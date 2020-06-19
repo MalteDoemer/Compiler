@@ -38,6 +38,8 @@ namespace Compiler.Syntax
 
         public SyntaxToken Literal { get; }
         public override int Pos => Literal.pos;
+
+        public override string ToString() => $"{Literal.value}";
     }
 
     internal sealed class VariableExpressionSyntax : ExpressionSyntax
@@ -49,8 +51,8 @@ namespace Compiler.Syntax
         }
 
         public override int Pos => Name.pos;
-
         public SyntaxToken Name { get; }
+        public override string ToString() => $"{Name.value}";
     }
 
     internal sealed class UnaryExpressionSyntax : ExpressionSyntax
@@ -65,6 +67,7 @@ namespace Compiler.Syntax
 
         public SyntaxToken Op { get; }
         public ExpressionSyntax Expression { get; }
+        public override string ToString() => $"({Op.value}{Expression})";
     }
 
     internal sealed class BinaryExpressionSyntax : ExpressionSyntax
@@ -81,6 +84,7 @@ namespace Compiler.Syntax
         public ExpressionSyntax Right { get; }
 
         public override int Pos => Op.pos;
+        public override string ToString() => $"({Left} {Op.value} {Right})";
     }
 
     internal class Parser

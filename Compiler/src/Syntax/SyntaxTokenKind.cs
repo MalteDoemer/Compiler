@@ -21,6 +21,15 @@ namespace Compiler.Syntax
         False,
         Null,
         LParen,
-        RParen
+        RParen,
+        LessThan,
+        GreaterThan,
+        Bang,
+        EqualEqual,
+        NotEqual,
+        LessEqual,
+        GreaterEqual,
+        AmpersandAmpersand,
+        PipePipe
     }
 }

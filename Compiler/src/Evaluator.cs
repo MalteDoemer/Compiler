@@ -2,6 +2,7 @@ using System;
 using Compiler.Binding;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
+using static System.Math;
 
 namespace Compiler
 {
@@ -37,6 +38,7 @@ namespace Compiler
                 {
                     case BoundUnaryOperator.Identety: return val;
                     case BoundUnaryOperator.Negation: return -val;
+                    case BoundUnaryOperator.LogicalNot: return !val;
                     default:
                         Diagnostics.ReportUnknownUnaryOperator(ue);
                         return null;
@@ -54,6 +56,19 @@ namespace Compiler
                     case BoundBinaryOperator.Subtraction: return left - right;
                     case BoundBinaryOperator.Multiplication: return left * right;
                     case BoundBinaryOperator.Division: return left / right;
+                    case BoundBinaryOperator.Power: return Pow(left, right);
+                    case BoundBinaryOperator.Root: return Pow(left, 1.0d / right);
+
+                    case BoundBinaryOperator.EqualEqual: return left == right;
+                    case BoundBinaryOperator.NotEqual: return left != right;
+                    case BoundBinaryOperator.LessThan: return left < right;
+                    case BoundBinaryOperator.LessEqual: return left <= right;
+                    case BoundBinaryOperator.GreaterThan: return left > right;
+                    case BoundBinaryOperator.GreaterEqual: return left >= right;
+
+                    case BoundBinaryOperator.LogicalAnd: return left && right;
+                    case BoundBinaryOperator.LogicalOr: return left || right;
+
                     default:
                         Diagnostics.ReportUnknownBinaryOperator(be);
                         return null;
@@ -67,8 +82,12 @@ namespace Compiler
             var bag = new DiagnosticBag();
             var parser = new Parser(text, bag);
             var binder = new Binder(bag);
-            var root = binder.BindExpression(parser.ParseExpression());
-            var evaluator = new Evaluator(root, bag);
+            var syntaxExpr = parser.ParseExpression();
+
+            //Console.WriteLine(syntaxExpr);
+
+            var boundExpr = binder.BindExpression(syntaxExpr);
+            var evaluator = new Evaluator(boundExpr, bag);
             var res = evaluator.EvaluateExpression();
 
             if (bag.Errors > 0)
@@ -79,7 +98,9 @@ namespace Compiler
                 return;
             }
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(res);
+
+            if (res == null) Console.WriteLine("null");
+            else Console.WriteLine(res);
             Console.ResetColor();
         }
     }

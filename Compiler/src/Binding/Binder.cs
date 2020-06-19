@@ -11,12 +11,12 @@ namespace Compiler.Binding
 
     internal abstract class BoundExpression : BoundNode
     {
-        public abstract TypeSymbol Type { get; }
+        public abstract TypeSymbol ResultType { get; }
     }
 
     internal sealed class BoundInvalidExpression : BoundExpression
     {
-        public override TypeSymbol Type => TypeSymbol.Null;
+        public override TypeSymbol ResultType => TypeSymbol.NullType;
 
         public override int Pos => -1;
     }
@@ -33,7 +33,7 @@ namespace Compiler.Binding
             this.symbol = symbol;
         }
 
-        public override TypeSymbol Type => symbol;
+        public override TypeSymbol ResultType => symbol;
         public override int Pos => pos;
         public dynamic Value { get; }
     }
@@ -42,25 +42,7 @@ namespace Compiler.Binding
     {
         Identety,
         Negation,
-    }
-
-    internal sealed class BoundUnaryExpression : BoundExpression
-    {
-        private readonly int pos;
-
-        public BoundUnaryExpression(int pos, BoundUnaryOperator op, BoundExpression right)
-        {
-            this.pos = pos;
-            Op = op;
-            Right = right;
-        }
-
-        public override TypeSymbol Type => Right.Type;
-
-        public BoundUnaryOperator Op { get; }
-        public BoundExpression Right { get; }
-
-        public override int Pos => pos;
+        LogicalNot,
     }
 
     internal enum BoundBinaryOperator
@@ -69,21 +51,57 @@ namespace Compiler.Binding
         Subtraction,
         Multiplication,
         Division,
+        Power,
+        Root,
+
+        EqualEqual,
+        NotEqual,
+        LessThan,
+        GreaterThan,
+        LessEqual,
+        GreaterEqual,
+
+        LogicalAnd,
+        LogicalOr,
+
+    }
+
+    internal sealed class BoundUnaryExpression : BoundExpression
+    {
+        private readonly int pos;
+        private readonly TypeSymbol resultType;
+
+        public BoundUnaryExpression(int pos, BoundUnaryOperator op, BoundExpression right, TypeSymbol resultType)
+        {
+            this.resultType = resultType;
+            this.pos = pos;
+            Op = op;
+            Right = right;
+        }
+
+        public override TypeSymbol ResultType => resultType;
+
+        public BoundUnaryOperator Op { get; }
+        public BoundExpression Right { get; }
+
+        public override int Pos => pos;
     }
 
     internal sealed class BoundBinaryExpression : BoundExpression
     {
         private readonly int pos;
+        private readonly TypeSymbol resultType;
 
-        public BoundBinaryExpression(int pos, BoundBinaryOperator op, BoundExpression left, BoundExpression right)
+        public BoundBinaryExpression(int pos, BoundBinaryOperator op, BoundExpression left, BoundExpression right, TypeSymbol resultType)
         {
             this.pos = pos;
             Op = op;
             Left = left;
             Right = right;
+            this.resultType = resultType;
         }
 
-        public override TypeSymbol Type => Left.Type;
+        public override TypeSymbol ResultType => resultType;
 
         public BoundBinaryOperator Op { get; }
         public BoundExpression Left { get; }
@@ -116,29 +134,34 @@ namespace Compiler.Binding
         {
             var left = BindExpression(be.Left);
             var right = BindExpression(be.Right);
-            var boundOperator = BindBinaryOperator(be.Op, left.Type, right.Type);
+            var boundOperator = BindBinaryOperator(be.Op, left.ResultType, right.ResultType);
 
-            if (boundOperator == null)
+            var resultType = BindFacts.ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
+
+            if (boundOperator == null || resultType == null)
             {
                 Diagnostics.ReportUnsupportedBinaryOperator(be.Op, left, right);
                 return new BoundInvalidExpression();
             }
+            
 
-            return new BoundBinaryExpression(be.Pos, (BoundBinaryOperator)boundOperator, left, right);
+            return new BoundBinaryExpression(be.Pos, (BoundBinaryOperator)boundOperator, left, right, (TypeSymbol)resultType);
         }
 
         private BoundExpression BindUnaryExpression(UnaryExpressionSyntax ue)
         {
             var right = BindExpression(ue.Expression);
-            var boundOperator = BindUnaryOperator(ue.Op, right.Type);
+            var boundOperator = BindUnaryOperator(ue.Op, right.ResultType);
 
-            if (boundOperator == null)
+            var resultType = BindFacts.ResolveUnaryType(boundOperator, right.ResultType);
+
+            if (boundOperator == null || resultType == null)
             {
                 Diagnostics.ReportUnsupportedUnaryOperator(ue.Op, right);
                 return new BoundInvalidExpression();
             }
 
-            return new BoundUnaryExpression(ue.Pos, (BoundUnaryOperator)boundOperator, right);
+            return new BoundUnaryExpression(ue.Pos, (BoundUnaryOperator)boundOperator, right, (TypeSymbol)resultType);
         }
 
         private BoundExpression BindLiteralExpression(LiteralExpressionSyntax le)
@@ -158,10 +181,20 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.Minus: boundOp = BoundBinaryOperator.Subtraction; break;
                 case SyntaxTokenKind.Star: boundOp = BoundBinaryOperator.Multiplication; break;
                 case SyntaxTokenKind.Slash: boundOp = BoundBinaryOperator.Division; break;
+                case SyntaxTokenKind.StarStar: boundOp = BoundBinaryOperator.Power; break;
+                case SyntaxTokenKind.SlashSlah: boundOp = BoundBinaryOperator.Root; break;
+                case SyntaxTokenKind.EqualEqual: boundOp = BoundBinaryOperator.EqualEqual; break;
+                case SyntaxTokenKind.NotEqual: boundOp = BoundBinaryOperator.NotEqual; break;
+                case SyntaxTokenKind.LessThan: boundOp = BoundBinaryOperator.LessThan; break;
+                case SyntaxTokenKind.LessEqual: boundOp = BoundBinaryOperator.LessEqual; break;
+                case SyntaxTokenKind.GreaterThan: boundOp = BoundBinaryOperator.GreaterThan; break;
+                case SyntaxTokenKind.GreaterEqual: boundOp = BoundBinaryOperator.GreaterEqual; break;
+                case SyntaxTokenKind.AmpersandAmpersand: boundOp = BoundBinaryOperator.LogicalAnd; break;
+                case SyntaxTokenKind.PipePipe: boundOp = BoundBinaryOperator.LogicalOr; break;
                 default: return null;
             }
 
-            if (!leftType.MatchBinaryOperator(rightType, boundOp)) return null;
+            //if (!leftType.MatchBinaryOperator(rightType, boundOp)) return null;
 
             return boundOp;
         }
@@ -174,10 +207,11 @@ namespace Compiler.Binding
             {
                 case SyntaxTokenKind.Plus: boundOp = BoundUnaryOperator.Identety; break;
                 case SyntaxTokenKind.Minus: boundOp = BoundUnaryOperator.Negation; break;
+                case SyntaxTokenKind.Bang: boundOp = BoundUnaryOperator.LogicalNot; break;
                 default: return null;
             }
 
-            if (!type.MatchUnaryOperator(boundOp)) return null;
+            //if (!type.MatchUnaryOperator(boundOp)) return null;
 
             return boundOp;
         }

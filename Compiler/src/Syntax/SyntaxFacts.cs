@@ -10,6 +10,9 @@ namespace Compiler.Syntax
             {"-", SyntaxTokenKind.Minus},
             {"*", SyntaxTokenKind.Star},
             {"/", SyntaxTokenKind.Slash},
+            {"<", SyntaxTokenKind.LessThan},
+            {">", SyntaxTokenKind.GreaterThan},
+            {"!", SyntaxTokenKind.Bang},
             {"(", SyntaxTokenKind.LParen},
             {")", SyntaxTokenKind.RParen},
         };
@@ -18,6 +21,12 @@ namespace Compiler.Syntax
         {
             {"**", SyntaxTokenKind.StarStar},
             {"//", SyntaxTokenKind.SlashSlah},
+            {"==", SyntaxTokenKind.EqualEqual},
+            {"!=", SyntaxTokenKind.NotEqual},
+            {"<=", SyntaxTokenKind.LessEqual},
+            {">=", SyntaxTokenKind.GreaterEqual},
+            {"&&", SyntaxTokenKind.AmpersandAmpersand},
+            {"||", SyntaxTokenKind.PipePipe},
         };
 
         public static readonly Dictionary<string, SyntaxTokenKind> Keywords = new Dictionary<string, SyntaxTokenKind>()
@@ -27,7 +36,7 @@ namespace Compiler.Syntax
             {"null", SyntaxTokenKind.Null},
         };
 
-        public const int MaxPrecedence = 2;
+        public const int MaxPrecedence = 5;
 
         public static dynamic GetKeywordValue(string keyword)
         {
@@ -42,10 +51,11 @@ namespace Compiler.Syntax
 
         public static bool IsUnaryOperator(this SyntaxTokenKind kind)
         {
-            switch(kind)
+            switch (kind)
             {
                 case SyntaxTokenKind.Minus:
                 case SyntaxTokenKind.Plus:
+                case SyntaxTokenKind.Bang:
                     return true;
                 default: return false;
             }
@@ -53,7 +63,7 @@ namespace Compiler.Syntax
 
         public static bool IsLiteralExpression(this SyntaxTokenKind kind)
         {
-            switch(kind)
+            switch (kind)
             {
                 case SyntaxTokenKind.Float:
                 case SyntaxTokenKind.Int:
@@ -68,14 +78,31 @@ namespace Compiler.Syntax
 
         public static int GetBinaryPrecedence(this SyntaxTokenKind kind)
         {
-            switch(kind)
+            switch (kind)
             {
+                case SyntaxTokenKind.StarStar:
+                case SyntaxTokenKind.SlashSlah:
+                    return 1;
+
                 case SyntaxTokenKind.Star:
                 case SyntaxTokenKind.Slash:
-                    return 1;
+                    return 2;
+
                 case SyntaxTokenKind.Plus:
                 case SyntaxTokenKind.Minus:
-                    return 2;
+                    return 3;
+
+                case SyntaxTokenKind.LessEqual:
+                case SyntaxTokenKind.GreaterEqual:
+                case SyntaxTokenKind.LessThan:
+                case SyntaxTokenKind.GreaterThan:
+                case SyntaxTokenKind.EqualEqual:
+                case SyntaxTokenKind.NotEqual:
+                    return 4;
+
+                case SyntaxTokenKind.AmpersandAmpersand:
+                case SyntaxTokenKind.PipePipe:
+                    return 5;
 
                 default: return 0;
             }

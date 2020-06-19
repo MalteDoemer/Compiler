@@ -108,13 +108,13 @@ namespace Compiler.Diagnostics
 
         internal void ReportUnsupportedBinaryOperator(SyntaxToken op, BoundExpression left, BoundExpression right)
         {
-            var d = new Diagnostic(ErrorKind.RuntimeError, $"The Binary operator '{op.value}' is unsupported for the operands <{left.Type}> and <{right.Type}>", op.pos);
+            var d = new Diagnostic(ErrorKind.RuntimeError, $"The Binary operator '{op.value}' is unsupported for the operands <{left.ResultType}> and <{right.ResultType}>", op.pos);
             diagnostics.Add(d);
         }
 
         internal void ReportUnsupportedUnaryOperator(SyntaxToken op, BoundExpression right)
         {
-            var d = new Diagnostic(ErrorKind.RuntimeError, $"The Unary operator '{op.value}' is unsupported for the operand <{right.Type}>", op.pos);
+            var d = new Diagnostic(ErrorKind.RuntimeError, $"The Unary operator '{op.value}' is unsupported for the operand <{right.ResultType}>", op.pos);
             diagnostics.Add(d);
         }
     }
