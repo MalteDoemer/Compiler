@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Compiler.Syntax;
 
 namespace Compiler.Diagnostics
 {
@@ -62,6 +64,18 @@ namespace Compiler.Diagnostics
         public void ReportInvalidDecimalPoint(int pos)
         {
             var d = new Diagnostic(ErrorKind.SyntaxError, "Invalid decimal point", pos);
+            diagnostics.Add(d);
+        }
+
+        internal void ReportUnexpectedToken(SyntaxToken actual, SyntaxTokenKind expected)
+        {
+            var d = new Diagnostic(ErrorKind.SyntaxError, $"Expected <{expected}> but got <{actual.kind}>", actual.pos);
+            diagnostics.Add(d);
+        }
+
+        internal void ReportUnexpectedToken(SyntaxToken token)
+        {
+            var d = new Diagnostic(ErrorKind.SyntaxError, $"Unexpected token <{token.kind}>", token.pos);
             diagnostics.Add(d);
         }
 

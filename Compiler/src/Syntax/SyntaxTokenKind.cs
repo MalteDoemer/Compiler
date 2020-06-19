@@ -18,6 +18,8 @@ namespace Compiler.Syntax
 
         True,
         False,
-        Null
+        Null,
+        LParen,
+        RParen
     }
 }
