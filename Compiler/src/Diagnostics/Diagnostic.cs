@@ -94,27 +94,27 @@ namespace Compiler.Diagnostics
             diagnostics.Add(d);
         }
 
-        internal void ReportUnknownUnaryOperator(UnaryExpressionSyntax ue)
+        internal void ReportUnknownUnaryOperator(BoundUnaryExpression ue)
         {
-            var d = new Diagnostic(ErrorKind.RuntimeError, $"Unknown unary operator <{ue.Op.value}>", ue.Pos);
+            var d = new Diagnostic(ErrorKind.RuntimeError, $"Unknown unary operator <{ue.Op}>", ue.Pos);
             diagnostics.Add(d);
         }
 
-        internal void ReportUnknownBinaryOperator(BinaryExpressionSyntax be)
+        internal void ReportUnknownBinaryOperator(BoundBinaryExpression be)
         {
-            var d = new Diagnostic(ErrorKind.RuntimeError, $"Unknown binary operator <{be.Op.value}>", be.Pos);
+            var d = new Diagnostic(ErrorKind.RuntimeError, $"Unknown binary operator <{be.Op}>", be.Pos);
             diagnostics.Add(d);
         }
 
         internal void ReportUnsupportedBinaryOperator(SyntaxToken op, BoundExpression left, BoundExpression right)
         {
-            var d = new Diagnostic(ErrorKind.RuntimeError, $"Binary operator <{op}> is unsupported for the operands <{left.Type}> and <{right.Type}>", op.pos);
+            var d = new Diagnostic(ErrorKind.RuntimeError, $"The Binary operator '{op.value}' is unsupported for the operands <{left.Type}> and <{right.Type}>", op.pos);
             diagnostics.Add(d);
         }
 
         internal void ReportUnsupportedUnaryOperator(SyntaxToken op, BoundExpression right)
         {
-            var d = new Diagnostic(ErrorKind.RuntimeError, $"Unary operator <{op}> is unsupported for the operand <{right.Type}>", op.pos);
+            var d = new Diagnostic(ErrorKind.RuntimeError, $"The Unary operator '{op.value}' is unsupported for the operand <{right.Type}>", op.pos);
             diagnostics.Add(d);
         }
     }

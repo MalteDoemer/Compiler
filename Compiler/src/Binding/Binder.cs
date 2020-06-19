@@ -109,7 +109,7 @@ namespace Compiler.Binding
                 return BindUnaryExpression(ue);
             else if (syntax is BinaryExpressionSyntax be)
                 return BindBinaryExpression(be);
-            else throw new Exception("Unknown Syntax kind");
+            else throw new Exception($"Unknown Syntax kind <{syntax}>");
         }
 
         private BoundExpression BindBinaryExpression(BinaryExpressionSyntax be)

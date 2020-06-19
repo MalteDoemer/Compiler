@@ -1,4 +1,5 @@
 using System;
+using Compiler.Binding;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
 
@@ -7,52 +8,52 @@ namespace Compiler
     public class Evaluator
     {
         private DiagnosticBag Diagnostics { get; }
-        private SyntaxNode Root { get; }
+        private BoundNode Root { get; }
 
-        internal Evaluator(SyntaxNode root, DiagnosticBag diagnostics)
+        internal Evaluator(BoundNode root, DiagnosticBag diagnostics)
         {
             Root = root;
             Diagnostics = diagnostics;
         }
 
-        internal dynamic EvaluateExpression() => EvaluateExpression((ExpressionSyntax)Root);
+        internal dynamic EvaluateExpression() => EvaluateExpression((BoundExpression)Root);
 
-        private dynamic EvaluateExpression(ExpressionSyntax expr)
+        private dynamic EvaluateExpression(BoundExpression expr)
         {
             if (Diagnostics.Count > 0) return null;
 
 
-            if (expr is LiteralExpressionSyntax le)
-                return le.Literal.value;
-            else if (expr is VariableExpressionSyntax ve)
+            if (expr is BoundLiteralExpression le)
+                return le.Value;
+            //else if (expr is VariableExpressionSyntax ve)
+            //{
+            //    Diagnostics.ReportVariableNotDefined(ve);
+            //    return null;
+            //}
+            else if (expr is BoundUnaryExpression ue)
             {
-                Diagnostics.ReportVariableNotDefined(ve);
-                return null;
-            }
-            else if (expr is UnaryExpressionSyntax ue)
-            {
-                dynamic val = EvaluateExpression(ue.Expression);
-                switch (ue.Op.kind)
+                dynamic val = EvaluateExpression(ue.Right);
+                switch (ue.Op)
                 {
-                    case SyntaxTokenKind.Plus: return val;
-                    case SyntaxTokenKind.Minus: return -val;
+                    case BoundUnaryOperator.Identety: return val;
+                    case BoundUnaryOperator.Negation: return -val;
                     default:
                         Diagnostics.ReportUnknownUnaryOperator(ue);
                         return null;
                 }
             }
-            else if (expr is BinaryExpressionSyntax be)
+            else if (expr is BoundBinaryExpression be)
             {
 
                 var left = EvaluateExpression(be.Left);
                 var right = EvaluateExpression(be.Right);
 
-                switch (be.Op.kind)
+                switch (be.Op)
                 {
-                    case SyntaxTokenKind.Plus: return left + right;
-                    case SyntaxTokenKind.Minus: return left - right;
-                    case SyntaxTokenKind.Star: return left * right;
-                    case SyntaxTokenKind.Slash: return left / right;
+                    case BoundBinaryOperator.Addition: return left + right;
+                    case BoundBinaryOperator.Subtraction: return left - right;
+                    case BoundBinaryOperator.Multiplication: return left * right;
+                    case BoundBinaryOperator.Division: return left / right;
                     default:
                         Diagnostics.ReportUnknownBinaryOperator(be);
                         return null;
@@ -65,7 +66,8 @@ namespace Compiler
         {
             var bag = new DiagnosticBag();
             var parser = new Parser(text, bag);
-            var root = parser.ParseExpression();
+            var binder = new Binder(bag);
+            var root = binder.BindExpression(parser.ParseExpression());
             var evaluator = new Evaluator(root, bag);
             var res = evaluator.EvaluateExpression();
 

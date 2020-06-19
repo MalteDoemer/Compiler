@@ -33,7 +33,7 @@ namespace Compiler.Syntax
 
         private string Peak(int len)
         {
-            if (pos + len < text.Length) return text.Substring(pos, len);
+            if (pos + len <= text.Length) return text.Substring(pos, len);
             else return "\0";
         }
 
