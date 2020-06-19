@@ -5,7 +5,8 @@ namespace Compiler.Syntax
         End,
         Invalid,
         Error,
-        Number,
+        Int,
+        Float,
         String,
         Identifier,
 

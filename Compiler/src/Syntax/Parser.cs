@@ -1,72 +1,75 @@
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Compiler.Diagnostics;
 
 namespace Compiler.Syntax
 {
 
-    internal abstract class SyntaxTreeNode
+    internal abstract class SyntaxNode
     {
-        public abstract int pos { get; }
+        public abstract int Pos { get; }
     }
 
-    internal abstract class SyntaxExpression : SyntaxTreeNode
+
+    internal abstract class ExpressionSyntax : SyntaxNode
     {
 
     }
 
-    internal sealed class InvalidExpression : SyntaxExpression
+    internal sealed class InvalidExpressionSyntax : ExpressionSyntax
     {
-        public InvalidExpression(SyntaxToken invalidToken)
+        public InvalidExpressionSyntax(SyntaxToken invalidToken)
         {
             InvalidToken = invalidToken;
         }
 
-        public override int pos => InvalidToken.pos;
+        public override int Pos => InvalidToken.pos;
 
         public SyntaxToken InvalidToken { get; }
     }
 
-    internal sealed class LiteralExpression : SyntaxExpression
+    internal sealed class LiteralExpressionSyntax : ExpressionSyntax
     {
-        public LiteralExpression(SyntaxToken literal)
+        public LiteralExpressionSyntax(SyntaxToken literal)
         {
             Literal = literal;
         }
 
         public SyntaxToken Literal { get; }
-        public override int pos => Literal.pos;
+        public override int Pos => Literal.pos;
     }
 
-    internal sealed class VariableExpression : SyntaxExpression
+    internal sealed class VariableExpressionSyntax : ExpressionSyntax
     {
 
-        public VariableExpression(SyntaxToken name)
+        public VariableExpressionSyntax(SyntaxToken name)
         {
             Name = name;
         }
 
-        public override int pos => Name.pos;
+        public override int Pos => Name.pos;
 
         public SyntaxToken Name { get; }
     }
 
-    internal sealed class UnaryExpression : SyntaxExpression
+    internal sealed class UnaryExpressionSyntax : ExpressionSyntax
     {
-        public UnaryExpression(SyntaxToken op, SyntaxExpression expression)
+        public UnaryExpressionSyntax(SyntaxToken op, ExpressionSyntax expression)
         {
             Op = op;
             Expression = expression;
         }
 
-        public override int pos => Op.pos;
+        public override int Pos => Op.pos;
 
         public SyntaxToken Op { get; }
-        public SyntaxExpression Expression { get; }
+        public ExpressionSyntax Expression { get; }
     }
 
-    internal sealed class BinaryExpression : SyntaxExpression
+    internal sealed class BinaryExpressionSyntax : ExpressionSyntax
     {
-        public BinaryExpression(SyntaxToken op, SyntaxExpression left, SyntaxExpression right)
+        public BinaryExpressionSyntax(SyntaxToken op, ExpressionSyntax left, ExpressionSyntax right)
         {
             Op = op;
             Left = left;
@@ -74,10 +77,10 @@ namespace Compiler.Syntax
         }
 
         public SyntaxToken Op { get; }
-        public SyntaxExpression Left { get; }
-        public SyntaxExpression Right { get; }
+        public ExpressionSyntax Left { get; }
+        public ExpressionSyntax Right { get; }
 
-        public override int pos => Op.pos;
+        public override int Pos => Op.pos;
     }
 
     internal class Parser
@@ -121,51 +124,51 @@ namespace Compiler.Syntax
             return res;
         }
 
-
-        public SyntaxExpression ParseBinaryExpression(int lvl = SyntaxFacts.MaxPrecedence)
+        public ExpressionSyntax ParseExpression(int lvl = SyntaxFacts.MaxPrecedence)
         {
             if (lvl == 0) return ParsePrimaryExpression();
 
-            var left = ParseBinaryExpression(lvl - 1);
+            var left = ParseExpression(lvl - 1);
 
             while (current.kind.GetBinaryPrecedence() == lvl)
             {
                 var op = Advance();
-                var right = ParseBinaryExpression(lvl - 1);
-                left = new BinaryExpression(op, left, right);
+                var right = ParseExpression(lvl - 1);
+                left = new BinaryExpressionSyntax(op, left, right);
             }
 
             return left;
 
         }
 
-        private SyntaxExpression ParsePrimaryExpression()
+        private ExpressionSyntax ParsePrimaryExpression()
         {
             if (current.kind.IsLiteralExpression())
-                return new LiteralExpression(Advance());
+                return new LiteralExpressionSyntax(Advance());
             else if (current.kind == SyntaxTokenKind.Identifier)
                 return ParseIdentifier();
             else if (current.kind.IsUnaryOperator()) 
-                return new UnaryExpression(Advance(), ParsePrimaryExpression());
+                return new UnaryExpressionSyntax(Advance(), ParsePrimaryExpression());
             else if (current.kind == SyntaxTokenKind.LParen)
                 return ParseParenthesizedExpression();
             else 
             {
                 diagnostics.ReportUnexpectedToken(current);
-                return new InvalidExpression(Advance());
+                return new InvalidExpressionSyntax(Advance());
             }
         }
-        private SyntaxExpression ParseParenthesizedExpression()
+        
+        private ExpressionSyntax ParseParenthesizedExpression()
         {
             pos++;
-            var expr = ParseBinaryExpression();
+            var expr = ParseExpression();
             MatchToken(SyntaxTokenKind.RParen);
             return expr;
         }
 
-        private SyntaxExpression ParseIdentifier()
+        private ExpressionSyntax ParseIdentifier()
         {
-            return new VariableExpression(Advance());
+            return new VariableExpressionSyntax(Advance());
         }
     }
 }

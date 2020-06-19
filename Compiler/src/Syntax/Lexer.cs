@@ -69,9 +69,9 @@ namespace Compiler.Syntax
                     fnum += (double)(current - '0') / (double)weight;
                     pos++;
                 }
-                return new SyntaxToken(SyntaxTokenKind.Number, start, fnum);
+                return new SyntaxToken(SyntaxTokenKind.Float, start, fnum);
             }
-            else return new SyntaxToken(SyntaxTokenKind.Number, start, num);
+            else return new SyntaxToken(SyntaxTokenKind.Int, start, num);
 
         }
 

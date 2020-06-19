@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Compiler.Binding;
 using Compiler.Syntax;
 
 namespace Compiler.Diagnostics
@@ -16,6 +17,7 @@ namespace Compiler.Diagnostics
     internal enum ErrorKind
     {
         SyntaxError,
+        RuntimeError,
     }
 
     internal class Diagnostic
@@ -67,6 +69,7 @@ namespace Compiler.Diagnostics
             diagnostics.Add(d);
         }
 
+
         internal void ReportUnexpectedToken(SyntaxToken actual, SyntaxTokenKind expected)
         {
             var d = new Diagnostic(ErrorKind.SyntaxError, $"Expected <{expected}> but got <{actual.kind}>", actual.pos);
@@ -85,5 +88,34 @@ namespace Compiler.Diagnostics
             diagnostics.Add(d);
         }
 
+        internal void ReportVariableNotDefined(VariableExpressionSyntax ve)
+        {
+            var d = new Diagnostic(ErrorKind.RuntimeError, $"The variable <{ve.Name.value}> is not defined>", ve.Pos);
+            diagnostics.Add(d);
+        }
+
+        internal void ReportUnknownUnaryOperator(UnaryExpressionSyntax ue)
+        {
+            var d = new Diagnostic(ErrorKind.RuntimeError, $"Unknown unary operator <{ue.Op.value}>", ue.Pos);
+            diagnostics.Add(d);
+        }
+
+        internal void ReportUnknownBinaryOperator(BinaryExpressionSyntax be)
+        {
+            var d = new Diagnostic(ErrorKind.RuntimeError, $"Unknown binary operator <{be.Op.value}>", be.Pos);
+            diagnostics.Add(d);
+        }
+
+        internal void ReportUnsupportedBinaryOperator(SyntaxToken op, BoundExpression left, BoundExpression right)
+        {
+            var d = new Diagnostic(ErrorKind.RuntimeError, $"Binary operator <{op}> is unsupported for the operands <{left.Type}> and <{right.Type}>", op.pos);
+            diagnostics.Add(d);
+        }
+
+        internal void ReportUnsupportedUnaryOperator(SyntaxToken op, BoundExpression right)
+        {
+            var d = new Diagnostic(ErrorKind.RuntimeError, $"Unary operator <{op}> is unsupported for the operand <{right.Type}>", op.pos);
+            diagnostics.Add(d);
+        }
     }
 }

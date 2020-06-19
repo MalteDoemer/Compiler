@@ -55,7 +55,8 @@ namespace Compiler.Syntax
         {
             switch(kind)
             {
-                case SyntaxTokenKind.Number:
+                case SyntaxTokenKind.Float:
+                case SyntaxTokenKind.Int:
                 case SyntaxTokenKind.String:
                 case SyntaxTokenKind.True:
                 case SyntaxTokenKind.False:
