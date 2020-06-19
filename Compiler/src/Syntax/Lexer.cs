@@ -1,84 +1,11 @@
 using System.Collections.Generic;
 
-namespace Compiler
+namespace Compiler.Syntax
 {
-    internal enum SyntaxTokenKind
-    {
-        End,
-        Invalid,
-        Error,
-        Number,
-        String,
-        Identifier,
-
-        Plus,
-        Minus,
-        Star,
-        Slash,
-        StarStar,
-        SlashSlah,
-
-        True,
-        False,
-        Null
-    }
-
-    internal class SyntaxToken
-    {
-        public readonly SyntaxTokenKind kind;
-        public readonly int pos;
-        public readonly dynamic value;
-
-        public SyntaxToken(SyntaxTokenKind kind, int pos, dynamic value)
-        {
-            this.kind = kind;
-            this.pos = pos;
-            this.value = value;
-        }
-
-        public override string ToString() => $"{kind} at {pos} : {value}";
-    }
-
-    internal static class SyntaxFacts
-    {
-        public static readonly Dictionary<string, SyntaxTokenKind> SingleCharacters = new Dictionary<string, SyntaxTokenKind>()
-        {
-            {"+", SyntaxTokenKind.Plus},
-            {"-", SyntaxTokenKind.Minus},
-            {"*", SyntaxTokenKind.Star},
-            {"/", SyntaxTokenKind.Slash},
-        };
-
-        public static readonly Dictionary<string, SyntaxTokenKind> DoubleCharacters = new Dictionary<string, SyntaxTokenKind>()
-        {
-            {"**", SyntaxTokenKind.StarStar},
-            {"//", SyntaxTokenKind.SlashSlah},
-        };
-
-        public static readonly Dictionary<string, SyntaxTokenKind> Keywords = new Dictionary<string, SyntaxTokenKind>()
-        {
-            {"true", SyntaxTokenKind.True},
-            {"false", SyntaxTokenKind.False},
-            {"null", SyntaxTokenKind.Null},
-        };
-    
-        public static dynamic GetKeywordValue(string keyword)
-        {
-            switch(keyword)
-            {
-                case "true": return true;
-                case "false": return false;
-                case "null": return null;
-                default: return keyword;
-            }
-        }
-
-    }
-
     internal class Lexer
     {
 
-        private readonly List<string> diagnostics;
+        public readonly List<string> diagnostics;
         private readonly string text;
         private int pos;
         private char current
@@ -163,11 +90,12 @@ namespace Compiler
                 if (current == '\0')
                 {
                     diagnostics.Add($"SyntaxError at {pos}\nNeverClosedString");
-                    break;
+                    return new SyntaxToken(SyntaxTokenKind.String, start, text.Substring(start, pos - start));
                 }
                 else pos++;
             }
-            return new SyntaxToken(SyntaxTokenKind.String, start, text.Substring(start, pos - start));
+            pos++;
+            return new SyntaxToken(SyntaxTokenKind.String, start, text.Substring(start, pos - start - 1));
         }
 
         private SyntaxToken LexSingleChar()
@@ -189,7 +117,7 @@ namespace Compiler
         {
             foreach (var pair in SyntaxFacts.Keywords)
                 if (Peak(pair.Key.Length) == pair.Key)
-                    return new SyntaxToken(pair.Value, (pos += pair.Key.Length) - pair.Key.Length, pair.Key);
+                    return new SyntaxToken(pair.Value, (pos += pair.Key.Length) - pair.Key.Length, SyntaxFacts.GetKeywordValue(pair.Key));
             return null;
         }
 
@@ -210,6 +138,16 @@ namespace Compiler
             else if (char.IsWhiteSpace(current)) return LexSpace();
             else if (char.IsLetter(current)) return LexIdentifier();
             else return new SyntaxToken(SyntaxTokenKind.Invalid, pos, Advance());
+        }
+
+        public IEnumerable<SyntaxToken> Tokenize()
+        {
+            SyntaxToken token;
+            do
+            {
+                token = NextToken();
+                yield return token;
+            } while (token.kind != SyntaxTokenKind.End);
         }
     }
 }
