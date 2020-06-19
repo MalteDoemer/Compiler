@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using Xunit;
 
 namespace Compiler.Tests
 {
-    public class UnitTest1
+    public class LexerTest
     {
         [Fact]
-        public void Test1()
+        public void Fact()
         {
-
+            
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Compiler.Diagnostics;
 using Compiler.Syntax;
 
 namespace Compiler
@@ -16,10 +17,19 @@ namespace Compiler
                 else if (inp == "cls") Console.Clear();
                 else
                 {
-                    var lexer = new Lexer(inp);
+                    var bag = new DiagnosticBag();
+                    var lexer = new Lexer(inp, bag);
                     var tokens = lexer.Tokenize().ToArray();
-                    if (lexer.diagnostics.Count > 0) foreach(var err in lexer.diagnostics) Console.WriteLine('\n' + err + '\n');
+
+                    if (bag.Errors > 0)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        foreach (var err in bag.GetErrors())
+                            Console.WriteLine(err);
+                        Console.ResetColor();
+                    }
                     else foreach (var t in tokens) Console.WriteLine(t);
+
                 }
             }
         }
