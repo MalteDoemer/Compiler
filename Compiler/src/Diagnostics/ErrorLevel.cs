@@ -1,6 +1,6 @@
 namespace Compiler.Diagnostics
 {
-    internal enum ErrorLevel
+    public enum ErrorLevel
     {
         Warning,
         Error,

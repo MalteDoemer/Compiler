@@ -75,11 +75,17 @@ namespace Compiler.Syntax
 
         }
 
-        private SyntaxToken LexIdentifier()
+        private SyntaxToken LexIdentifierOrKeyword()
         {
             int start = pos;
             while (char.IsLetter(current)) pos++;
-            return new SyntaxToken(SyntaxTokenKind.Identifier, pos, text.Substring(start, pos - start));
+
+            var tokenText = text.Substring(start, pos - start);
+            var isKeyword = SyntaxFacts.IsKeyWord(tokenText);
+
+            if (isKeyword != null)
+                return new SyntaxToken((SyntaxTokenKind)isKeyword, start, SyntaxFacts.GetKeywordValue(tokenText));
+            else return new SyntaxToken(SyntaxTokenKind.Identifier, start, tokenText);
         }
 
         private SyntaxToken LexString()
@@ -114,19 +120,22 @@ namespace Compiler.Syntax
             return null;
         }
 
-        private SyntaxToken LexKeyWord()
-        {
-            foreach (var pair in SyntaxFacts.Keywords)
-                if (Peak(pair.Key.Length) == pair.Key)
-                    return new SyntaxToken(pair.Value, (pos += pair.Key.Length) - pair.Key.Length, SyntaxFacts.GetKeywordValue(pair.Key));
-            return null;
-        }
+        // private SyntaxToken LexKeyWord()
+        // {
+        //     foreach (var pair in SyntaxFacts.Keywords)
+        //         if (Peak(pair.Key.Length) == pair.Key)
+        //         {
+        //             if (pos + pair.Key.Length < text.Length)
+        //                 if (text[pos + pair.Key.Length + 1])
+
+        //             return new SyntaxToken(pair.Value, (pos += pair.Key.Length) - pair.Key.Length, SyntaxFacts.GetKeywordValue(pair.Key));
+        //         }
+
+        //     return null;
+        // }
 
         public SyntaxToken NextToken()
         {
-            var keyword = LexKeyWord();
-            if (keyword != null) return keyword;
-
             var doubleChar = LexDoubleChar();
             if (doubleChar != null) return doubleChar;
 
@@ -137,7 +146,7 @@ namespace Compiler.Syntax
             else if (current == '"') return LexString();
             else if (char.IsNumber(current)) return LexNumber();
             else if (char.IsWhiteSpace(current)) return LexSpace();
-            else if (char.IsLetter(current)) return LexIdentifier();
+            else if (char.IsLetter(current) ||current == '_') return LexIdentifierOrKeyword();
             else return new SyntaxToken(SyntaxTokenKind.Invalid, pos, Advance());
         }
 

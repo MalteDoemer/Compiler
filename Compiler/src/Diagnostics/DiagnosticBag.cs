@@ -5,7 +5,7 @@ using Compiler.Syntax;
 
 namespace Compiler.Diagnostics
 {
-    internal class DiagnosticBag
+    public class DiagnosticBag
     {
         private readonly List<Diagnostic> diagnostics;
 
@@ -24,12 +24,11 @@ namespace Compiler.Diagnostics
         public IEnumerable<Diagnostic> GetWarnings() => diagnostics.Where(d => d.Level == ErrorLevel.Warning);
 
 
-        public void ReportInvalidDecimalPoint(int pos)
+        internal void ReportInvalidDecimalPoint(int pos)
         {
             var d = new Diagnostic(ErrorKind.SyntaxError, "Invalid decimal point", pos);
             diagnostics.Add(d);
         }
-
 
         internal void ReportUnexpectedToken(SyntaxToken actual, SyntaxTokenKind expected)
         {
@@ -43,7 +42,7 @@ namespace Compiler.Diagnostics
             diagnostics.Add(d);
         }
 
-        public void ReportNeverClosedString(int pos)
+        internal void ReportNeverClosedString(int pos)
         {
             var d = new Diagnostic(ErrorKind.SyntaxError, "Never closed string literal", pos);
             diagnostics.Add(d);

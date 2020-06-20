@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Compiler.Binding;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
@@ -77,9 +79,9 @@ namespace Compiler
             else throw new Exception("Fett");
         }
 
-        public static void Evaluate(string text)
+        public static void Evaluate(string text, out DiagnosticBag bag)
         {
-            var bag = new DiagnosticBag();
+            bag = new DiagnosticBag();
             var parser = new Parser(text, bag);
             var binder = new Binder(bag);
             var syntaxExpr = parser.ParseExpression();
@@ -103,5 +105,13 @@ namespace Compiler
             else Console.WriteLine(res);
             Console.ResetColor();
         }
+
+        public static IEnumerable<SyntaxToken> Tokenize(string text, out DiagnosticBag bag)
+        {
+            bag = new DiagnosticBag();
+            var lexer = new Lexer(text, bag);
+            return lexer.Tokenize();
+        }
+
     }
 }

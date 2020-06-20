@@ -10,16 +10,16 @@ namespace Compiler.Syntax
         String,
         Identifier,
 
+        True,
+        False,
+        Null,
+
         Plus,
         Minus,
         Star,
         Slash,
         StarStar,
         SlashSlah,
-
-        True,
-        False,
-        Null,
         LParen,
         RParen,
         LessThan,

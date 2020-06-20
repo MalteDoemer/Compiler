@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Compiler.Diagnostics
 {
-    internal class Diagnostic
+    public class Diagnostic
     {
         public ErrorKind Kind { get; }
         public string Message { get; }

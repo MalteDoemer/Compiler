@@ -15,7 +15,7 @@ namespace Compiler
                 var inp = Console.ReadLine();
                 if (inp == "exit") break;
                 else if (inp == "cls") Console.Clear();
-                else Evaluator.Evaluate(inp);
+                else Evaluator.Evaluate(inp, out DiagnosticBag diagnostics);
             }
         }
     }

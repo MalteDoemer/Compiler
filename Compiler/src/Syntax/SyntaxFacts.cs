@@ -108,5 +108,12 @@ namespace Compiler.Syntax
             }
         }
 
+        public static SyntaxTokenKind? IsKeyWord(string text)
+        {
+            foreach (var pair in Keywords)
+                if (pair.Key == text) return pair.Value;
+            return null;
+        }
+
     }
 }

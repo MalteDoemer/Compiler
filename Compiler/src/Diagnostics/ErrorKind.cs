@@ -1,6 +1,6 @@
 namespace Compiler.Diagnostics
 {
-    internal enum ErrorKind
+    public enum ErrorKind
     {
         SyntaxError,
         RuntimeError,
