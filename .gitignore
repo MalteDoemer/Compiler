@@ -3,3 +3,5 @@
 /Compiler/bin
 /Compiler.Tests/obj
 /Compiler.Tests/bin
+/Repl/obj
+/Repl/bin
