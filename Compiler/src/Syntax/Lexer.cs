@@ -78,7 +78,7 @@ namespace Compiler.Syntax
         private SyntaxToken LexIdentifierOrKeyword()
         {
             int start = pos;
-            while (char.IsLetter(current)) pos++;
+            while (char.IsLetterOrDigit(current) || current == '_') pos++;
 
             var tokenText = text.Substring(start, pos - start);
             var isKeyword = SyntaxFacts.IsKeyWord(tokenText);

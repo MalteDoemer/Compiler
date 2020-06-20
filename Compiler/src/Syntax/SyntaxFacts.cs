@@ -4,7 +4,7 @@ namespace Compiler.Syntax
 {
     internal static class SyntaxFacts
     {
-        public static readonly Dictionary<string, SyntaxTokenKind> SingleCharacters = new Dictionary<string, SyntaxTokenKind>()
+        internal static readonly Dictionary<string, SyntaxTokenKind> SingleCharacters = new Dictionary<string, SyntaxTokenKind>()
         {
             {"+", SyntaxTokenKind.Plus},
             {"-", SyntaxTokenKind.Minus},
@@ -15,9 +15,10 @@ namespace Compiler.Syntax
             {"!", SyntaxTokenKind.Bang},
             {"(", SyntaxTokenKind.LParen},
             {")", SyntaxTokenKind.RParen},
+            {"=", SyntaxTokenKind.Equal},
         };
 
-        public static readonly Dictionary<string, SyntaxTokenKind> DoubleCharacters = new Dictionary<string, SyntaxTokenKind>()
+        internal static readonly Dictionary<string, SyntaxTokenKind> DoubleCharacters = new Dictionary<string, SyntaxTokenKind>()
         {
             {"**", SyntaxTokenKind.StarStar},
             {"//", SyntaxTokenKind.SlashSlah},
@@ -29,16 +30,16 @@ namespace Compiler.Syntax
             {"||", SyntaxTokenKind.PipePipe},
         };
 
-        public static readonly Dictionary<string, SyntaxTokenKind> Keywords = new Dictionary<string, SyntaxTokenKind>()
+        internal static readonly Dictionary<string, SyntaxTokenKind> Keywords = new Dictionary<string, SyntaxTokenKind>()
         {
             {"true", SyntaxTokenKind.True},
             {"false", SyntaxTokenKind.False},
             {"null", SyntaxTokenKind.Null},
         };
 
-        public const int MaxPrecedence = 5;
+        internal const int MaxPrecedence = 5;
 
-        public static dynamic GetKeywordValue(string keyword)
+        internal static dynamic GetKeywordValue(string keyword)
         {
             switch (keyword)
             {
@@ -49,7 +50,7 @@ namespace Compiler.Syntax
             }
         }
 
-        public static bool IsUnaryOperator(this SyntaxTokenKind kind)
+        internal static bool IsUnaryOperator(this SyntaxTokenKind kind)
         {
             switch (kind)
             {
@@ -61,7 +62,7 @@ namespace Compiler.Syntax
             }
         }
 
-        public static bool IsLiteralExpression(this SyntaxTokenKind kind)
+        internal static bool IsLiteralExpression(this SyntaxTokenKind kind)
         {
             switch (kind)
             {
@@ -76,7 +77,7 @@ namespace Compiler.Syntax
             }
         }
 
-        public static int GetBinaryPrecedence(this SyntaxTokenKind kind)
+        internal static int GetBinaryPrecedence(this SyntaxTokenKind kind)
         {
             switch (kind)
             {
@@ -108,7 +109,7 @@ namespace Compiler.Syntax
             }
         }
 
-        public static SyntaxTokenKind? IsKeyWord(string text)
+        internal static SyntaxTokenKind? IsKeyWord(string text)
         {
             foreach (var pair in Keywords)
                 if (pair.Key == text) return pair.Value;

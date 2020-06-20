@@ -30,6 +30,7 @@ namespace Compiler.Syntax
         LessEqual,
         GreaterEqual,
         AmpersandAmpersand,
-        PipePipe
+        PipePipe,
+        Equal
     }
 }
