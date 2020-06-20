@@ -14,7 +14,7 @@ namespace Compiler.Text
             Lenght = lenght;
         }
 
-        public static TextSpan FromEnd(int start, int end) => new TextSpan(start, end - start);
+        public static TextSpan FromBounds(int start, int end) => new TextSpan(start, end - start);
 
         public override bool Equals(object obj)
         {
@@ -28,7 +28,7 @@ namespace Compiler.Text
             return HashCode.Combine(Start, Lenght, End);
         }
 
-        public static TextSpan operator +(TextSpan l, TextSpan r) => FromEnd(l.Start, r.End);
+        public static TextSpan operator +(TextSpan l, TextSpan r) => FromBounds(l.Start, r.End);
         public static bool operator ==(TextSpan l, TextSpan r) => l.Start == r.Start && l.Lenght == r.Lenght;
         public static bool operator !=(TextSpan l, TextSpan r) => l.Start != r.Start || l.Lenght != r.Lenght;
 

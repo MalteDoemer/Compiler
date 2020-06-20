@@ -47,7 +47,7 @@ namespace Compiler.Diagnostics
 
         internal void ReportNeverClosedString(int start, int end)
         {
-            var span = TextSpan.FromEnd(start, end);
+            var span = TextSpan.FromBounds(start, end);
             var d = new Diagnostic(ErrorKind.SyntaxError, "Never closed string literal.", span);
             diagnostics.Add(d);
         }

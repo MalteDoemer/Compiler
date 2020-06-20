@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Xunit;
-using Compiler.Syntax;
 using Compiler.Diagnostics;
+using Compiler.Syntax;
 
 namespace Compiler.Tests.Syntax
 {
@@ -34,7 +34,7 @@ namespace Compiler.Tests.Syntax
                 var expected = $"(a {text1} (b {text2} c))";
                 Assert.Equal(expected, res);
             }
-            else 
+            else
             {
                 // ((a * b) + c)
                 var expected = $"((a {text1} b) {text2} c)";
@@ -49,5 +49,6 @@ namespace Compiler.Tests.Syntax
                 foreach (var op2 in SyntaxFacts.GetBinaryOperators())
                     yield return new object[] { op1, op2 };
         }
+
     }
 }
