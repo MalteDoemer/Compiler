@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using Compiler.Diagnostics;
+using Compiler.Text;
 
 namespace Compiler.Syntax
 {
     internal class Lexer
     {
         private readonly DiagnosticBag diagnostics;
-        private readonly string text;
+        private readonly SourceText text;
         private int pos;
         private char current
         {
@@ -17,7 +18,7 @@ namespace Compiler.Syntax
             }
         }
 
-        public Lexer(string text, DiagnosticBag diagnostics)
+        public Lexer(SourceText text, DiagnosticBag diagnostics)
         {
             this.text = text;
             this.diagnostics = diagnostics;
@@ -33,7 +34,7 @@ namespace Compiler.Syntax
 
         private string Peak(int len)
         {
-            if (pos + len <= text.Length) return text.Substring(pos, len);
+            if (pos + len <= text.Length) return text.ToString(pos, len);
             else return "\0";
         }
 
@@ -80,7 +81,7 @@ namespace Compiler.Syntax
             int start = pos;
             while (char.IsLetterOrDigit(current) || current == '_') pos++;
 
-            var tokenText = text.Substring(start, pos - start);
+            var tokenText = text.ToString(start, pos - start);
             var isKeyword = SyntaxFacts.IsKeyWord(tokenText);
 
             if (isKeyword != null)
@@ -97,13 +98,13 @@ namespace Compiler.Syntax
                 if (current == '\0')
                 {
                     diagnostics.ReportNeverClosedString(start, pos);
-                    var t1 = text.Substring(start, pos - start);
+                    var t1 = text.ToString(start, pos - start);
                     return new SyntaxToken(SyntaxTokenKind.String, start, t1.Length, t1);
                 }
                 else pos++;
             }
             pos++;
-            var t = text.Substring(start, pos - start - 1);
+            var t = text.ToString(start, pos - start - 1);
             return new SyntaxToken(SyntaxTokenKind.String, start, text.Length, t);
         }
 

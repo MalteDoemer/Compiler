@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Compiler.Diagnostics;
+using Compiler.Text;
 
 namespace Compiler.Syntax
 {
@@ -19,7 +20,7 @@ namespace Compiler.Syntax
             }
         }
 
-        public Parser(string text, DiagnosticBag diagnostics)
+        public Parser(SourceText text, DiagnosticBag diagnostics)
         {
             this.diagnostics = diagnostics;
             var lexer = new Lexer(text, diagnostics);

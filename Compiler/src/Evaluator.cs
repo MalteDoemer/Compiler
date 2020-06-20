@@ -5,6 +5,7 @@ using System.Linq;
 using Compiler.Binding;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
+using Compiler.Text;
 using static System.Math;
 
 namespace Compiler
@@ -95,7 +96,8 @@ namespace Compiler
         public static void Evaluate(string text, Dictionary<string, (TypeSymbol type, dynamic value)> env, out DiagnosticBag bag)
         {
             bag = new DiagnosticBag();
-            var parser = new Parser(text, bag);
+            var src = new SourceText(text);
+            var parser = new Parser(src, bag);
             var binder = new Binder(bag, env);
             var syntaxExpr = parser.ParseExpression();
 
@@ -161,14 +163,14 @@ namespace Compiler
         public static IEnumerable<SyntaxToken> Tokenize(string text, out DiagnosticBag bag)
         {
             bag = new DiagnosticBag();
-            var lexer = new Lexer(text, bag);
+            var lexer = new Lexer(new SourceText(text), bag);
             return lexer.Tokenize();
         }
 
         public static string GetExpressionAsString(string text, out DiagnosticBag bag)
         {
             bag = new DiagnosticBag();
-            var parser = new Parser(text, bag);
+            var parser = new Parser(new SourceText(text), bag);
             return parser.ParseExpression().ToString();
         }
 
