@@ -42,8 +42,7 @@ namespace Compiler
                     case BoundUnaryOperator.Negation: return -val;
                     case BoundUnaryOperator.LogicalNot: return !val;
                     default:
-                        Diagnostics.ReportUnknownUnaryOperator(ue);
-                        return null;
+                        throw new Exception($"Unknown Unary Operator <{ue.Op}>");
                 }
             }
             else if (expr is BoundBinaryExpression be)
@@ -72,8 +71,7 @@ namespace Compiler
                     case BoundBinaryOperator.LogicalOr: return left || right;
 
                     default:
-                        Diagnostics.ReportUnknownBinaryOperator(be);
-                        return null;
+                        throw new Exception($"Unknown binary operator <{be.Op}>");
                 }
             }
             else throw new Exception("Fett");
@@ -94,8 +92,44 @@ namespace Compiler
 
             if (bag.Errors > 0)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                foreach (var err in bag.GetErrors()) Console.WriteLine('\n' + err.ToString() + '\n');
+                foreach (var err in bag.GetErrors())
+                {
+                    if (err.HasPositon)
+                    {
+                        var errText = text.Substring(err.Span.Start, err.Span.Lenght);
+                        var prefix = text.Substring(0, err.Span.Start);
+                        var postfix = text.Substring(err.Span.End, text.Length - err.Span.End);
+
+                        Console.WriteLine('\n');
+
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write(err.Kind);
+                        Console.Write(" at position ");
+                        Console.Write(err.Span.Start);
+                        Console.Write(":");
+                        Console.WriteLine('\n');
+
+                        Console.ResetColor();
+                        Console.Write("\t");
+                        Console.Write(prefix);
+
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write(errText);
+                        
+                        Console.ResetColor();
+                        Console.Write(postfix);
+
+                        Console.WriteLine('\n');
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(err.Message);
+                        Console.WriteLine('\n');
+
+                    }
+                    else 
+                    {
+
+                    }
+                }
                 Console.ResetColor();
                 return;
             }
@@ -111,6 +145,13 @@ namespace Compiler
             bag = new DiagnosticBag();
             var lexer = new Lexer(text, bag);
             return lexer.Tokenize();
+        }
+
+        public static string GetExpressionAsString(string text, out DiagnosticBag bag)
+        {
+            bag = new DiagnosticBag();
+            var parser = new Parser(text, bag);
+            return parser.ParseExpression().ToString();
         }
 
     }

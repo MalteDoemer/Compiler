@@ -53,31 +53,19 @@ namespace Compiler.Diagnostics
 
         internal void ReportVariableNotDefined(VariableExpressionSyntax ve)
         {
-            var d = new Diagnostic(ErrorKind.InvalidIdentifier, $"The variable <{ve.Name.Value}> is not defined>", ve.Span);
-            diagnostics.Add(d);
-        }
-
-        internal void ReportUnknownUnaryOperator(BoundUnaryExpression ue)
-        {
-            var d = new Diagnostic(ErrorKind.InvalidOperator, $"Unknown unary operator <{ue.Op}>", ue.Span);
-            diagnostics.Add(d);
-        }
-
-        internal void ReportUnknownBinaryOperator(BoundBinaryExpression be)
-        {
-            var d = new Diagnostic(ErrorKind.InvalidOperator, $"Unknown binary operator <{be.Op}>", be.Span);
+            var d = new Diagnostic(ErrorKind.IdentifierNotFound, $"The variable <{ve.Name.Value}> is not defined>", ve.Span);
             diagnostics.Add(d);
         }
 
         internal void ReportUnsupportedBinaryOperator(BinaryExpressionSyntax expr, BoundExpression left, BoundExpression right)
         {
-            var d = new Diagnostic(ErrorKind.InvalidOperator, $"The Binary operator '{expr.Op.Value}' is unsupported for the operands <{left.ResultType}> and <{right.ResultType}>", expr.Span);
+            var d = new Diagnostic(ErrorKind.TypeError, $"The Binary operator '{expr.Op.Value}' is unsupported for the operands <{left.ResultType}> and <{right.ResultType}>", expr.Op.Span);
             diagnostics.Add(d);
         }
 
         internal void ReportUnsupportedUnaryOperator(UnaryExpressionSyntax expr, BoundExpression right)
         {
-            var d = new Diagnostic(ErrorKind.InvalidOperator, $"The Unary operator '{expr.Op.Value}' is unsupported for the operand <{right.ResultType}>", expr.Span);
+            var d = new Diagnostic(ErrorKind.TypeError, $"The Unary operator '{expr.Op.Value}' is unsupported for the operand <{right.ResultType}>", expr.Op.Span);
             diagnostics.Add(d);
         }
     }

@@ -109,13 +109,9 @@ namespace Compiler.Tests.Syntax
         {
             return new[]
             {
-                " ",
                 "  ",
-                "\t",
                 "\t \t",
-                "\r",
                 "\r\n",
-                " \r\n ",
                 "\n ",
             };
         }

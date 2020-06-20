@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace Compiler.Syntax
 {
-    internal static class SyntaxFacts
+    public static class SyntaxFacts
     {
         internal static readonly Dictionary<string, SyntaxTokenKind> SingleCharacters = new Dictionary<string, SyntaxTokenKind>()
         {
@@ -76,8 +77,15 @@ namespace Compiler.Syntax
                 default: return false;
             }
         }
+        
+        internal static SyntaxTokenKind? IsKeyWord(string text)
+        {
+            foreach (var pair in Keywords)
+                if (pair.Key == text) return pair.Value;
+            return null;
+        }
 
-        internal static int GetBinaryPrecedence(this SyntaxTokenKind kind)
+        public static int GetBinaryPrecedence(this SyntaxTokenKind kind)
         {
             switch (kind)
             {
@@ -109,12 +117,43 @@ namespace Compiler.Syntax
             }
         }
 
-        internal static SyntaxTokenKind? IsKeyWord(string text)
+        public static IEnumerable<SyntaxTokenKind> GetUnaryOperators()
         {
-            foreach (var pair in Keywords)
-                if (pair.Key == text) return pair.Value;
-            return null;
+            var tokens = (SyntaxTokenKind[])Enum.GetValues(typeof(SyntaxTokenKind));
+
+            foreach (var t in tokens)
+                if (IsUnaryOperator(t)) yield return t;
         }
 
+        public static IEnumerable<SyntaxTokenKind> GetBinaryOperators()
+        {
+            var tokens = (SyntaxTokenKind[])Enum.GetValues(typeof(SyntaxTokenKind));
+
+            foreach (var t in tokens)
+                if (GetBinaryPrecedence(t) > 0) yield return t;
+        }
+
+        public static string GetOperatorText(SyntaxTokenKind kind)
+        {
+            switch (kind)
+            {
+                case SyntaxTokenKind.Plus: return "+";
+                case SyntaxTokenKind.Minus: return "-";
+                case SyntaxTokenKind.Star: return "*";
+                case SyntaxTokenKind.Slash: return "/";
+                case SyntaxTokenKind.StarStar: return "**";
+                case SyntaxTokenKind.SlashSlah: return "//";
+                case SyntaxTokenKind.LessThan: return "<";
+                case SyntaxTokenKind.GreaterThan: return ">";
+                case SyntaxTokenKind.LessEqual: return "<=";
+                case SyntaxTokenKind.GreaterEqual: return ">=";
+                case SyntaxTokenKind.EqualEqual: return "==";
+                case SyntaxTokenKind.NotEqual: return "!=";
+                case SyntaxTokenKind.Bang: return "!";
+                case SyntaxTokenKind.PipePipe: return "||";
+                case SyntaxTokenKind.AmpersandAmpersand: return "&&";
+                default: return null;
+            }
+        }
     }
 }

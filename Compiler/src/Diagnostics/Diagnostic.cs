@@ -19,12 +19,5 @@ namespace Compiler.Diagnostics
             Span = span;
             Level = level;
         }
-
-        public override string ToString()
-        {
-            if (HasPositon) return $"{Kind} at {Span.Start}\n{Message}";
-            else return $"{Kind}: {Message}";
-        }
-
     }
 }
