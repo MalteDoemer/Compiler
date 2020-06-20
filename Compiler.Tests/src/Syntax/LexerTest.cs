@@ -8,7 +8,7 @@ namespace Compiler.Tests.Syntax
         [Fact]
         public void Fact()
         {
-              
+             
         }
     }
 }
