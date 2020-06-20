@@ -1,6 +1,6 @@
 namespace Compiler.Syntax
 {
-    internal enum SyntaxTokenKind
+    public enum SyntaxTokenKind
     {
         End,
         Invalid,

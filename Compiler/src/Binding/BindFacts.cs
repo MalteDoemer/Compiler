@@ -162,20 +162,6 @@ namespace Compiler.Binding
             return null;
         }
 
-        // public static bool MatchUnaryOperator(this TypeSymbol symbol, BoundUnaryOperator op)
-        // {
-        //     foreach (var t in UnaryMatcher)
-        //         if (symbol == t.Item1 && op == t.Item2) return true;
-        //     return false;
-        // }
-
-        // public static bool MatchBinaryOperator(this TypeSymbol symbol, TypeSymbol other, BoundBinaryOperator op)
-        // {
-        //     foreach (var t in BinaryMatcher)
-        //         if (((t.Item1 == symbol && t.Item2 == other) || (t.Item2 == symbol && t.Item1 == other)) && t.Item3 == op) return true;
-        //     return false;
-        // }
-
         public static TypeSymbol GetTypeSymbol(this SyntaxTokenKind kind)
         {
             switch (kind)

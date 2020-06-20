@@ -1,6 +1,6 @@
 namespace Compiler.Syntax
 {
-    internal class SyntaxToken
+    public class SyntaxToken
     {
         public readonly SyntaxTokenKind kind;
         public readonly int pos;

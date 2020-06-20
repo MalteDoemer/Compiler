@@ -1,6 +1,6 @@
 namespace Compiler.Binding
 {
-    internal enum TypeSymbol
+    public enum TypeSymbol
     {
         Int,
         Float,
