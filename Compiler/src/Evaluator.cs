@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Compiler.Binding;
 using Compiler.Diagnostics;
@@ -13,10 +14,13 @@ namespace Compiler
         private DiagnosticBag Diagnostics { get; }
         private BoundNode Root { get; }
 
-        internal Evaluator(BoundNode root, DiagnosticBag diagnostics)
+        private Dictionary<string, (TypeSymbol type, dynamic value)> Environment { get; }
+
+        internal Evaluator(BoundNode root, DiagnosticBag diagnostics, Dictionary<string, (TypeSymbol type, dynamic value)> environement)
         {
             Root = root;
             Diagnostics = diagnostics;
+            Environment = environement;
         }
 
         internal dynamic EvaluateExpression() => EvaluateExpression((BoundExpression)Root);
@@ -25,14 +29,17 @@ namespace Compiler
         {
             if (Diagnostics.Count > 0) return null;
 
+            if (expr is BoundLiteralExpression le) return le.Value;
+            else if (expr is BoundVariableExpression ve)
+            {
+                if (!Environment.TryGetValue(ve.Identifier, out (TypeSymbol Type, dynamic Value) value))
+                {
+                    Diagnostics.ReportVariableNotDefined(ve);
+                    return null;
+                }
 
-            if (expr is BoundLiteralExpression le)
-                return le.Value;
-            //else if (expr is VariableExpressionSyntax ve)
-            //{
-            //    Diagnostics.ReportVariableNotDefined(ve);
-            //    return null;
-            //}
+                return value.Value;
+            }
             else if (expr is BoundUnaryExpression ue)
             {
                 dynamic val = EvaluateExpression(ue.Right);
@@ -74,20 +81,28 @@ namespace Compiler
                         throw new Exception($"Unknown binary operator <{be.Op}>");
                 }
             }
-            else throw new Exception("Fett");
+            else if (expr is BoundAssignementExpression ae)
+            {
+                var value = Environment[ae.Identifier];
+                value.value = EvaluateExpression(ae.Expression);
+                Environment[ae.Identifier] = value;
+                return value.value;
+            }
+            else if (expr is BoundInvalidExpression) return null;
+            else throw new Exception("Unknown Expression");
         }
 
-        public static void Evaluate(string text, out DiagnosticBag bag)
+        public static void Evaluate(string text, Dictionary<string, (TypeSymbol type, dynamic value)> env, out DiagnosticBag bag)
         {
             bag = new DiagnosticBag();
             var parser = new Parser(text, bag);
-            var binder = new Binder(bag);
+            var binder = new Binder(bag, env);
             var syntaxExpr = parser.ParseExpression();
 
             //Console.WriteLine(syntaxExpr);
 
             var boundExpr = binder.BindExpression(syntaxExpr);
-            var evaluator = new Evaluator(boundExpr, bag);
+            var evaluator = new Evaluator(boundExpr, bag, env);
             var res = evaluator.EvaluateExpression();
 
             if (bag.Errors > 0)
@@ -115,7 +130,7 @@ namespace Compiler
 
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write(errText);
-                        
+
                         Console.ResetColor();
                         Console.Write(postfix);
 
@@ -125,9 +140,12 @@ namespace Compiler
                         Console.WriteLine('\n');
 
                     }
-                    else 
+                    else
                     {
-
+                        Console.WriteLine('\n');
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"{err.Kind}: {err.Message}");
+                        Console.WriteLine('\n');
                     }
                 }
                 Console.ResetColor();

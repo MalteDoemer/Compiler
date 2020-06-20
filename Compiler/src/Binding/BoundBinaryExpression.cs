@@ -4,11 +4,9 @@ namespace Compiler.Binding
 {
     internal sealed class BoundBinaryExpression : BoundExpression
     {
-        private readonly TypeSymbol resultType;
-
         public BoundBinaryExpression(BoundBinaryOperator op, TextSpan operatorSpan, BoundExpression left, BoundExpression right, TypeSymbol resultType)
         {
-            this.resultType = resultType;
+            ResultType = resultType;
             OperatorSpan = operatorSpan;
             Op = op;
             Left = left;
@@ -22,7 +20,7 @@ namespace Compiler.Binding
 
         public TextSpan OperatorSpan { get; }
 
-        public override TypeSymbol ResultType => resultType;
+        public override TypeSymbol ResultType { get; }
         public override TextSpan Span => Left.Span + Right.Span;
     }
 }

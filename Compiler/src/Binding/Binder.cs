@@ -1,16 +1,38 @@
+// -1 + (4 ** 2 - 2) * -(5 / 10 -2)              = 27
+//((-1) + (((4 ** 2) - 2) * (-((5 / 10) - 2))) )
+
+/*
+          +
+        /  \
+       *    -
+     /  \   |
+    -    -  1
+   / \   |
+  **  2  -
+ /  \   / \
+4    2 :  2 
+      / \  
+      5  10
+*/
+
+
 using System;
+using System.Collections.Generic;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
+using Compiler.Text;
 
 namespace Compiler.Binding
 {
     internal sealed class Binder
     {
         public DiagnosticBag Diagnostics { get; }
+        private Dictionary<string, (TypeSymbol type, dynamic value)> Environment { get; }
 
-        public Binder(DiagnosticBag diagnostics)
+        public Binder(DiagnosticBag diagnostics, Dictionary<string, (TypeSymbol type, dynamic value)> environment)
         {
             Diagnostics = diagnostics;
+            Environment = environment;
         }
 
         public BoundExpression BindExpression(ExpressionSyntax syntax)
@@ -21,7 +43,51 @@ namespace Compiler.Binding
                 return BindUnaryExpression(ue);
             else if (syntax is BinaryExpressionSyntax be)
                 return BindBinaryExpression(be);
+            else if (syntax is VariableExpressionSyntax ve)
+                return BindVariableExpression(ve);
+            else if (syntax is AssignmentExpressionSyntax ee)
+                return BindAssignmentExpression(ee);
             else throw new Exception($"Unknown Syntax kind <{syntax}>");
+        }
+
+        private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax ee)
+        {
+            string identifier = ee.Identifier.Value;
+            var equalSpan = ee.EqualToken.Span;
+            var identifierSpan = ee.Identifier.Span;
+            var expr = BindExpression(ee.Expression);
+            var type = expr.ResultType;
+            var assignment = new BoundAssignementExpression(identifier, identifierSpan, equalSpan, expr, type);
+            if (!RegisterAssignment(assignment))
+                return new BoundInvalidExpression();
+            return assignment;
+        }
+
+        private bool RegisterAssignment(BoundAssignementExpression expression)
+        {
+            bool notExists = Environment.TryAdd(expression.Identifier, (expression.ResultType, null));
+            if (!notExists)
+            {
+                var t = Environment[expression.Identifier];
+
+                if (t.type != expression.ResultType) { Diagnostics.ReportWrongType(expression, t.type); return false; }
+                Environment[expression.Identifier] = (expression.ResultType, null);
+            }
+            return true;
+        }
+
+        private BoundExpression BindVariableExpression(VariableExpressionSyntax ve)
+        {
+            string identifier = ve.Name.Value;
+            var span = ve.Span;
+            bool sucess = Environment.TryGetValue(identifier, out (TypeSymbol, dynamic) value);
+
+            if (!sucess)
+            {
+                Diagnostics.ReportVariableNotDefined(ve);
+                return new BoundInvalidExpression();
+            }
+            return new BoundVariableExpression(identifier, span, value.Item1);
         }
 
         private BoundExpression BindBinaryExpression(BinaryExpressionSyntax be)

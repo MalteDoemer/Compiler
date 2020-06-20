@@ -69,17 +69,17 @@ namespace Compiler.Syntax
                 return new LiteralExpressionSyntax(Advance());
             else if (current.Kind == SyntaxTokenKind.Identifier)
                 return ParseIdentifier();
-            else if (current.Kind.IsUnaryOperator()) 
+            else if (current.Kind.IsUnaryOperator())
                 return new UnaryExpressionSyntax(Advance(), ParsePrimaryExpression());
             else if (current.Kind == SyntaxTokenKind.LParen)
                 return ParseParenthesizedExpression();
-            else 
+            else
             {
                 diagnostics.ReportUnexpectedToken(current);
                 return new InvalidExpressionSyntax(Advance());
             }
         }
-        
+
         private ExpressionSyntax ParseParenthesizedExpression()
         {
             pos++;
@@ -90,7 +90,15 @@ namespace Compiler.Syntax
 
         private ExpressionSyntax ParseIdentifier()
         {
-            return new VariableExpressionSyntax(Advance());
+            var identifier = Advance();
+
+            if (current.Kind == SyntaxTokenKind.Equal)
+            {
+                var equalToken = Advance();
+                return new AssignmentExpressionSyntax(identifier, equalToken, ParseExpression());
+            }
+            else
+                return new VariableExpressionSyntax(identifier);
         }
     }
 }
