@@ -1,3 +1,5 @@
+using Compiler.Text;
+
 namespace Compiler.Syntax
 {
     internal sealed class VariableExpressionSyntax : ExpressionSyntax
@@ -8,8 +10,10 @@ namespace Compiler.Syntax
             Name = name;
         }
 
-        public override int Pos => Name.pos;
         public SyntaxToken Name { get; }
-        public override string ToString() => $"{Name.value}";
+
+        public override TextSpan Span => Name.Span;
+
+        public override string ToString() => $"{Name.Value}";
     }
 }

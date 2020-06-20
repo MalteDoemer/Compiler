@@ -1,18 +1,24 @@
+using Compiler.Text;
+
 namespace Compiler.Syntax
 {
     public class SyntaxToken
     {
-        public readonly SyntaxTokenKind kind;
-        public readonly int pos;
-        public readonly dynamic value;
+        public SyntaxTokenKind Kind { get; }
+        public int Pos { get; }
+        public int Lenght { get; }
+        public dynamic Value { get; }
 
-        public SyntaxToken(SyntaxTokenKind kind, int pos, dynamic value)
+        public TextSpan Span { get => new TextSpan(Pos, Lenght); }
+
+        public SyntaxToken(SyntaxTokenKind kind, int pos, int len, dynamic value)
         {
-            this.kind = kind;
-            this.pos = pos;
-            this.value = value;
+            Kind = kind;
+            Pos = pos;
+            Value = value;
+            Lenght = len;
         }
 
-        public override string ToString() => $"{kind} at {pos} : {value}";
+        public override string ToString() => $"{Kind} at {Pos} : {Value}";
     }
 }

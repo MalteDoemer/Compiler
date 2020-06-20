@@ -34,12 +34,12 @@ namespace Compiler.Binding
 
             if (boundOperator == null || resultType == null)
             {
-                Diagnostics.ReportUnsupportedBinaryOperator(be.Op, left, right);
+                Diagnostics.ReportUnsupportedBinaryOperator(be, left, right);
                 return new BoundInvalidExpression();
             }
-            
 
-            return new BoundBinaryExpression(be.Pos, (BoundBinaryOperator)boundOperator, left, right, (TypeSymbol)resultType);
+
+            return new BoundBinaryExpression((BoundBinaryOperator)boundOperator, be.Op.Span, left, right, (TypeSymbol)resultType);
         }
 
         private BoundExpression BindUnaryExpression(UnaryExpressionSyntax ue)
@@ -51,25 +51,25 @@ namespace Compiler.Binding
 
             if (boundOperator == null || resultType == null)
             {
-                Diagnostics.ReportUnsupportedUnaryOperator(ue.Op, right);
+                Diagnostics.ReportUnsupportedUnaryOperator(ue, right);
                 return new BoundInvalidExpression();
             }
 
-            return new BoundUnaryExpression(ue.Pos, (BoundUnaryOperator)boundOperator, right, (TypeSymbol)resultType);
+            return new BoundUnaryExpression((BoundUnaryOperator)boundOperator, ue.Op.Span, right, (TypeSymbol)resultType);
         }
 
         private BoundExpression BindLiteralExpression(LiteralExpressionSyntax le)
         {
-            var value = le.Literal.value;
-            var type = le.Literal.kind.GetTypeSymbol();
-            return new BoundLiteralExpression(le.Pos, value, type);
+            var value = le.Literal.Value;
+            var type = le.Literal.Kind.GetTypeSymbol();
+            return new BoundLiteralExpression(le.Span, value, type);
         }
 
         private BoundBinaryOperator? BindBinaryOperator(SyntaxToken op, TypeSymbol leftType, TypeSymbol rightType)
         {
             BoundBinaryOperator boundOp;
 
-            switch (op.kind)
+            switch (op.Kind)
             {
                 case SyntaxTokenKind.Plus: boundOp = BoundBinaryOperator.Addition; break;
                 case SyntaxTokenKind.Minus: boundOp = BoundBinaryOperator.Subtraction; break;
@@ -88,8 +88,6 @@ namespace Compiler.Binding
                 default: return null;
             }
 
-            //if (!leftType.MatchBinaryOperator(rightType, boundOp)) return null;
-
             return boundOp;
         }
 
@@ -97,16 +95,13 @@ namespace Compiler.Binding
         {
             BoundUnaryOperator boundOp;
 
-            switch (op.kind)
+            switch (op.Kind)
             {
                 case SyntaxTokenKind.Plus: boundOp = BoundUnaryOperator.Identety; break;
                 case SyntaxTokenKind.Minus: boundOp = BoundUnaryOperator.Negation; break;
                 case SyntaxTokenKind.Bang: boundOp = BoundUnaryOperator.LogicalNot; break;
                 default: return null;
             }
-
-            //if (!type.MatchUnaryOperator(boundOp)) return null;
-
             return boundOp;
         }
     }

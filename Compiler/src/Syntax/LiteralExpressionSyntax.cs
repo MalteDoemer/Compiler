@@ -1,3 +1,5 @@
+using Compiler.Text;
+
 namespace Compiler.Syntax
 {
     internal sealed class LiteralExpressionSyntax : ExpressionSyntax
@@ -8,8 +10,9 @@ namespace Compiler.Syntax
         }
 
         public SyntaxToken Literal { get; }
-        public override int Pos => Literal.pos;
 
-        public override string ToString() => $"{Literal.value}";
+        public override TextSpan Span => Literal.Span;
+
+        public override string ToString() => $"{Literal.Value}";
     }
 }

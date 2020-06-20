@@ -1,19 +1,22 @@
+using Compiler.Text;
+
 namespace Compiler.Binding
 {
     internal sealed class BoundLiteralExpression : BoundExpression
     {
-        private readonly int pos;
+        private readonly TextSpan span;
         private readonly TypeSymbol symbol;
 
-        public BoundLiteralExpression(int pos, dynamic value, TypeSymbol symbol)
+        public BoundLiteralExpression(TextSpan span, dynamic value, TypeSymbol symbol)
         {
-            this.pos = pos;
+            this.span = span;
             Value = value;
             this.symbol = symbol;
         }
 
         public override TypeSymbol ResultType => symbol;
-        public override int Pos => pos;
         public dynamic Value { get; }
+
+        public override TextSpan Span => span;
     }
 }

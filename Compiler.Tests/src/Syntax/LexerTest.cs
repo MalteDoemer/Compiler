@@ -15,8 +15,8 @@ namespace Compiler.Tests.Syntax
         {
             var tokens = Evaluator.Tokenize(text, out DiagnosticBag bag).ToArray();
             Assert.Equal(2, tokens.Length);
-            Assert.Equal(kind, tokens[0].kind);
-            Assert.Equal(SyntaxTokenKind.End, tokens[1].kind);
+            Assert.Equal(kind, tokens[0].Kind);
+            Assert.Equal(SyntaxTokenKind.End, tokens[1].Kind);
             Assert.Equal(0, bag.Errors);
         }
 
@@ -27,9 +27,9 @@ namespace Compiler.Tests.Syntax
             var text = text1 + text2;
             var tokens = Evaluator.Tokenize(text, out DiagnosticBag bag).ToArray();
             Assert.Equal(3, tokens.Length);
-            Assert.Equal(kind1, tokens[0].kind);
-            Assert.Equal(kind2, tokens[1].kind);
-            Assert.Equal(SyntaxTokenKind.End, tokens[2].kind);
+            Assert.Equal(kind1, tokens[0].Kind);
+            Assert.Equal(kind2, tokens[1].Kind);
+            Assert.Equal(SyntaxTokenKind.End, tokens[2].Kind);
             Assert.Equal(0, bag.Errors);
         }
 
@@ -41,9 +41,9 @@ namespace Compiler.Tests.Syntax
             var tokens = Evaluator.Tokenize(text, out DiagnosticBag bag).ToArray();
 
             Assert.Equal(3, tokens.Length);
-            Assert.Equal(kind1, tokens[0].kind);
-            Assert.Equal(kind2, tokens[1].kind);
-            Assert.Equal(SyntaxTokenKind.End, tokens[2].kind);
+            Assert.Equal(kind1, tokens[0].Kind);
+            Assert.Equal(kind2, tokens[1].Kind);
+            Assert.Equal(SyntaxTokenKind.End, tokens[2].Kind);
             Assert.Equal(0, bag.Errors);
         }
 

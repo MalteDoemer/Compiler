@@ -1,3 +1,5 @@
+using Compiler.Text;
+
 namespace Compiler.Syntax
 {
     internal sealed class InvalidExpressionSyntax : ExpressionSyntax
@@ -7,8 +9,9 @@ namespace Compiler.Syntax
             InvalidToken = invalidToken;
         }
 
-        public override int Pos => InvalidToken.pos;
-
+    
         public SyntaxToken InvalidToken { get; }
+
+        public override TextSpan Span => TextSpan.Invalid;
     }
 }

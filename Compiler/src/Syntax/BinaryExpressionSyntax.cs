@@ -1,3 +1,5 @@
+using Compiler.Text;
+
 namespace Compiler.Syntax
 {
     internal sealed class BinaryExpressionSyntax : ExpressionSyntax
@@ -13,7 +15,7 @@ namespace Compiler.Syntax
         public ExpressionSyntax Left { get; }
         public ExpressionSyntax Right { get; }
 
-        public override int Pos => Op.pos;
-        public override string ToString() => $"({Left} {Op.value} {Right})";
+        public override TextSpan Span => Left.Span + Right.Span;
+        public override string ToString() => $"({Left} {Op.Value} {Right})";
     }
 }

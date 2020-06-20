@@ -1,3 +1,5 @@
+using Compiler.Text;
+
 namespace Compiler.Syntax
 {
     internal sealed class UnaryExpressionSyntax : ExpressionSyntax
@@ -8,10 +10,11 @@ namespace Compiler.Syntax
             Expression = expression;
         }
 
-        public override int Pos => Op.pos;
-
         public SyntaxToken Op { get; }
         public ExpressionSyntax Expression { get; }
-        public override string ToString() => $"({Op.value}{Expression})";
+
+        public override TextSpan Span => Op.Span + Expression.Span;
+
+        public override string ToString() => $"({Op.Value}{Expression})";
     }
 }

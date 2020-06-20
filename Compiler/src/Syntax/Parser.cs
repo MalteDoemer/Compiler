@@ -29,11 +29,11 @@ namespace Compiler.Syntax
 
         private SyntaxToken MatchToken(SyntaxTokenKind kind)
         {
-            if (kind == current.kind) return Advance();
+            if (kind == current.Kind) return Advance();
             else
             {
                 diagnostics.ReportUnexpectedToken(current, kind);
-                var res = new SyntaxToken(kind, current.pos, current.value);
+                var res = new SyntaxToken(kind, current.Pos, current.Lenght, current.Value);
                 pos++;
                 return res;
             }
@@ -52,7 +52,7 @@ namespace Compiler.Syntax
 
             var left = ParseExpression(lvl - 1);
 
-            while (current.kind.GetBinaryPrecedence() == lvl)
+            while (current.Kind.GetBinaryPrecedence() == lvl)
             {
                 var op = Advance();
                 var right = ParseExpression(lvl - 1);
@@ -65,13 +65,13 @@ namespace Compiler.Syntax
 
         private ExpressionSyntax ParsePrimaryExpression()
         {
-            if (current.kind.IsLiteralExpression())
+            if (current.Kind.IsLiteralExpression())
                 return new LiteralExpressionSyntax(Advance());
-            else if (current.kind == SyntaxTokenKind.Identifier)
+            else if (current.Kind == SyntaxTokenKind.Identifier)
                 return ParseIdentifier();
-            else if (current.kind.IsUnaryOperator()) 
+            else if (current.Kind.IsUnaryOperator()) 
                 return new UnaryExpressionSyntax(Advance(), ParsePrimaryExpression());
-            else if (current.kind == SyntaxTokenKind.LParen)
+            else if (current.Kind == SyntaxTokenKind.LParen)
                 return ParseParenthesizedExpression();
             else 
             {

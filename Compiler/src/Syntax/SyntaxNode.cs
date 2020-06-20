@@ -1,7 +1,9 @@
+using Compiler.Text;
+
 namespace Compiler.Syntax
 {
     internal abstract class SyntaxNode
     {
-        public abstract int Pos { get; }
+        public abstract TextSpan Span { get; }
     }
 }
