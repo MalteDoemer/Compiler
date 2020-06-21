@@ -40,9 +40,9 @@ namespace Compiler
         private static void Evaluate(string inp)
         {
             var src = new SourceText(inp);
-            var bag = new DiagnosticBag();
-            var evaluator = Evaluator.ConstructEvaluator(src, env, bag);
-            var res = evaluator.Evaluate();
+            var tree = SyntaxTree.ParseSyntaxTree(src);
+            var bag = tree.Diagnostics;
+            var res = tree.Evaluate(env);
 
             if (bag.Errors > 0)
             {

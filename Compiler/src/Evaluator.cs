@@ -1,29 +1,26 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using Compiler.Binding;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
-using Compiler.Text;
 using static System.Math;
 
 namespace Compiler
 {
-    public class Evaluator
+    internal class Evaluator
     {
-        private SourceText Text;
-        private BoundNode Root { get; }
+
+        private CompilationUnit Root { get; }
         private DiagnosticBag Diagnostics { get; }
         private Dictionary<string, (TypeSymbol type, dynamic value)> Environment { get; }
 
-        private Evaluator(SourceText src, BoundNode root, DiagnosticBag diagnostics, Dictionary<string, (TypeSymbol type, dynamic value)> environement)
+        public Evaluator(CompilationUnit root, DiagnosticBag diagnostics, Dictionary<string, (TypeSymbol type, dynamic value)> environment)
         {
-            Text = src;
             Root = root;
             Diagnostics = diagnostics;
-            Environment = environement;
+            Environment = environment;
         }
+
 
         private dynamic EvaluateExpression(BoundExpression expr)
         {
@@ -92,31 +89,12 @@ namespace Compiler
             else throw new Exception("Unknown Expression");
         }
 
-        public dynamic Evaluate() => EvaluateExpression((BoundExpression)Root);
 
-        public static Evaluator ConstructEvaluator(SourceText text, Dictionary<string, (TypeSymbol type, dynamic value)> env, DiagnosticBag bag)
+        public dynamic Evaluate()
         {
-            var parser = new Parser(text, bag);
-            var binder = new Binder(bag, env);
-            var syntaxExpr = parser.Parse();
-            var root = binder.BindExpression((ExpressionSyntax)syntaxExpr);
-            var evaluator = new Evaluator(text, root, bag, env);
-            return evaluator;
+            var binder= new Binder(Diagnostics, Environment);
+            var expr = binder.BindExpression((ExpressionSyntax)Root.Nodes[0]);
+            return EvaluateExpression(expr);
         }
-
-        public static IEnumerable<SyntaxToken> Tokenize(string text, out DiagnosticBag bag)
-        {
-            bag = new DiagnosticBag();
-            var lexer = new Lexer(new SourceText(text), bag);
-            return lexer.Tokenize();
-        }
-
-        public static string GetExpressionAsString(string text, out DiagnosticBag bag)
-        {
-            bag = new DiagnosticBag();
-            var parser = new Parser(new SourceText(text), bag);
-            return parser.Parse().ToString();
-        }
-
     }
 }

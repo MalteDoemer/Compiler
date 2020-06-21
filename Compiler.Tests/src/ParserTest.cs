@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 using Compiler.Diagnostics;
+using Compiler.Text;
 
 namespace Compiler.Syntax
 {
@@ -23,9 +24,7 @@ namespace Compiler.Syntax
             Assert.NotEqual(0, precedence2);
 
             var text = $"a {text1} b {text2} c";
-            var res = Evaluator.GetExpressionAsString(text, out DiagnosticBag bag);
-
-            Assert.Equal(0, bag.Errors);
+            var res = SyntaxTree.ParseSyntaxTree(new SourceText(text)).ToString();
 
             if (precedence1 > precedence2)
             {

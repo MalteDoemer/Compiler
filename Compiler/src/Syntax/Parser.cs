@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -19,11 +20,12 @@ namespace Compiler.Syntax
                 else return tokens[tokens.Length - 1];
             }
         }
-
+        private SourceText Text { get; }
         public bool IsFinished { get => current.Kind == SyntaxTokenKind.End; }
 
         public Parser(SourceText text, DiagnosticBag diagnostics)
         {
+            Text = text;
             this.diagnostics = diagnostics;
             var lexer = new Lexer(text, diagnostics);
             tokens = lexer.Tokenize().ToArray();
@@ -49,11 +51,13 @@ namespace Compiler.Syntax
             return res;
         }
 
-        public SyntaxNode Parse()
+        
+        public CompilationUnit ParseCompilationUnit()
         {
-            var res = ParseExpression();
+            var expr = ParseExpression();
+            var unit = new CompilationUnit(new TextSpan(0, Text.Length), expr);
             if (!IsFinished) diagnostics.ReportUnexpectedToken(current, SyntaxTokenKind.End);
-            return res;
+            return unit;
         }
 
         private ExpressionSyntax ParseExpression(int lvl = SyntaxFacts.MaxPrecedence)

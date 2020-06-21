@@ -4,6 +4,7 @@ using Compiler.Syntax;
 using Compiler.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
+using Compiler.Text;
 
 namespace Compiler.Syntax
 {
@@ -13,11 +14,10 @@ namespace Compiler.Syntax
         [MemberData(nameof(GetTokenData))]
         public void LexSingleToken(string text, SyntaxTokenKind kind)
         {
-            var tokens = Evaluator.Tokenize(text, out DiagnosticBag bag).ToArray();
+            var tokens = SyntaxTree.ParseTokens(new SourceText(text));
             Assert.Equal(2, tokens.Length);
             Assert.Equal(kind, tokens[0].Kind);
             Assert.Equal(SyntaxTokenKind.End, tokens[1].Kind);
-            Assert.Equal(0, bag.Errors);
         }
 
         [Theory]
@@ -25,12 +25,11 @@ namespace Compiler.Syntax
         public void LexTokenPairs(string text1, SyntaxTokenKind kind1, string text2, SyntaxTokenKind kind2)
         {
             var text = text1 + text2;
-            var tokens = Evaluator.Tokenize(text, out DiagnosticBag bag).ToArray();
+            var tokens = SyntaxTree.ParseTokens(new SourceText(text));
             Assert.Equal(3, tokens.Length);
             Assert.Equal(kind1, tokens[0].Kind);
             Assert.Equal(kind2, tokens[1].Kind);
             Assert.Equal(SyntaxTokenKind.End, tokens[2].Kind);
-            Assert.Equal(0, bag.Errors);
         }
 
         [Theory]
@@ -38,13 +37,12 @@ namespace Compiler.Syntax
         public void LexTokenPairsWithSpace(string space, string text1, SyntaxTokenKind kind1, string text2, SyntaxTokenKind kind2)
         {
             var text = text1 + space + text2;
-            var tokens = Evaluator.Tokenize(text, out DiagnosticBag bag).ToArray();
+            var tokens = SyntaxTree.ParseTokens(new SourceText(text));
 
             Assert.Equal(3, tokens.Length);
             Assert.Equal(kind1, tokens[0].Kind);
             Assert.Equal(kind2, tokens[1].Kind);
             Assert.Equal(SyntaxTokenKind.End, tokens[2].Kind);
-            Assert.Equal(0, bag.Errors);
         }
 
         public static IEnumerable<object[]> GetTokenData()

@@ -61,7 +61,7 @@ namespace Compiler.Text
                 }
             }
 
-            if (pos > lineStart)
+            if (pos >= lineStart)
                 AddLine(src, result, pos, lineStart, 0);
 
             return result.ToImmutable();
