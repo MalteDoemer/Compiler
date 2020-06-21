@@ -1,41 +1,114 @@
-// -1 + (4 ** 2 - 2) * -(5 / 10 -2)              = 27
-//((-1) + (((4 ** 2) - 2) * (-((5 / 10) - 2))) )
 
-/*
-          +
-        /  \
-       *    -
-     /  \   |
-    -    -  1
-   / \   |
-  **  2  -
- /  \   / \
-4    2 :  2 
-      / \  
-      5  10
-*/
 
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
 using static Compiler.Binding.BindFacts;
 
 namespace Compiler.Binding
 {
+    public class VariableSymbol
+    {
+        public VariableSymbol(string identifier, TypeSymbol type, dynamic value)
+        {
+            Identifier = identifier;
+            Type = type;
+            Value = value;
+        }
+
+        public string Identifier { get; }
+        public TypeSymbol Type { get; }
+        public dynamic Value { get; }
+    }
+
+    internal sealed class BoundScope
+    {
+        private Dictionary<string, VariableSymbol> variables;
+
+        public BoundScope Parent { get; }
+
+        public BoundScope(BoundScope parent)
+        {
+            Parent = parent;
+            variables = new Dictionary<string, VariableSymbol>();
+        }
+
+        public bool TryLookUp(string identifier, out VariableSymbol value)
+        {
+            if (variables.TryGetValue(identifier, out value))
+                return true;
+
+            if (Parent == null) return false;
+
+            return Parent.TryLookUp(identifier, out value);
+
+        }
+
+        public bool TryDeclare(VariableSymbol variable)
+        {
+            if (variables.ContainsKey(variable.Identifier))
+                return false;
+            variables.Add(variable.Identifier, variable);
+            return true;
+        }
+
+        public ImmutableArray<VariableSymbol> GetDeclaredVariables()
+        {
+            return variables.Values.ToImmutableArray();
+        }
+    }
+
     internal sealed class Binder
     {
         public DiagnosticBag Diagnostics { get; }
-        private Dictionary<string, (TypeSymbol type, dynamic value)> Environment { get; }
+        public BoundScope Scope { get; }
 
-        public Binder(DiagnosticBag diagnostics, Dictionary<string, (TypeSymbol type, dynamic value)> environment)
+        private Binder(DiagnosticBag diagnostics, BoundScope parentScope)
         {
             Diagnostics = diagnostics;
-            Environment = environment;
+            Scope = new BoundScope(parentScope);
         }
 
-        public BoundExpression BindExpression(ExpressionSyntax syntax)
+        private static BoundScope CreateBoundScopes(BoundGlobalScope previous)
+        {
+            var stack = new Stack<BoundGlobalScope>();
+
+            while (previous != null)
+            {
+                stack.Push(previous);
+                previous = previous.Previous;
+            }
+
+            BoundScope current = null;
+
+            while (stack.Count > 0)
+            {
+                var global = stack.Pop();
+                var scope = new BoundScope(current);
+                foreach (var variable in global.Variables)
+                    scope.TryDeclare(variable);
+
+                current = scope;
+            }
+
+            return current;
+        }
+
+        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax unit)
+        {
+            var bag = new DiagnosticBag();
+
+            var parentScope = CreateBoundScopes(previous);
+            var binder = new Binder(bag, parentScope);
+            var expression = binder.BindExpression(unit.Expression);
+            var variables = binder.Scope.GetDeclaredVariables();
+            return new BoundGlobalScope(previous, bag, variables, expression);
+        }
+
+        private BoundExpression BindExpression(ExpressionSyntax syntax)
         {
             if (syntax is LiteralExpressionSyntax le)
                 return BindLiteralExpression(le);
@@ -54,42 +127,30 @@ namespace Compiler.Binding
 
         private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax ee)
         {
-            string identifier = ee.Identifier.Value;
-            var equalSpan = ee.EqualToken.Span;
-            var identifierSpan = ee.Identifier.Span;
             var expr = BindExpression(ee.Expression);
-            var type = expr.ResultType;
-            var assignment = new BoundAssignementExpression(identifier, identifierSpan, equalSpan, expr, type);
-            if (!RegisterAssignment(assignment))
-                return new BoundInvalidExpression();
-            return assignment;
-        }
-
-        private bool RegisterAssignment(BoundAssignementExpression expression)
-        {
-            bool notExists = Environment.TryAdd(expression.Identifier, (expression.ResultType, null));
-            if (!notExists)
+            if (Scope.TryLookUp(ee.Identifier.Value, out VariableSymbol variable))
             {
-                var t = Environment[expression.Identifier];
-
-                if (t.type != expression.ResultType) { Diagnostics.ReportWrongType(expression, t.type); return false; }
-                Environment[expression.Identifier] = (expression.ResultType, null);
+                Diagnostics.ReportVariableNotDeclared(ee.Identifier.Value, ee.Identifier.Span);
+                return new BoundInvalidExpression();
             }
-            return true;
+            else if (variable.Type != expr.ResultType)
+            {
+                Diagnostics.ReportWrongType(variable.Type, expr.ResultType, ee.EqualToken.Span);
+                return new BoundInvalidExpression();
+            }
+            else return new BoundAssignementExpression(variable, expr, ee.Span, ee.EqualToken.Span);
+
         }
 
         private BoundExpression BindVariableExpression(VariableExpressionSyntax ve)
         {
             string identifier = ve.Name.Value;
-            var span = ve.Span;
-            bool sucess = Environment.TryGetValue(identifier, out (TypeSymbol, dynamic) value);
-
-            if (!sucess)
+            if (!Scope.TryLookUp(identifier, out VariableSymbol variable))
             {
-                Diagnostics.ReportVariableNotDefined(ve);
+                Diagnostics.ReportVariableNotDeclared(ve.Name.Value, ve.Name.Span);
                 return new BoundInvalidExpression();
             }
-            return new BoundVariableExpression(identifier, span, value.Item1);
+            return new BoundVariableExpression(variable, ve.Span);
         }
 
         private BoundExpression BindBinaryExpression(BinaryExpressionSyntax be)
@@ -102,7 +163,7 @@ namespace Compiler.Binding
 
             if (boundOperator == null || resultType == null)
             {
-                Diagnostics.ReportUnsupportedBinaryOperator(be, left, right);
+                Diagnostics.ReportUnsupportedBinaryOperator(be.Op.Value, left.ResultType, right.ResultType, be.Op.Span);
                 return new BoundInvalidExpression();
             }
 
@@ -119,7 +180,7 @@ namespace Compiler.Binding
 
             if (boundOperator == null || resultType == null)
             {
-                Diagnostics.ReportUnsupportedUnaryOperator(ue, right);
+                Diagnostics.ReportUnsupportedUnaryOperator(ue.Op.Value, right.ResultType, ue.Op.Span);
                 return new BoundInvalidExpression();
             }
 

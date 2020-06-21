@@ -10,7 +10,8 @@ namespace Compiler
 {
     public static class Program
     {
-        private static readonly Dictionary<string, (TypeSymbol type, dynamic value)> env = new Dictionary<string, (TypeSymbol type, dynamic value)>();
+        private static readonly Dictionary<string, VariableSymbol> variables = new Dictionary<string, VariableSymbol>();
+
 
         public static void Main(string[] args)
         {
@@ -41,12 +42,12 @@ namespace Compiler
         {
             var src = new SourceText(inp);
             var tree = SyntaxTree.ParseSyntaxTree(src);
-            var bag = tree.Diagnostics;
-            var res = tree.Evaluate(env);
+            var compilation = new Compilation(tree);
+            var res = compilation.Evaluate(variables);
 
-            if (bag.Errors > 0)
+            if (tree.Diagnostics.Errors > 0)
             {
-                foreach (var err in bag.GetErrors())
+                foreach (var err in tree.Diagnostics.GetErrors())
                 {
                     if (err.Message.EndsWith("<End>."))
                     {

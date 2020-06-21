@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Compiler.Binding;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
@@ -7,35 +8,65 @@ using static System.Math;
 
 namespace Compiler
 {
-    internal class Evaluator
+    public sealed class Compilation
     {
+        private BoundGlobalScope globalScope;
 
-        private CompilationUnit Root { get; }
-        private DiagnosticBag Diagnostics { get; }
-        private Dictionary<string, (TypeSymbol type, dynamic value)> Environment { get; }
+        public Compilation(SyntaxTree tree) : this(null, tree) { }
 
-        public Evaluator(CompilationUnit root, DiagnosticBag diagnostics, Dictionary<string, (TypeSymbol type, dynamic value)> environment)
+        private Compilation(Compilation previous, SyntaxTree tree)
         {
-            Root = root;
-            Diagnostics = diagnostics;
-            Environment = environment;
+            Tree = tree;
+            Previous = previous;
         }
 
+        public SyntaxTree Tree { get; }
+        public Compilation Previous { get; }
+
+        internal BoundGlobalScope GlobalScope
+        {
+            get
+            {
+                if (globalScope == null)
+                {
+                    var scope = Binder.BindGlobalScope(Previous?.GlobalScope, Tree.Root);
+                    Interlocked.CompareExchange(ref globalScope, scope, null); // Dammm son
+
+                }
+                return globalScope;
+            }
+        }
+
+        public Compilation ContinueWith(SyntaxTree previous)
+        {
+            return new Compilation(this, previous);
+        }
+
+        public dynamic Evaluate(Dictionary<string, VariableSymbol> variables)
+        {
+            if (GlobalScope.Bag.Errors > 0) return null;
+            var evaluator = new Evaluator(GlobalScope.Expr, variables);
+            return evaluator.Evaluate();
+        }
+    }
+
+    internal class Evaluator
+    {
+        public Evaluator(BoundExpression root, Dictionary<string, VariableSymbol> varaibles)
+        {
+            Root = root;
+            Varaibles = varaibles;
+        }
+
+        private Dictionary<string, VariableSymbol> Varaibles { get; }
+        private BoundExpression Root { get; }
 
         private dynamic EvaluateExpression(BoundExpression expr)
         {
-            if (Diagnostics.Count > 0) return null;
-
             if (expr is BoundLiteralExpression le) return le.Value;
             else if (expr is BoundVariableExpression ve)
             {
-                if (!Environment.TryGetValue(ve.Identifier, out (TypeSymbol Type, dynamic Value) value))
-                {
-                    Diagnostics.ReportVariableNotDefined(ve);
-                    return null;
-                }
-
-                return value.Value;
+                return Varaibles[ve.Variable.Identifier];
             }
             else if (expr is BoundUnaryExpression ue)
             {
@@ -80,21 +111,16 @@ namespace Compiler
             }
             else if (expr is BoundAssignementExpression ae)
             {
-                var value = Environment[ae.Identifier];
-                value.value = EvaluateExpression(ae.Expression);
-                Environment[ae.Identifier] = value;
-                return value.value;
+                var val = EvaluateExpression(ae.Expression);
+                var variable = new VariableSymbol(ae.Variable.Identifier, ae.Variable.Type, val);
+                Varaibles[variable.Identifier] = variable;
+                return val;
             }
             else if (expr is BoundInvalidExpression) return null;
             else throw new Exception("Unknown Expression");
         }
 
+        public dynamic Evaluate() => EvaluateExpression(Root);
 
-        public dynamic Evaluate()
-        {
-            var binder= new Binder(Diagnostics, Environment);
-            var expr = binder.BindExpression((ExpressionSyntax)Root.Nodes[0]);
-            return EvaluateExpression(expr);
-        }
     }
 }

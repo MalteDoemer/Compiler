@@ -37,7 +37,7 @@ namespace Compiler.Syntax
             if (kind == current.Kind) return Advance();
             else
             {
-                diagnostics.ReportUnexpectedToken(current, kind);
+                diagnostics.ReportUnexpectedToken(current.Kind, kind, current.Span);
                 var res = new SyntaxToken(kind, current.Pos, current.Lenght, current.Value);
                 pos++;
                 return res;
@@ -52,11 +52,11 @@ namespace Compiler.Syntax
         }
 
         
-        public CompilationUnit ParseCompilationUnit()
+        public CompilationUnitSyntax ParseCompilationUnit()
         {
             var expr = ParseExpression();
-            var unit = new CompilationUnit(new TextSpan(0, Text.Length), expr);
-            if (!IsFinished) diagnostics.ReportUnexpectedToken(current, SyntaxTokenKind.End);
+            var unit = new CompilationUnitSyntax(new TextSpan(0, Text.Length), expr);
+            if (!IsFinished) diagnostics.ReportUnexpectedToken(current.Kind, SyntaxTokenKind.End, current.Span);
             return unit;
         }
 
@@ -89,7 +89,7 @@ namespace Compiler.Syntax
                 return ParseParenthesizedExpression();
             else
             {
-                diagnostics.ReportUnexpectedToken(current);
+                diagnostics.ReportUnexpectedToken(current.Kind, current.Span);
                 return new InvalidExpressionSyntax(Advance());
             }
         }

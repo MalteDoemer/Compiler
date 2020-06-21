@@ -8,7 +8,7 @@ namespace Compiler.Syntax
 {
     public sealed class SyntaxTree
     {
-        internal CompilationUnit Root { get; }
+        internal CompilationUnitSyntax Root { get; }
         public SourceText Text { get; }
         public DiagnosticBag Diagnostics { get; }
 
@@ -18,11 +18,6 @@ namespace Compiler.Syntax
             Diagnostics = new DiagnosticBag();
             var parser = new Parser(text, Diagnostics);
             Root = parser.ParseCompilationUnit();
-        }
-
-        public dynamic Evaluate(Dictionary<string, (TypeSymbol type, dynamic value)> environment)
-        {
-            return new Evaluator(Root, Diagnostics, environment).Evaluate();
         }
 
         public static SyntaxTree ParseSyntaxTree(SourceText text)

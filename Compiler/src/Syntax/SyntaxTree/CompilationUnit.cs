@@ -5,25 +5,20 @@ using Compiler.Text;
 namespace Compiler.Syntax
 {
 
-    internal sealed class CompilationUnit : SyntaxNode
+    internal sealed class CompilationUnitSyntax : SyntaxNode
     {
-        public CompilationUnit(TextSpan span, params SyntaxNode[] nodes)
+        public CompilationUnitSyntax(TextSpan span, ExpressionSyntax expression)
         {
             Span = span;
-            Nodes = nodes.ToImmutableArray();
+            Expression = expression;
         }
 
         public override TextSpan Span { get; }
-        public ImmutableArray<SyntaxNode> Nodes;
+        public ExpressionSyntax Expression { get; }
 
         public override string ToString()
         {
-            var builder = new StringBuilder();
-            foreach(var node in Nodes)
-                builder.Append(node.ToString() + '\n');
-
-            builder.Remove(builder.Length -1, 1);
-            return builder.ToString();
+            return Expression.ToString();
         }
     }
 }

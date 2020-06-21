@@ -22,15 +22,14 @@ namespace Compiler.Binding
 {
     internal sealed class BoundVariableExpression : BoundExpression
     {
-        public BoundVariableExpression(string identifier, TextSpan span, TypeSymbol resultType)
+        public BoundVariableExpression(VariableSymbol variable, TextSpan span)
         {
-            Identifier = identifier;
+            Variable = variable;
             Span = span;
-            ResultType = resultType;
         }
 
-        public override TypeSymbol ResultType { get; }
+        public VariableSymbol Variable { get; }
         public override TextSpan Span { get; }
-        public string Identifier { get; }
+        public override TypeSymbol ResultType => Variable.Type;
     }
 }

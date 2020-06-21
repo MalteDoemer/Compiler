@@ -33,15 +33,15 @@ namespace Compiler.Diagnostics
             diagnostics.Add(d);
         }
 
-        internal void ReportUnexpectedToken(SyntaxToken actual, SyntaxTokenKind expected)
+        internal void ReportUnexpectedToken(SyntaxTokenKind actual, SyntaxTokenKind expected, TextSpan span)
         {
-            var d = new Diagnostic(ErrorKind.SyntaxError, $"Expected <{expected}> but got <{actual.Kind}>.", actual.Span);
+            var d = new Diagnostic(ErrorKind.SyntaxError, $"Expected <{expected}> but got <{actual}>.", span);
             diagnostics.Add(d);
         }
 
-        internal void ReportUnexpectedToken(SyntaxToken token)
+        internal void ReportUnexpectedToken(SyntaxTokenKind kind, TextSpan span)
         {
-            var d = new Diagnostic(ErrorKind.SyntaxError, $"Unexpected token <{token.Kind}>.", token.Span);
+            var d = new Diagnostic(ErrorKind.SyntaxError, $"Unexpected token <{kind}>.", span);
             diagnostics.Add(d);
         }
 
@@ -52,33 +52,27 @@ namespace Compiler.Diagnostics
             diagnostics.Add(d);
         }
 
-        internal void ReportVariableNotDefined(VariableExpressionSyntax ve)
+        internal void ReportVariableNotDeclared(string name, TextSpan span)
         {
-            var d = new Diagnostic(ErrorKind.IdentifierNotFound, $"The variable \"{ve.Name.Value}\" is not defined.", ve.Span);
+            var d = new Diagnostic(ErrorKind.IdentifierNotFound, $"The variable \"{name}\" is not defined.", span);
             diagnostics.Add(d);
         }
 
-        internal void ReportVariableNotDefined(BoundVariableExpression ve)
+        internal void ReportUnsupportedBinaryOperator(string op, TypeSymbol left, TypeSymbol right, TextSpan span)
         {
-            var d = new Diagnostic(ErrorKind.IdentifierNotFound, $"The variable \"{ve.Identifier}\" is not defined.", ve.Span);
+            var d = new Diagnostic(ErrorKind.TypeError, $"The Binary operator '{op}' is unsupported for the operands <{left}> and <{right}>.", span);
             diagnostics.Add(d);
         }
 
-        internal void ReportUnsupportedBinaryOperator(BinaryExpressionSyntax expr, BoundExpression left, BoundExpression right)
+        internal void ReportUnsupportedUnaryOperator(string op, TypeSymbol right, TextSpan span)
         {
-            var d = new Diagnostic(ErrorKind.TypeError, $"The Binary operator '{expr.Op.Value}' is unsupported for the operands <{left.ResultType}> and <{right.ResultType}>.", expr.Op.Span);
+            var d = new Diagnostic(ErrorKind.TypeError, $"The Unary operator '{op}' is unsupported for the operand <{right}>.", span);
             diagnostics.Add(d);
         }
 
-        internal void ReportUnsupportedUnaryOperator(UnaryExpressionSyntax expr, BoundExpression right)
+        internal void ReportWrongType(TypeSymbol expected, TypeSymbol porvided, TextSpan span)
         {
-            var d = new Diagnostic(ErrorKind.TypeError, $"The Unary operator '{expr.Op.Value}' is unsupported for the operand <{right.ResultType}>.", expr.Op.Span);
-            diagnostics.Add(d);
-        }
-
-        internal void ReportWrongType(BoundAssignementExpression ae, TypeSymbol type)
-        {
-            var d = new Diagnostic(ErrorKind.TypeError, $"The types <{type}> and <{ae.ResultType}> don't match.", ae.Expression.Span);
+            var d = new Diagnostic(ErrorKind.TypeError, $"The types <{expected}> and <{porvided}> don't match.", span);
             diagnostics.Add(d);
         }
     }

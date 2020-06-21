@@ -4,20 +4,19 @@ namespace Compiler.Binding
 {
     internal sealed class BoundAssignementExpression : BoundExpression
     {
-        public BoundAssignementExpression(string identifier,TextSpan identifierSpan, TextSpan equalSpan, BoundExpression expression, TypeSymbol resultType)
+        public BoundAssignementExpression(VariableSymbol variable, BoundExpression expression, TextSpan identifierSpan, TextSpan equalSpan)
         {
-            ResultType = resultType;
-            Identifier = identifier;
             IdentifierSpan = identifierSpan;
             EqualSpan = equalSpan;
+            Variable = variable;
             Expression = expression;
         }
 
-        public string Identifier { get; }
+        public VariableSymbol Variable { get; }
+        public BoundExpression Expression { get; }
         public TextSpan IdentifierSpan { get; }
         public TextSpan EqualSpan { get; }
-        public BoundExpression Expression { get; }
-        public override TypeSymbol ResultType { get; }
+        public override TypeSymbol ResultType => Variable.Type;
         public override TextSpan Span => IdentifierSpan + Expression.Span;
     }
 }
