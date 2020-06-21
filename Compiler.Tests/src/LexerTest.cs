@@ -5,7 +5,7 @@ using Compiler.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace Compiler.Tests.Syntax
+namespace Compiler.Syntax
 {
     public class LexerTest
     {

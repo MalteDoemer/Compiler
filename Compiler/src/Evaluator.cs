@@ -17,15 +17,13 @@ namespace Compiler
         private DiagnosticBag Diagnostics { get; }
         private Dictionary<string, (TypeSymbol type, dynamic value)> Environment { get; }
 
-        internal Evaluator(SourceText src, BoundNode root, DiagnosticBag diagnostics, Dictionary<string, (TypeSymbol type, dynamic value)> environement)
+        private Evaluator(SourceText src, BoundNode root, DiagnosticBag diagnostics, Dictionary<string, (TypeSymbol type, dynamic value)> environement)
         {
             Text = src;
             Root = root;
             Diagnostics = diagnostics;
             Environment = environement;
         }
-
-        internal dynamic EvaluateExpression() => EvaluateExpression((BoundExpression)Root);
 
         private dynamic EvaluateExpression(BoundExpression expr)
         {
@@ -94,71 +92,16 @@ namespace Compiler
             else throw new Exception("Unknown Expression");
         }
 
-        public static void Evaluate(string text, Dictionary<string, (TypeSymbol type, dynamic value)> env, out DiagnosticBag bag)
+        public dynamic Evaluate() => EvaluateExpression((BoundExpression)Root);
+
+        public static Evaluator ConstructEvaluator(SourceText text, Dictionary<string, (TypeSymbol type, dynamic value)> env, DiagnosticBag bag)
         {
-            bag = new DiagnosticBag();
-            var src = new SourceText(text);
-            var parser = new Parser(src, bag);
+            var parser = new Parser(text, bag);
             var binder = new Binder(bag, env);
-            var syntaxExpr = parser.ParseExpression();
-
-            //Console.WriteLine(syntaxExpr);
-
-            var boundExpr = binder.BindExpression(syntaxExpr);
-            var evaluator = new Evaluator(src, boundExpr, bag, env);
-            var res = evaluator.EvaluateExpression();
-
-            if (bag.Errors > 0)
-            {
-                foreach (var err in bag.GetErrors())
-                {
-                    if (err.HasPositon)
-                    {
-                        var errText = text.Substring(err.Span.Start, err.Span.Lenght);
-                        var prefix = text.Substring(0, err.Span.Start);
-                        var postfix = text.Substring(err.Span.End, text.Length - err.Span.End);
-
-                        Console.WriteLine('\n');
-
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write(err.Kind);
-                        Console.Write(" at line ");
-                        Console.Write(src.GetLineNumber(err.Span.Start) + 1);
-                        Console.Write(":");
-                        Console.WriteLine('\n');
-
-                        Console.ResetColor();
-                        Console.Write("\t");
-                        Console.Write(prefix);
-
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write(errText);
-
-                        Console.ResetColor();
-                        Console.Write(postfix);
-
-                        Console.WriteLine('\n');
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(err.Message);
-                        Console.WriteLine('\n');
-
-                    }
-                    else
-                    {
-                        Console.WriteLine('\n');
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"{err.Kind}: {err.Message}");
-                        Console.WriteLine('\n');
-                    }
-                }
-                Console.ResetColor();
-                return;
-            }
-            Console.ForegroundColor = ConsoleColor.Green;
-
-            if (res == null) Console.WriteLine("null");
-            else Console.WriteLine(res);
-            Console.ResetColor();
+            var syntaxExpr = parser.Parse();
+            var root = binder.BindExpression((ExpressionSyntax)syntaxExpr);
+            var evaluator = new Evaluator(text, root, bag, env);
+            return evaluator;
         }
 
         public static IEnumerable<SyntaxToken> Tokenize(string text, out DiagnosticBag bag)
@@ -172,7 +115,7 @@ namespace Compiler
         {
             bag = new DiagnosticBag();
             var parser = new Parser(new SourceText(text), bag);
-            return parser.ParseExpression().ToString();
+            return parser.Parse().ToString();
         }
 
     }

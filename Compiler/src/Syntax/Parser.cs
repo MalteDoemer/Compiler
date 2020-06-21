@@ -20,6 +20,8 @@ namespace Compiler.Syntax
             }
         }
 
+        public bool IsFinished { get => current.Kind == SyntaxTokenKind.End; }
+
         public Parser(SourceText text, DiagnosticBag diagnostics)
         {
             this.diagnostics = diagnostics;
@@ -47,7 +49,14 @@ namespace Compiler.Syntax
             return res;
         }
 
-        public ExpressionSyntax ParseExpression(int lvl = SyntaxFacts.MaxPrecedence)
+        public SyntaxNode Parse()
+        {
+            var res = ParseExpression();
+            if (!IsFinished) diagnostics.ReportUnexpectedToken(current, SyntaxTokenKind.End);
+            return res;
+        }
+
+        private ExpressionSyntax ParseExpression(int lvl = SyntaxFacts.MaxPrecedence)
         {
             if (lvl == 0) return ParsePrimaryExpression();
 
