@@ -54,17 +54,17 @@ namespace Compiler.Diagnostics
 
         internal void ReportVariableNotDeclared(string name, TextSpan span)
         {
-            var d = new Diagnostic(ErrorKind.IdentifierNotFound, $"The variable \"{name}\" is not defined.", span);
+            var d = new Diagnostic(ErrorKind.IdentifierNotDeclared, $"The variable \"{name}\" is not declared.", span);
             diagnostics.Add(d);
         }
 
-        internal void ReportUnsupportedBinaryOperator(string op, TypeSymbol left, TypeSymbol right, TextSpan span)
+        internal void ReportUnsupportedBinaryOperator(dynamic op, TypeSymbol left, TypeSymbol right, TextSpan span)
         {
             var d = new Diagnostic(ErrorKind.TypeError, $"The Binary operator '{op}' is unsupported for the operands <{left}> and <{right}>.", span);
             diagnostics.Add(d);
         }
 
-        internal void ReportUnsupportedUnaryOperator(string op, TypeSymbol right, TextSpan span)
+        internal void ReportUnsupportedUnaryOperator(dynamic op, TypeSymbol right, TextSpan span)
         {
             var d = new Diagnostic(ErrorKind.TypeError, $"The Unary operator '{op}' is unsupported for the operand <{right}>.", span);
             diagnostics.Add(d);

@@ -29,7 +29,7 @@ namespace Compiler
             {
                 if (globalScope == null)
                 {
-                    var scope = Binder.BindGlobalScope(Previous?.GlobalScope, Tree.Root);
+                    var scope = Binder.BindGlobalScope(Previous?.GlobalScope, Tree.Root, Tree.Diagnostics);
                     Interlocked.CompareExchange(ref globalScope, scope, null); // Dammm son
 
                 }

@@ -3,63 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
 using static Compiler.Binding.BindFacts;
 
 namespace Compiler.Binding
 {
-    public class VariableSymbol
-    {
-        public VariableSymbol(string identifier, TypeSymbol type, dynamic value)
-        {
-            Identifier = identifier;
-            Type = type;
-            Value = value;
-        }
-
-        public string Identifier { get; }
-        public TypeSymbol Type { get; }
-        public dynamic Value { get; }
-    }
-
-    internal sealed class BoundScope
-    {
-        private Dictionary<string, VariableSymbol> variables;
-
-        public BoundScope Parent { get; }
-
-        public BoundScope(BoundScope parent)
-        {
-            Parent = parent;
-            variables = new Dictionary<string, VariableSymbol>();
-        }
-
-        public bool TryLookUp(string identifier, out VariableSymbol value)
-        {
-            if (variables.TryGetValue(identifier, out value))
-                return true;
-
-            if (Parent == null) return false;
-
-            return Parent.TryLookUp(identifier, out value);
-
-        }
-
-        public bool TryDeclare(VariableSymbol variable)
-        {
-            if (variables.ContainsKey(variable.Identifier))
-                return false;
-            variables.Add(variable.Identifier, variable);
-            return true;
-        }
-
-        public ImmutableArray<VariableSymbol> GetDeclaredVariables()
-        {
-            return variables.Values.ToImmutableArray();
-        }
-    }
 
     internal sealed class Binder
     {
@@ -97,10 +46,8 @@ namespace Compiler.Binding
             return current;
         }
 
-        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax unit)
+        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax unit, DiagnosticBag bag)
         {
-            var bag = new DiagnosticBag();
-
             var parentScope = CreateBoundScopes(previous);
             var binder = new Binder(bag, parentScope);
             var expression = binder.BindExpression(unit.Expression);
@@ -128,7 +75,7 @@ namespace Compiler.Binding
         private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax ee)
         {
             var expr = BindExpression(ee.Expression);
-            if (Scope.TryLookUp(ee.Identifier.Value, out VariableSymbol variable))
+            if (!Scope.TryLookUp(ee.Identifier.Value, out VariableSymbol variable))
             {
                 Diagnostics.ReportVariableNotDeclared(ee.Identifier.Value, ee.Identifier.Span);
                 return new BoundInvalidExpression();
