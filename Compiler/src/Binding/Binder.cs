@@ -13,12 +13,12 @@ namespace Compiler.Binding
     internal sealed class Binder
     {
         public DiagnosticBag Diagnostics { get; }
-        public BoundScope Scope { get; }
+        private BoundScope scope;
 
         private Binder(DiagnosticBag diagnostics, BoundScope parentScope)
         {
             Diagnostics = diagnostics;
-            Scope = new BoundScope(parentScope);
+            scope = new BoundScope(parentScope);
         }
 
         private static BoundScope CreateBoundScopes(BoundGlobalScope previous)
@@ -51,7 +51,7 @@ namespace Compiler.Binding
             var parentScope = CreateBoundScopes(previous);
             var binder = new Binder(bag, parentScope);
             var stmt = binder.BindStatement(unit.Statement);
-            var variables = binder.Scope.GetDeclaredVariables();
+            var variables = binder.scope.GetDeclaredVariables();
             return new BoundGlobalScope(previous, bag, variables, stmt);
         }
 
@@ -71,7 +71,11 @@ namespace Compiler.Binding
         private BoundStatement BindVariableDeclerationStatement(VariableDeclerationStatement vs)
         {
             var expr = BindExpression(vs.Expression);
-            var type = BindFacts.GetTypeSymbol(vs.TypeToken.Kind);
+
+            TypeSymbol type;
+
+            if (vs.TypeToken.Kind == SyntaxTokenKind.Var) type = expr.ResultType;
+            else type = BindFacts.GetTypeSymbol(vs.TypeToken.Kind);
 
             if (expr.ResultType != type)
             {
@@ -79,7 +83,7 @@ namespace Compiler.Binding
                 return new BoundInvalidStatement();
             }
             var variable = new VariableSymbol(vs.Identifier.Value, type, null);
-            if (!Scope.TryDeclare(variable))
+            if (!scope.TryDeclare(variable))
             {
                 Diagnostics.ReportVariableAlreadyDeclared(variable.Identifier, vs.Identifier.Span);
                 return new BoundInvalidStatement();
@@ -90,9 +94,12 @@ namespace Compiler.Binding
         private BoundStatement BindBlockStatement(BlockStatment bs)
         {
             var builder = ImmutableArray.CreateBuilder<BoundStatement>();
+            scope = new BoundScope(scope);
 
             foreach (var stmt in bs.Statements)
                 builder.Add(BindStatement(stmt));
+
+            scope = scope.Parent;
 
             return new BoundBlockStatement(bs.OpenCurly.Span, builder.ToImmutable(), bs.CloseCurly.Span);
         }
@@ -123,7 +130,7 @@ namespace Compiler.Binding
         private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax ee)
         {
             var expr = BindExpression(ee.Expression);
-            if (!Scope.TryLookUp(ee.Identifier.Value, out VariableSymbol variable))
+            if (!scope.TryLookUp(ee.Identifier.Value, out VariableSymbol variable))
             {
                 Diagnostics.ReportVariableNotDeclared(ee.Identifier.Value, ee.Identifier.Span);
                 return new BoundInvalidExpression();
@@ -140,7 +147,7 @@ namespace Compiler.Binding
         private BoundExpression BindVariableExpression(VariableExpressionSyntax ve)
         {
             string identifier = ve.Name.Value;
-            if (!Scope.TryLookUp(identifier, out VariableSymbol variable))
+            if (!scope.TryLookUp(identifier, out VariableSymbol variable))
             {
                 Diagnostics.ReportVariableNotDeclared(ve.Name.Value, ve.Name.Span);
                 return new BoundInvalidExpression();

@@ -50,7 +50,7 @@ namespace Compiler
             {
                 foreach (var err in tree.Diagnostics.GetErrors())
                 {
-                    if (err.Message.EndsWith("<End>."))
+                    if (err.Message.EndsWith("<End>.") || err.Message == "Never closed curly brackets.")
                     {
                         ColorWrite("·", ConsoleColor.Green);
                         var next = Console.ReadLine();

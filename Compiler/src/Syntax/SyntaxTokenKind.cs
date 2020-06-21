@@ -37,6 +37,7 @@ namespace Compiler.Syntax
         BoolKeyword,
         StringKeyword,
         LCurly,
-        RCurly
+        RCurly,
+        Var
     }
 }

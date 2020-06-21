@@ -46,6 +46,7 @@ namespace Compiler.Syntax
             {"float", SyntaxTokenKind.FloatKeyword},
             {"bool", SyntaxTokenKind.BoolKeyword},
             {"string", SyntaxTokenKind.StringKeyword},
+            {"var", SyntaxTokenKind.Var},
         };
 
 
@@ -105,6 +106,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.FloatKeyword:
                 case SyntaxTokenKind.BoolKeyword:
                 case SyntaxTokenKind.StringKeyword:
+                case SyntaxTokenKind.Var:
                     return true;
                 default: return false;
             }
