@@ -31,6 +31,12 @@ namespace Compiler.Syntax
         GreaterEqual,
         AmpersandAmpersand,
         PipePipe,
-        Equal
+        Equal,
+        IntKeyword,
+        FloatKeyword,
+        BoolKeyword,
+        StringKeyword,
+        LCurly,
+        RCurly
     }
 }

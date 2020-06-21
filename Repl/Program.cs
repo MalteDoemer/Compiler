@@ -24,6 +24,7 @@ namespace Compiler
                     var inp = Console.ReadLine();
                     if (inp == "exit") break;
                     else if (inp == "cls") Console.Clear();
+                    else if (inp == "reset") compilation = null;
                     else
                     {
                         Evaluate(inp);

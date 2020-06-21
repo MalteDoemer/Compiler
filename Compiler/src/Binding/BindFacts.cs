@@ -135,6 +135,10 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.Null: return TypeSymbol.NullType;
                 case SyntaxTokenKind.False: return TypeSymbol.Bool;
                 case SyntaxTokenKind.True: return TypeSymbol.Bool;
+                case SyntaxTokenKind.IntKeyword: return TypeSymbol.Int;
+                case SyntaxTokenKind.FloatKeyword: return TypeSymbol.Float;
+                case SyntaxTokenKind.StringKeyword: return TypeSymbol.String;
+                case SyntaxTokenKind.BoolKeyword: return TypeSymbol.Bool;
                 default: throw new Exception($"<{kind}> canno't be converted to a TypeSymbol");
             }
         }

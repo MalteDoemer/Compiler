@@ -51,13 +51,56 @@ namespace Compiler.Syntax
             return res;
         }
 
-        
+
         public CompilationUnitSyntax ParseCompilationUnit()
         {
-            var expr = ParseExpression();
-            var unit = new CompilationUnitSyntax(new TextSpan(0, Text.Length), expr);
+            var stmt = ParseStatement();
+            var unit = new CompilationUnitSyntax(new TextSpan(0, Text.Length), stmt);
             if (!IsFinished) diagnostics.ReportUnexpectedToken(current.Kind, SyntaxTokenKind.End, current.Span);
             return unit;
+        }
+
+        private StatementSyntax ParseStatement()
+        {
+            if (current.Kind.IsTypeKeyword())
+                return ParseVariableDecleration();
+            else if (current.Kind == SyntaxTokenKind.LCurly)
+                return ParseBlockStatement();
+            else return ParseExpressionStatement();
+        }
+
+        private StatementSyntax ParseExpressionStatement()
+        {
+            var expression = ParseExpression();
+            return new ExpressionStatement(expression);
+        }
+
+        private StatementSyntax ParseBlockStatement()
+        {
+            var lcurly = MatchToken(SyntaxTokenKind.LCurly);
+
+            var builder = ImmutableArray.CreateBuilder<StatementSyntax>();
+
+            while (current.Kind != SyntaxTokenKind.RCurly)
+            {
+                if (current.Kind == SyntaxTokenKind.End)
+                {
+                    diagnostics.ReportNeverClosedCurlyBrackets(new TextSpan(current.Span.Start, current.Pos));
+                    return new InvalidStatementSyntax(TextSpan.FromBounds(lcurly.Span.Start, current.Pos));
+                }
+                builder.Add(ParseStatement());
+            }
+            var rcurly = MatchToken(SyntaxTokenKind.RCurly);
+            return new BlockStatment(lcurly, builder.ToImmutable(), rcurly);
+        }
+
+        private StatementSyntax ParseVariableDecleration()
+        {
+            var typeToken = Advance();
+            var identifier = MatchToken(SyntaxTokenKind.Identifier);
+            var equalToken = MatchToken(SyntaxTokenKind.Equal);
+            var expr = ParseExpression();
+            return new VariableDeclerationStatement(typeToken, identifier, equalToken, expr);
         }
 
         private ExpressionSyntax ParseExpression(int lvl = SyntaxFacts.MaxPrecedence)

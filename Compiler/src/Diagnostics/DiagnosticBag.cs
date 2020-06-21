@@ -70,9 +70,21 @@ namespace Compiler.Diagnostics
             diagnostics.Add(d);
         }
 
+        internal void ReportNeverClosedCurlyBrackets(TextSpan span)
+        {
+            var d = new Diagnostic(ErrorKind.SyntaxError, "Never closed curly brackets.", span);
+            diagnostics.Add(d);
+        }
+
         internal void ReportWrongType(TypeSymbol expected, TypeSymbol porvided, TextSpan span)
         {
             var d = new Diagnostic(ErrorKind.TypeError, $"The types <{expected}> and <{porvided}> don't match.", span);
+            diagnostics.Add(d);
+        }
+
+        internal void ReportVariableAlreadyDeclared(string identifier, TextSpan span)
+        {
+            var d = new Diagnostic(ErrorKind.TypeError, $"The variable \"{identifier}\" is already declared.", span);
             diagnostics.Add(d);
         }
     }

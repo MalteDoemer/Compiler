@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
 using static Compiler.Binding.BindFacts;
 
 namespace Compiler.Binding
 {
-
     internal sealed class Binder
     {
         public DiagnosticBag Diagnostics { get; }
@@ -50,9 +50,57 @@ namespace Compiler.Binding
         {
             var parentScope = CreateBoundScopes(previous);
             var binder = new Binder(bag, parentScope);
-            var expression = binder.BindExpression(unit.Expression);
+            var stmt = binder.BindStatement(unit.Statement);
             var variables = binder.Scope.GetDeclaredVariables();
-            return new BoundGlobalScope(previous, bag, variables, expression);
+            return new BoundGlobalScope(previous, bag, variables, stmt);
+        }
+
+        private BoundStatement BindStatement(StatementSyntax statement)
+        {
+            if (statement is ExpressionStatement es)
+                return BindExpressionStatement(es);
+            else if (statement is BlockStatment bs)
+                return BindBlockStatement(bs);
+            else if (statement is VariableDeclerationStatement vs)
+                return BindVariableDeclerationStatement(vs);
+            else if (statement is InvalidStatementSyntax)
+                return new BoundInvalidStatement();
+            else throw new Exception($"Unexpected StatementSyntax <{statement}>");
+        }
+
+        private BoundStatement BindVariableDeclerationStatement(VariableDeclerationStatement vs)
+        {
+            var expr = BindExpression(vs.Expression);
+            var type = BindFacts.GetTypeSymbol(vs.TypeToken.Kind);
+
+            if (expr.ResultType != type)
+            {
+                Diagnostics.ReportWrongType(type, expr.ResultType, expr.Span);
+                return new BoundInvalidStatement();
+            }
+            var variable = new VariableSymbol(vs.Identifier.Value, type, null);
+            if (!Scope.TryDeclare(variable))
+            {
+                Diagnostics.ReportVariableAlreadyDeclared(variable.Identifier, vs.Identifier.Span);
+                return new BoundInvalidStatement();
+            }
+            return new BoundVariableDeclerationStatement(variable, expr, vs.TypeToken.Span, vs.Identifier.Span, vs.EqualToken.Span, expr.Span);
+        }
+
+        private BoundStatement BindBlockStatement(BlockStatment bs)
+        {
+            var builder = ImmutableArray.CreateBuilder<BoundStatement>();
+
+            foreach (var stmt in bs.Statements)
+                builder.Add(BindStatement(stmt));
+
+            return new BoundBlockStatement(bs.OpenCurly.Span, builder.ToImmutable(), bs.CloseCurly.Span);
+        }
+
+        private BoundStatement BindExpressionStatement(ExpressionStatement es)
+        {
+            var expr = BindExpression(es.Expression);
+            return new BoundExpressionStatement(expr, es.Span);
         }
 
         private BoundExpression BindExpression(ExpressionSyntax syntax)

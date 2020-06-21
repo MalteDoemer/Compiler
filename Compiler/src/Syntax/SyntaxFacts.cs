@@ -20,6 +20,8 @@ namespace Compiler.Syntax
             {"!", SyntaxTokenKind.Bang},
             {"(", SyntaxTokenKind.LParen},
             {")", SyntaxTokenKind.RParen},
+            {"{", SyntaxTokenKind.LCurly},
+            {"}", SyntaxTokenKind.RCurly},
             {"=", SyntaxTokenKind.Equal},
         };
 
@@ -40,6 +42,10 @@ namespace Compiler.Syntax
             {"true", SyntaxTokenKind.True},
             {"false", SyntaxTokenKind.False},
             {"null", SyntaxTokenKind.Null},
+            {"int", SyntaxTokenKind.IntKeyword},
+            {"float", SyntaxTokenKind.FloatKeyword},
+            {"bool", SyntaxTokenKind.BoolKeyword},
+            {"string", SyntaxTokenKind.StringKeyword},
         };
 
 
@@ -91,8 +97,20 @@ namespace Compiler.Syntax
             return null;
         }
 
-        
-        
+        internal static bool IsTypeKeyword(this SyntaxTokenKind kind)
+        {
+            switch (kind)
+            {
+                case SyntaxTokenKind.IntKeyword:
+                case SyntaxTokenKind.FloatKeyword:
+                case SyntaxTokenKind.BoolKeyword:
+                case SyntaxTokenKind.StringKeyword:
+                    return true;
+                default: return false;
+            }
+        }
+
+
         public static int GetBinaryPrecedence(this SyntaxTokenKind kind)
         {
             switch (kind)

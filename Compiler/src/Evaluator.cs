@@ -45,28 +45,31 @@ namespace Compiler
         public dynamic Evaluate(Dictionary<string, VariableSymbol> variables)
         {
             if (GlobalScope.Bag.Errors > 0) return null;
-            var evaluator = new Evaluator(GlobalScope.Expr, variables);
-            return evaluator.Evaluate();
+            var evaluator = new Evaluator(GlobalScope.Statement, variables);
+            evaluator.Evaluate();
+            return evaluator.lastValue;
         }
     }
 
     internal class Evaluator
     {
-        public Evaluator(BoundExpression root, Dictionary<string, VariableSymbol> varaibles)
+        internal dynamic lastValue;
+
+        public Evaluator(BoundStatement root, Dictionary<string, VariableSymbol> varaibles)
         {
             Root = root;
             Varaibles = varaibles;
         }
 
         private Dictionary<string, VariableSymbol> Varaibles { get; }
-        private BoundExpression Root { get; }
+        private BoundStatement Root { get; }
 
         private dynamic EvaluateExpression(BoundExpression expr)
         {
             if (expr is BoundLiteralExpression le) return le.Value;
             else if (expr is BoundVariableExpression ve)
             {
-                return Varaibles[ve.Variable.Identifier];
+                return Varaibles[ve.Variable.Identifier].Value;
             }
             else if (expr is BoundUnaryExpression ue)
             {
@@ -120,7 +123,29 @@ namespace Compiler
             else throw new Exception("Unknown Expression");
         }
 
-        public dynamic Evaluate() => EvaluateExpression(Root);
+        private void EvaluateStatement(BoundStatement stmt)
+        {
+            if (stmt is BoundExpressionStatement es)
+            {
+                lastValue = EvaluateExpression(es.Expression);
+                return;
+            }
+            else if (stmt is BoundBlockStatement bs)
+            {
+                foreach(var s in bs.Statements)
+                    EvaluateStatement(s);
+                return;
+            }
+            else if (stmt is BoundVariableDeclerationStatement vs)
+            {
+                var val = EvaluateExpression(vs.Expression);
+                lastValue = val;
+                var variable = new VariableSymbol(vs.Variable.Identifier, vs.Variable.Type, val);
+                Varaibles[variable.Identifier] = variable;
+            }
+        }
+
+        public void Evaluate() => EvaluateStatement(Root);
 
     }
 }
