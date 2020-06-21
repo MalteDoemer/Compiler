@@ -66,7 +66,27 @@ namespace Compiler.Syntax
                 return ParseVariableDecleration();
             else if (current.Kind == SyntaxTokenKind.LCurly)
                 return ParseBlockStatement();
+            else if (current.Kind == SyntaxTokenKind.IfKeyword)
+                return ParseIfStatement();
             else return ParseExpressionStatement();
+        }
+
+        private StatementSyntax ParseIfStatement()
+        {
+            var ifToken = MatchToken(SyntaxTokenKind.IfKeyword);
+            var expr = ParseExpression();
+            var statement = ParseStatement();
+            var elseClause = ParseElseClause();
+            return new IfStatement(ifToken, expr, statement, elseClause);
+        }
+
+        private ElseStatement ParseElseClause()
+        {
+            if (current.Kind != SyntaxTokenKind.ElseKeyword)
+                return null;
+            var elseKeyword = Advance();
+            var statement = ParseStatement();
+            return new ElseStatement(elseKeyword, statement);
         }
 
         private StatementSyntax ParseExpressionStatement()

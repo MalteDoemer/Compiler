@@ -38,6 +38,8 @@ namespace Compiler.Syntax
         StringKeyword,
         LCurly,
         RCurly,
-        Var
+        Var,
+        IfKeyword,
+        ElseKeyword
     }
 }

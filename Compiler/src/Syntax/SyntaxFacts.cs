@@ -47,6 +47,8 @@ namespace Compiler.Syntax
             {"bool", SyntaxTokenKind.BoolKeyword},
             {"string", SyntaxTokenKind.StringKeyword},
             {"var", SyntaxTokenKind.Var},
+            {"if", SyntaxTokenKind.IfKeyword},
+            {"else", SyntaxTokenKind.ElseKeyword},
         };
 
 

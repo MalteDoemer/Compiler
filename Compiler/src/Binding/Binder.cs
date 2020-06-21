@@ -10,6 +10,7 @@ using static Compiler.Binding.BindFacts;
 
 namespace Compiler.Binding
 {
+
     internal sealed class Binder
     {
         public DiagnosticBag Diagnostics { get; }
@@ -63,9 +64,26 @@ namespace Compiler.Binding
                 return BindBlockStatement(bs);
             else if (statement is VariableDeclerationStatement vs)
                 return BindVariableDeclerationStatement(vs);
+            else if (statement is IfStatement ifs)
+                return BindIfStatement(ifs);
             else if (statement is InvalidStatementSyntax)
                 return new BoundInvalidStatement();
             else throw new Exception($"Unexpected StatementSyntax <{statement}>");
+        }
+
+        private BoundStatement BindIfStatement(IfStatement ifs)
+        {
+            var condition = BindExpression(ifs.Expression);
+
+            if (condition.ResultType != TypeSymbol.Bool)
+            {
+                Diagnostics.ReportWrongType(TypeSymbol.Bool, condition.ResultType, condition.Span);
+                return new BoundInvalidStatement();
+            }
+
+            var stmt = BindStatement(ifs.ThenStatement);
+            var elseStmt = ifs.ElseStatement == null ? null : BindStatement(ifs.ElseStatement.ThenStatement);
+            return new BoundIfStatement(condition, stmt, elseStmt, ifs.IfToken.Span);
         }
 
         private BoundStatement BindVariableDeclerationStatement(VariableDeclerationStatement vs)

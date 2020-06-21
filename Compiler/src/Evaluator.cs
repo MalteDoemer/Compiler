@@ -132,9 +132,16 @@ namespace Compiler
             }
             else if (stmt is BoundBlockStatement bs)
             {
-                foreach(var s in bs.Statements)
+                foreach (var s in bs.Statements)
                     EvaluateStatement(s);
                 return;
+            }
+            else if (stmt is BoundIfStatement ifs)
+            {
+                bool condition = EvaluateExpression(ifs.Condition);
+                if (condition)
+                    EvaluateStatement(ifs.ThenStatement);
+                else if (ifs.ElseStatement != null) EvaluateStatement(ifs.ElseStatement);
             }
             else if (stmt is BoundVariableDeclerationStatement vs)
             {
@@ -144,7 +151,7 @@ namespace Compiler
                 Varaibles[variable.Identifier] = variable;
             }
         }
-
+ 
         public void Evaluate() => EvaluateStatement(Root);
 
     }
