@@ -32,9 +32,10 @@ namespace Compiler.Text
         public static bool operator ==(TextSpan l, TextSpan r) => l.Start == r.Start && l.Lenght == r.Lenght;
         public static bool operator !=(TextSpan l, TextSpan r) => l.Start != r.Start || l.Lenght != r.Lenght;
 
-
         public int Start { get; }
         public int Lenght { get; }
         public int End => Start + Lenght;
+
+        public override string ToString() => $"{Start}..{End}";
     }
 }
