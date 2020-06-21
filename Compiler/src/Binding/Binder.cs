@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
-using Compiler.Text;
+using static Compiler.Binding.BindFacts;
 
 namespace Compiler.Binding
 {
@@ -96,9 +96,9 @@ namespace Compiler.Binding
         {
             var left = BindExpression(be.Left);
             var right = BindExpression(be.Right);
-            var boundOperator = BindBinaryOperator(be.Op, left.ResultType, right.ResultType);
+            var boundOperator = BindBinaryOperator(be.Op);
 
-            var resultType = BindFacts.ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
+            var resultType = ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
 
             if (boundOperator == null || resultType == null)
             {
@@ -113,9 +113,9 @@ namespace Compiler.Binding
         private BoundExpression BindUnaryExpression(UnaryExpressionSyntax ue)
         {
             var right = BindExpression(ue.Expression);
-            var boundOperator = BindUnaryOperator(ue.Op, right.ResultType);
+            var boundOperator = BindUnaryOperator(ue.Op);
 
-            var resultType = BindFacts.ResolveUnaryType(boundOperator, right.ResultType);
+            var resultType = ResolveUnaryType(boundOperator, right.ResultType);
 
             if (boundOperator == null || resultType == null)
             {
@@ -129,48 +129,8 @@ namespace Compiler.Binding
         private BoundExpression BindLiteralExpression(LiteralExpressionSyntax le)
         {
             var value = le.Literal.Value;
-            var type = le.Literal.Kind.GetTypeSymbol();
+            var type = BindFacts.GetTypeSymbol(le.Literal.Kind);
             return new BoundLiteralExpression(le.Span, value, type);
-        }
-
-        private BoundBinaryOperator? BindBinaryOperator(SyntaxToken op, TypeSymbol leftType, TypeSymbol rightType)
-        {
-            BoundBinaryOperator boundOp;
-
-            switch (op.Kind)
-            {
-                case SyntaxTokenKind.Plus: boundOp = BoundBinaryOperator.Addition; break;
-                case SyntaxTokenKind.Minus: boundOp = BoundBinaryOperator.Subtraction; break;
-                case SyntaxTokenKind.Star: boundOp = BoundBinaryOperator.Multiplication; break;
-                case SyntaxTokenKind.Slash: boundOp = BoundBinaryOperator.Division; break;
-                case SyntaxTokenKind.StarStar: boundOp = BoundBinaryOperator.Power; break;
-                case SyntaxTokenKind.SlashSlah: boundOp = BoundBinaryOperator.Root; break;
-                case SyntaxTokenKind.EqualEqual: boundOp = BoundBinaryOperator.EqualEqual; break;
-                case SyntaxTokenKind.NotEqual: boundOp = BoundBinaryOperator.NotEqual; break;
-                case SyntaxTokenKind.LessThan: boundOp = BoundBinaryOperator.LessThan; break;
-                case SyntaxTokenKind.LessEqual: boundOp = BoundBinaryOperator.LessEqual; break;
-                case SyntaxTokenKind.GreaterThan: boundOp = BoundBinaryOperator.GreaterThan; break;
-                case SyntaxTokenKind.GreaterEqual: boundOp = BoundBinaryOperator.GreaterEqual; break;
-                case SyntaxTokenKind.AmpersandAmpersand: boundOp = BoundBinaryOperator.LogicalAnd; break;
-                case SyntaxTokenKind.PipePipe: boundOp = BoundBinaryOperator.LogicalOr; break;
-                default: return null;
-            }
-
-            return boundOp;
-        }
-
-        private BoundUnaryOperator? BindUnaryOperator(SyntaxToken op, TypeSymbol type)
-        {
-            BoundUnaryOperator boundOp;
-
-            switch (op.Kind)
-            {
-                case SyntaxTokenKind.Plus: boundOp = BoundUnaryOperator.Identety; break;
-                case SyntaxTokenKind.Minus: boundOp = BoundUnaryOperator.Negation; break;
-                case SyntaxTokenKind.Bang: boundOp = BoundUnaryOperator.LogicalNot; break;
-                default: return null;
-            }
-            return boundOp;
         }
     }
 }

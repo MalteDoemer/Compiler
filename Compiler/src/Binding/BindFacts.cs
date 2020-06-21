@@ -6,76 +6,6 @@ namespace Compiler.Binding
 {
     internal static class BindFacts
     {
-        private static readonly (TypeSymbol, BoundUnaryOperator)[] UnaryMatcher =
-        {
-            (TypeSymbol.Int, BoundUnaryOperator.Identety),
-            (TypeSymbol.Float, BoundUnaryOperator.Identety),
-            (TypeSymbol.Int, BoundUnaryOperator.Negation),
-            (TypeSymbol.Float, BoundUnaryOperator.Negation),
-            (TypeSymbol.Bool, BoundUnaryOperator.LogicalNot),
-        };
-
-        private static readonly (TypeSymbol, TypeSymbol, BoundBinaryOperator)[] BinaryMatcher =
-        {
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Addition),
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Subtraction),
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Multiplication),
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Division),
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Power),
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Root),
-
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Addition),
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Subtraction),
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Multiplication),
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Division),
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Power),
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Root),
-
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Addition),
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Subtraction),
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Multiplication),
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Division),
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Power),
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Root),
-
-            (TypeSymbol.String, TypeSymbol.String, BoundBinaryOperator.Addition),
-            (TypeSymbol.String, TypeSymbol.Int, BoundBinaryOperator.Addition),
-            (TypeSymbol.String, TypeSymbol.Float, BoundBinaryOperator.Addition),
-            (TypeSymbol.String, TypeSymbol.Bool, BoundBinaryOperator.Addition),
-
-            (TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.EqualEqual),
-            (TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.NotEqual),
-            (TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.LessThan),
-            (TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.LessEqual),
-            (TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.GreaterThan),
-            (TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.GreaterEqual),
-
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.EqualEqual),
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.NotEqual),
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.LessThan),
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.LessEqual),
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.GreaterThan),
-            (TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.GreaterEqual),
-
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.EqualEqual),
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.NotEqual),
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.LessThan),
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.LessEqual),
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.GreaterThan),
-            (TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.GreaterEqual),
-
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.EqualEqual),
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.NotEqual),
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.LessThan),
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.LessEqual),
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.GreaterThan),
-            (TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.GreaterEqual),
-
-            (TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.LogicalAnd),
-            (TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.LogicalOr),
-
-        };
-
         private static readonly Dictionary<(TypeSymbol, BoundUnaryOperator), TypeSymbol> UnaryResultTypes = new Dictionary<(TypeSymbol, BoundUnaryOperator), TypeSymbol>()
         {
             {(TypeSymbol.Int, BoundUnaryOperator.Identety), TypeSymbol.Int},
@@ -162,7 +92,40 @@ namespace Compiler.Binding
             return null;
         }
 
-        public static TypeSymbol GetTypeSymbol(this SyntaxTokenKind kind)
+        internal static BoundBinaryOperator? BindBinaryOperator(SyntaxToken op)
+        {
+            switch (op.Kind)
+            {
+                case SyntaxTokenKind.Plus: return BoundBinaryOperator.Addition;
+                case SyntaxTokenKind.Minus: return BoundBinaryOperator.Subtraction;
+                case SyntaxTokenKind.Star: return BoundBinaryOperator.Multiplication;
+                case SyntaxTokenKind.Slash: return BoundBinaryOperator.Division;
+                case SyntaxTokenKind.StarStar: return BoundBinaryOperator.Power;
+                case SyntaxTokenKind.SlashSlah: return BoundBinaryOperator.Root;
+                case SyntaxTokenKind.EqualEqual: return BoundBinaryOperator.EqualEqual;
+                case SyntaxTokenKind.NotEqual: return BoundBinaryOperator.NotEqual;
+                case SyntaxTokenKind.LessThan: return BoundBinaryOperator.LessThan;
+                case SyntaxTokenKind.LessEqual: return BoundBinaryOperator.LessEqual;
+                case SyntaxTokenKind.GreaterThan: return BoundBinaryOperator.GreaterThan;
+                case SyntaxTokenKind.GreaterEqual: return BoundBinaryOperator.GreaterEqual;
+                case SyntaxTokenKind.AmpersandAmpersand: return BoundBinaryOperator.LogicalAnd;
+                case SyntaxTokenKind.PipePipe: return BoundBinaryOperator.LogicalOr;
+                default: return null;
+            }
+        }
+
+        internal static BoundUnaryOperator? BindUnaryOperator(SyntaxToken op)
+        {
+            switch (op.Kind)
+            {
+                case SyntaxTokenKind.Plus: return BoundUnaryOperator.Identety;
+                case SyntaxTokenKind.Minus: return BoundUnaryOperator.Negation;
+                case SyntaxTokenKind.Bang: return BoundUnaryOperator.LogicalNot;
+                default: return null;
+            }
+        }
+
+        public static TypeSymbol GetTypeSymbol(SyntaxTokenKind kind)
         {
             switch (kind)
             {
