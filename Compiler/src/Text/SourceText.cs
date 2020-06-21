@@ -18,7 +18,7 @@ namespace Compiler.Text
         public int GetLineNumber(int pos)
         {
             var lower = 0;
-            var upper = Text.Length - 1;
+            var upper = Lines.Length - 1;
 
             while (lower <= upper)
             {

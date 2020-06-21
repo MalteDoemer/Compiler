@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 using Compiler.Diagnostics;
-using Compiler.Syntax;
 
-namespace Compiler.Tests.Syntax
+namespace Compiler.Syntax
 {
     public class ParserTest
     {
@@ -13,10 +12,10 @@ namespace Compiler.Tests.Syntax
         [MemberData(nameof(GetBinaryOperatorPairData))]
         public static void CheckPrecedence(SyntaxTokenKind op1, SyntaxTokenKind op2)
         {
-            var precedence1 = SyntaxFacts.GetBinaryPrecedence(op1);
-            var precedence2 = SyntaxFacts.GetBinaryPrecedence(op2);
-            var text1 = SyntaxFacts.GetOperatorText(op1);
-            var text2 = SyntaxFacts.GetOperatorText(op2);
+            var precedence1 = op1.GetBinaryPrecedence();
+            var precedence2 = op2.GetBinaryPrecedence();
+            var text1 = op1.GetText();
+            var text2 = op2.GetText();
 
             Assert.NotNull(text1);
             Assert.NotNull(text2);

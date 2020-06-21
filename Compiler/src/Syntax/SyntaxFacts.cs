@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Compiler.Syntax
 {
     public static class SyntaxFacts
     {
-        internal static readonly Dictionary<string, SyntaxTokenKind> SingleCharacters = new Dictionary<string, SyntaxTokenKind>()
+
+        internal const int MaxPrecedence = 5;
+
+        private static readonly Dictionary<string, SyntaxTokenKind> SingleCharacters = new Dictionary<string, SyntaxTokenKind>()
         {
             {"+", SyntaxTokenKind.Plus},
             {"-", SyntaxTokenKind.Minus},
@@ -19,7 +23,7 @@ namespace Compiler.Syntax
             {"=", SyntaxTokenKind.Equal},
         };
 
-        internal static readonly Dictionary<string, SyntaxTokenKind> DoubleCharacters = new Dictionary<string, SyntaxTokenKind>()
+        private static readonly Dictionary<string, SyntaxTokenKind> DoubleCharacters = new Dictionary<string, SyntaxTokenKind>()
         {
             {"**", SyntaxTokenKind.StarStar},
             {"//", SyntaxTokenKind.SlashSlah},
@@ -31,14 +35,14 @@ namespace Compiler.Syntax
             {"||", SyntaxTokenKind.PipePipe},
         };
 
-        internal static readonly Dictionary<string, SyntaxTokenKind> Keywords = new Dictionary<string, SyntaxTokenKind>()
+        private static readonly Dictionary<string, SyntaxTokenKind> Keywords = new Dictionary<string, SyntaxTokenKind>()
         {
             {"true", SyntaxTokenKind.True},
             {"false", SyntaxTokenKind.False},
             {"null", SyntaxTokenKind.Null},
         };
 
-        internal const int MaxPrecedence = 5;
+
 
         internal static dynamic GetKeywordValue(string keyword)
         {
@@ -48,18 +52,6 @@ namespace Compiler.Syntax
                 case "false": return false;
                 case "null": return null;
                 default: return keyword;
-            }
-        }
-
-        internal static bool IsUnaryOperator(this SyntaxTokenKind kind)
-        {
-            switch (kind)
-            {
-                case SyntaxTokenKind.Minus:
-                case SyntaxTokenKind.Plus:
-                case SyntaxTokenKind.Bang:
-                    return true;
-                default: return false;
             }
         }
 
@@ -77,7 +69,21 @@ namespace Compiler.Syntax
                 default: return false;
             }
         }
-        
+
+        internal static SyntaxTokenKind? IsSingleCharacter(char c)
+        {
+            foreach (var pair in SingleCharacters)
+                if (pair.Key[0] == c) return pair.Value;
+            return null;
+        }
+
+        internal static SyntaxTokenKind? IsDoubleCharacter(char c1, char c2)
+        {
+            foreach (var pair in DoubleCharacters)
+                if (c1 == pair.Key[0] && c2 == pair.Key[1]) return pair.Value;
+            return null;
+        }
+
         internal static SyntaxTokenKind? IsKeyWord(string text)
         {
             foreach (var pair in Keywords)
@@ -85,6 +91,8 @@ namespace Compiler.Syntax
             return null;
         }
 
+        
+        
         public static int GetBinaryPrecedence(this SyntaxTokenKind kind)
         {
             switch (kind)
@@ -133,27 +141,29 @@ namespace Compiler.Syntax
                 if (GetBinaryPrecedence(t) > 0) yield return t;
         }
 
-        public static string GetOperatorText(SyntaxTokenKind kind)
+        public static bool IsUnaryOperator(this SyntaxTokenKind kind)
         {
             switch (kind)
             {
-                case SyntaxTokenKind.Plus: return "+";
-                case SyntaxTokenKind.Minus: return "-";
-                case SyntaxTokenKind.Star: return "*";
-                case SyntaxTokenKind.Slash: return "/";
-                case SyntaxTokenKind.StarStar: return "**";
-                case SyntaxTokenKind.SlashSlah: return "//";
-                case SyntaxTokenKind.LessThan: return "<";
-                case SyntaxTokenKind.GreaterThan: return ">";
-                case SyntaxTokenKind.LessEqual: return "<=";
-                case SyntaxTokenKind.GreaterEqual: return ">=";
-                case SyntaxTokenKind.EqualEqual: return "==";
-                case SyntaxTokenKind.NotEqual: return "!=";
-                case SyntaxTokenKind.Bang: return "!";
-                case SyntaxTokenKind.PipePipe: return "||";
-                case SyntaxTokenKind.AmpersandAmpersand: return "&&";
-                default: return null;
+                case SyntaxTokenKind.Minus:
+                case SyntaxTokenKind.Plus:
+                case SyntaxTokenKind.Bang:
+                    return true;
+                default: return false;
             }
+        }
+
+        public static bool IsBinaryOperator(this SyntaxTokenKind kind) => kind.GetBinaryPrecedence() > 0;
+
+        public static string GetText(this SyntaxTokenKind kind)
+        {
+            foreach (var pair in SingleCharacters)
+                if (kind == pair.Value) return pair.Key;
+            foreach (var pair in DoubleCharacters)
+                if (kind == pair.Value) return pair.Key;
+            foreach (var pair in Keywords)
+                if (kind == pair.Value) return pair.Key;
+            return null;
         }
     }
 }

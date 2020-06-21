@@ -47,6 +47,8 @@ namespace Compiler.Binding
                 return BindVariableExpression(ve);
             else if (syntax is AssignmentExpressionSyntax ee)
                 return BindAssignmentExpression(ee);
+            else if (syntax is InvalidExpressionSyntax ie)
+                return new BoundInvalidExpression();
             else throw new Exception($"Unknown Syntax kind <{syntax}>");
         }
 

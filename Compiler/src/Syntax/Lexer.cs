@@ -17,6 +17,15 @@ namespace Compiler.Syntax
                 else return '\0';
             }
         }
+        private char ahead
+        {
+            get
+            {
+                if (pos + 1 < text.Length) return text[pos + 1];
+                else return '\0';
+            }
+        }
+
 
         public Lexer(SourceText text, DiagnosticBag diagnostics)
         {
@@ -110,16 +119,16 @@ namespace Compiler.Syntax
 
         private SyntaxToken LexSingleChar()
         {
-            foreach (var pair in SyntaxFacts.SingleCharacters)
-                if (current == pair.Key[0]) return new SyntaxToken(pair.Value, pos++, 1, pair.Key);
+            var kind = SyntaxFacts.IsSingleCharacter(current);
+            if (kind != null) return new SyntaxToken((SyntaxTokenKind)kind, pos, 1, Advance());
             return null;
         }
 
         private SyntaxToken LexDoubleChar()
         {
-            foreach (var pair in SyntaxFacts.DoubleCharacters)
-                if (pos + 1 < text.Length && text[pos] == pair.Key[0] && text[pos + 1] == pair.Key[1])
-                    return new SyntaxToken(pair.Value, (pos += 2) - 2, 2, pair.Key);
+            var kind = SyntaxFacts.IsDoubleCharacter(current, ahead);
+            string value = "" + current + ahead;
+            if (kind != null) return new SyntaxToken((SyntaxTokenKind)kind, (pos+=2) -2, 2, value);
             return null;
         }
 
@@ -131,7 +140,7 @@ namespace Compiler.Syntax
             var singleChar = LexSingleChar();
             if (singleChar != null) return singleChar;
 
-            if (current == '\0') return new SyntaxToken(SyntaxTokenKind.End, pos, 1, "End");
+            if (current == '\0') return new SyntaxToken(SyntaxTokenKind.End, pos, 0, "End");
             else if (current == '"') return LexString();
             else if (char.IsNumber(current)) return LexNumber();
             else if (char.IsWhiteSpace(current)) return LexSpace();

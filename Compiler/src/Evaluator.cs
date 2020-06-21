@@ -12,13 +12,14 @@ namespace Compiler
 {
     public class Evaluator
     {
-        private DiagnosticBag Diagnostics { get; }
+        private SourceText Text;
         private BoundNode Root { get; }
-
+        private DiagnosticBag Diagnostics { get; }
         private Dictionary<string, (TypeSymbol type, dynamic value)> Environment { get; }
 
-        internal Evaluator(BoundNode root, DiagnosticBag diagnostics, Dictionary<string, (TypeSymbol type, dynamic value)> environement)
+        internal Evaluator(SourceText src, BoundNode root, DiagnosticBag diagnostics, Dictionary<string, (TypeSymbol type, dynamic value)> environement)
         {
+            Text = src;
             Root = root;
             Diagnostics = diagnostics;
             Environment = environement;
@@ -104,7 +105,7 @@ namespace Compiler
             //Console.WriteLine(syntaxExpr);
 
             var boundExpr = binder.BindExpression(syntaxExpr);
-            var evaluator = new Evaluator(boundExpr, bag, env);
+            var evaluator = new Evaluator(src, boundExpr, bag, env);
             var res = evaluator.EvaluateExpression();
 
             if (bag.Errors > 0)
@@ -121,8 +122,8 @@ namespace Compiler
 
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write(err.Kind);
-                        Console.Write(" at position ");
-                        Console.Write(err.Span.Start);
+                        Console.Write(" at line ");
+                        Console.Write(src.GetLineNumber(err.Span.Start) + 1);
                         Console.Write(":");
                         Console.WriteLine('\n');
 
