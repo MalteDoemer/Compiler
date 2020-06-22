@@ -7,11 +7,11 @@ namespace Compiler.Syntax
         public SyntaxTokenKind Kind { get; }
         public int Pos { get; }
         public int Lenght { get; }
-        public dynamic Value { get; }
+        public object Value { get; }
 
         public TextSpan Span { get => new TextSpan(Pos, Lenght); }
 
-        public SyntaxToken(SyntaxTokenKind kind, int pos, int len, dynamic value)
+        public SyntaxToken(SyntaxTokenKind kind, int pos, int len, object value)
         {
             Kind = kind;
             Pos = pos;

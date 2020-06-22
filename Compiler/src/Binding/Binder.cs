@@ -100,7 +100,7 @@ namespace Compiler.Binding
                 Diagnostics.ReportWrongType(type, expr.ResultType, expr.Span);
                 return new BoundInvalidStatement();
             }
-            var variable = new VariableSymbol(vs.Identifier.Value, type, null);
+            var variable = new VariableSymbol((string)vs.Identifier.Value, type, null);
             if (!scope.TryDeclare(variable))
             {
                 Diagnostics.ReportVariableAlreadyDeclared(variable.Identifier, vs.Identifier.Span);
@@ -148,9 +148,9 @@ namespace Compiler.Binding
         private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax ee)
         {
             var expr = BindExpression(ee.Expression);
-            if (!scope.TryLookUp(ee.Identifier.Value, out VariableSymbol variable))
+            if (!scope.TryLookUp((string)ee.Identifier.Value, out VariableSymbol variable))
             {
-                Diagnostics.ReportVariableNotDeclared(ee.Identifier.Value, ee.Identifier.Span);
+                Diagnostics.ReportVariableNotDeclared((string)ee.Identifier.Value, ee.Identifier.Span);
                 return new BoundInvalidExpression();
             }
             else if (variable.Type != expr.ResultType)
@@ -164,10 +164,10 @@ namespace Compiler.Binding
 
         private BoundExpression BindVariableExpression(VariableExpressionSyntax ve)
         {
-            string identifier = ve.Name.Value;
+            var identifier = (string)ve.Name.Value;
             if (!scope.TryLookUp(identifier, out VariableSymbol variable))
             {
-                Diagnostics.ReportVariableNotDeclared(ve.Name.Value, ve.Name.Span);
+                Diagnostics.ReportVariableNotDeclared((string)ve.Name.Value, ve.Name.Span);
                 return new BoundInvalidExpression();
             }
             return new BoundVariableExpression(variable, ve.Span);

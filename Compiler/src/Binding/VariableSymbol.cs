@@ -2,7 +2,7 @@ namespace Compiler.Binding
 {
     public class VariableSymbol
     {
-        public VariableSymbol(string identifier, TypeSymbol type, dynamic value)
+        public VariableSymbol(string identifier, TypeSymbol type, object value)
         {
             Identifier = identifier;
             Type = type;
@@ -11,6 +11,6 @@ namespace Compiler.Binding
 
         public string Identifier { get; }
         public TypeSymbol Type { get; }
-        public dynamic Value { get; }
+        public object Value { get; }
     }
 }

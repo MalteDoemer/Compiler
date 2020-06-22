@@ -53,7 +53,7 @@ namespace Compiler.Syntax
 
 
 
-        internal static dynamic GetKeywordValue(string keyword)
+        internal static object GetKeywordValue(string keyword)
         {
             switch (keyword)
             {
