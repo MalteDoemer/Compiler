@@ -4,6 +4,11 @@ namespace Compiler.Binding
 {
     internal class BoundInvalidStatement : BoundStatement
     {
-        public override TextSpan Span => TextSpan.Invalid;
+        public BoundInvalidStatement(TextSpan span)
+        {
+            Span = span;
+        }
+
+        public override TextSpan Span { get; }
     }
 }

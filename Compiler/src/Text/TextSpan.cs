@@ -5,7 +5,7 @@ namespace Compiler.Text
     public struct TextSpan
     {
         public static TextSpan Invalid { get => invalid; }
-        private readonly static TextSpan invalid = new TextSpan(-1, -1);
+        private readonly static TextSpan invalid = new TextSpan(-10, -10);
 
 
         public TextSpan(int start, int lenght)

@@ -23,7 +23,6 @@ namespace Compiler.Syntax
             {"{", SyntaxTokenKind.LCurly},
             {"}", SyntaxTokenKind.RCurly},
             {"=", SyntaxTokenKind.Equal},
-            {";", SyntaxTokenKind.SemiColon},
         };
 
         private static readonly Dictionary<string, SyntaxTokenKind> DoubleCharacters = new Dictionary<string, SyntaxTokenKind>()

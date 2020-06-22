@@ -41,6 +41,5 @@ namespace Compiler.Syntax
         Var,
         IfKeyword,
         ElseKeyword,
-        SemiColon
     }
 }

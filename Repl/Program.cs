@@ -22,13 +22,11 @@ namespace Compiler
                 {
                     ColorWrite("≫ ", ConsoleColor.Green);
                     var inp = Console.ReadLine();
-                    if (inp == "exit") break;
+                    if (string.IsNullOrWhiteSpace(inp)) continue;
+                    else if (inp == "exit") break;
                     else if (inp == "cls") Console.Clear();
                     else if (inp == "reset") compilation = null;
-                    else
-                    {
-                        Evaluate(inp);
-                    }
+                    else Evaluate(inp);
                 }
             }
             catch (Exception e)
@@ -42,9 +40,7 @@ namespace Compiler
         private static void Evaluate(string inp)
         {
             var src = new SourceText(inp);
-            //var tree = SyntaxTree.ParseSyntaxTree(src);
-            //compilation = compilation == null ? new Compilation(tree) : compilation.ContinueWith(tree);
-            compilation = Compilation.Compile(src);
+            compilation = compilation == null ? Compilation.Compile(src) : compilation.ContinueWith(src);
             var res = compilation.Evaluate();
 
             if (compilation.Diagnostics.Length > 0)
@@ -79,7 +75,7 @@ namespace Compiler
 
         private static void ReportError(SourceText src, Diagnostic err)
         {
-            compilation = null;
+            //compilation = null;
             if (err.HasPositon)
             {
                 var prefix = src.ToString(0, err.Span.Start);
@@ -96,14 +92,14 @@ namespace Compiler
                 ColorWrite(errorText, ConsoleColor.Red);
                 ColorWrite(posfix, ConsoleColor.Gray);
 
-                NewLine();
-                for (int i = 0; i < prefix.Length; i++)
-                    Console.Write(' ');
-                for (int i = 0; i < errorText.Length; i++)
-                    ColorWrite('~', ConsoleColor.Red);
-                NewLine();
-                NewLine();
+                // NewLine();
+                // for (int i = 0; i < prefix.Length; i++)
+                //     Console.Write(' ');
+                // for (int i = 0; i < errorText.Length; i++)
+                //     ColorWrite('~', ConsoleColor.Red);
 
+                NewLine();
+                NewLine();
                 ColorWrite(err.Message, ConsoleColor.Gray);
                 NewLine();
                 NewLine();

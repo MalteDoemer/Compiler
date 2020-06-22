@@ -12,6 +12,6 @@ namespace Compiler.Syntax
     
         public SyntaxToken InvalidToken { get; }
 
-        public override TextSpan Span => TextSpan.Invalid;
+        public override TextSpan Span => InvalidToken.Span;
     }
 }

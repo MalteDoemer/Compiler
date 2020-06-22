@@ -11,16 +11,17 @@ namespace Compiler
 
     public sealed class Compilation
     {
-        private readonly BoundCompilationUnit root;
-
-        private Compilation(SourceText text)
+        private Compilation(Compilation previous, SourceText text, Dictionary<string, VariableSymbol> env)
         {
+            Previous = previous;
+            Text = text;
+            Env = env;
             var lexer = new Lexer(text);
             var tokens = lexer.Tokenize().ToImmutableArray();
             var parser = new Parser(text, tokens);
             var unit = parser.ParseCompilationUnit();
-            var binder = new Binder();
-            root = binder.BindCompilationUnit(unit);
+            var binder = new Binder(previous);
+            Root = binder.BindCompilationUnit(unit);
 
             var builder = ImmutableArray.CreateBuilder<Diagnostic>();
             builder.AddRange(lexer.GetDiagnostics());
@@ -30,53 +31,27 @@ namespace Compiler
             Diagnostics = builder.ToImmutable();
         }
 
+        internal BoundCompilationUnit Root { get; }
+        public Compilation Previous { get; }
+        public SourceText Text { get; }
+        public Dictionary<string, VariableSymbol> Env { get; }
         public ImmutableArray<Diagnostic> Diagnostics { get; }
 
         public dynamic Evaluate()
         {
-            var env = new Dictionary<string, VariableSymbol>();
-            var evaluator = new Evaluator(root.Statement, env);
+            if (Diagnostics.Length > 0) return null;
+            var evaluator = new Evaluator(Root.Statement, Env);
             evaluator.Evaluate();
             return evaluator.lastValue;
         }
 
+        public Compilation ContinueWith(SourceText text) => new Compilation(this, text, Env);
+        public Compilation ContinueWith(string text) => ContinueWith(new SourceText(text));
         public static Compilation Compile(string text) => Compile(new SourceText(text));
-
         public static Compilation Compile(SourceText text)
         {
-            return new Compilation(text);
+            return new Compilation(null, text, new Dictionary<string, VariableSymbol>());
         }
 
     }
-
-    // public sealed class Compilation
-    // {
-    //     private BoundGlobalScope globalScope;
-    //     public Compilation Previous { get; }
-
-    //     private Compilation(Compilation previous, SourceText text)
-    //     {
-    //         Previous = previous;
-    //     }
-
-
-    //     // internal BoundGlobalScope GlobalScope
-    //     // {
-    //     //     get
-    //     //     {
-    //     //         if (globalScope == null)
-    //     //         {
-    //     //             var scope = Binder.BindGlobalScope(Previous?.GlobalScope, Tree.Root);
-    //     //             Interlocked.CompareExchange(ref globalScope, scope, null); // Dammm son
-    //     //         }
-    //     //         return globalScope;
-    //     //     }
-    //     // }
-
-
-    //     public static Compilation Compile(SourceText text)
-    //     {
-
-    //     }
-    // }
 }

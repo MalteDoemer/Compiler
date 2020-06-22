@@ -31,10 +31,7 @@ namespace Compiler.Syntax
             pos = 0;
         }
 
-        internal IEnumerable<Diagnostic> GetDiagnostics()
-        {
-            return diagnostics;
-        }
+        public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
         private SyntaxToken MatchToken(SyntaxTokenKind kind)
         {
@@ -95,7 +92,6 @@ namespace Compiler.Syntax
         private StatementSyntax ParseExpressionStatement()
         {
             var expression = ParseExpression();
-            MatchToken(SyntaxTokenKind.SemiColon);
             return new ExpressionStatement(expression);
         }
 
@@ -124,8 +120,9 @@ namespace Compiler.Syntax
             var typeToken = Advance();
             var identifier = MatchToken(SyntaxTokenKind.Identifier);
             var equalToken = MatchToken(SyntaxTokenKind.Equal);
-            var expr = ParseExpression();
-            return new VariableDeclerationStatement(typeToken, identifier, equalToken, expr);
+            var expr = (ExpressionStatement)ParseExpressionStatement();
+
+            return new VariableDeclerationStatement(typeToken, identifier, equalToken, expr.Expression);
         }
 
         private ExpressionSyntax ParseExpression(int lvl = SyntaxFacts.MaxPrecedence)

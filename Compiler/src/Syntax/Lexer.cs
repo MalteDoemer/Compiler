@@ -36,10 +36,7 @@ namespace Compiler.Syntax
             pos = 0;
         }
 
-        internal IEnumerable<Diagnostic> GetDiagnostics()
-        {
-            return diagnostics;
-        }
+        public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
         private char Advance()
         {
