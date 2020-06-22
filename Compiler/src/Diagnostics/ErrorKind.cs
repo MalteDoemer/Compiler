@@ -4,6 +4,6 @@ namespace Compiler.Diagnostics
     {
         SyntaxError,
         TypeError,
-        IdentifierNotDeclared,
+        IdentifierError,
     }
 }

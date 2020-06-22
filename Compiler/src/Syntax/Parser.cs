@@ -10,7 +10,8 @@ namespace Compiler.Syntax
     internal class Parser
     {
         private readonly DiagnosticBag diagnostics;
-        private readonly SyntaxToken[] tokens;
+        private readonly SourceText source;
+        private readonly ImmutableArray<SyntaxToken> tokens;
         private int pos;
         private SyntaxToken current
         {
@@ -20,16 +21,19 @@ namespace Compiler.Syntax
                 else return tokens[tokens.Length - 1];
             }
         }
-        private SourceText Text { get; }
-        public bool IsFinished { get => current.Kind == SyntaxTokenKind.End; }
+        private bool IsFinished { get => current.Kind == SyntaxTokenKind.End; }
 
-        public Parser(SourceText text, DiagnosticBag diagnostics)
+        public Parser(SourceText source, ImmutableArray<SyntaxToken> tokens)
         {
-            Text = text;
-            this.diagnostics = diagnostics;
-            var lexer = new Lexer(text, diagnostics);
-            tokens = lexer.Tokenize().ToArray();
+            this.source = source;
+            this.tokens = tokens;
+            diagnostics = new DiagnosticBag();
             pos = 0;
+        }
+
+        internal IEnumerable<Diagnostic> GetDiagnostics()
+        {
+            return diagnostics;
         }
 
         private SyntaxToken MatchToken(SyntaxTokenKind kind)
@@ -37,7 +41,7 @@ namespace Compiler.Syntax
             if (kind == current.Kind) return Advance();
             else
             {
-                diagnostics.ReportUnexpectedToken(current.Kind, kind, current.Span);
+                diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
                 var res = new SyntaxToken(kind, current.Pos, current.Lenght, current.Value);
                 pos++;
                 return res;
@@ -51,12 +55,11 @@ namespace Compiler.Syntax
             return res;
         }
 
-
         public CompilationUnitSyntax ParseCompilationUnit()
         {
             var stmt = ParseStatement();
-            var unit = new CompilationUnitSyntax(new TextSpan(0, Text.Length), stmt);
-            if (!IsFinished) diagnostics.ReportUnexpectedToken(current.Kind, SyntaxTokenKind.End, current.Span);
+            var unit = new CompilationUnitSyntax(new TextSpan(0, source.Length), stmt);
+            if (!IsFinished) diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, SyntaxTokenKind.End);
             return unit;
         }
 
@@ -92,6 +95,7 @@ namespace Compiler.Syntax
         private StatementSyntax ParseExpressionStatement()
         {
             var expression = ParseExpression();
+            MatchToken(SyntaxTokenKind.SemiColon);
             return new ExpressionStatement(expression);
         }
 
@@ -105,8 +109,9 @@ namespace Compiler.Syntax
             {
                 if (current.Kind == SyntaxTokenKind.End)
                 {
-                    diagnostics.ReportNeverClosedCurlyBrackets(new TextSpan(current.Span.Start, current.Pos));
-                    return new InvalidStatementSyntax(TextSpan.FromBounds(lcurly.Span.Start, current.Pos));
+                    var span = TextSpan.FromBounds(lcurly.Span.Start, current.Pos);
+                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedCurlyBrackets, span);
+                    return new InvalidStatementSyntax(span);
                 }
                 builder.Add(ParseStatement());
             }
@@ -152,16 +157,19 @@ namespace Compiler.Syntax
                 return ParseParenthesizedExpression();
             else
             {
-                diagnostics.ReportUnexpectedToken(current.Kind, current.Span);
+                diagnostics.ReportSyntaxError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
                 return new InvalidExpressionSyntax(Advance());
             }
         }
 
         private ExpressionSyntax ParseParenthesizedExpression()
         {
+            var start = pos;
             pos++;
             var expr = ParseExpression();
-            MatchToken(SyntaxTokenKind.RParen);
+            if (current.Kind != SyntaxTokenKind.RParen)
+                diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, pos));
+            else pos++;
             return expr;
         }
 

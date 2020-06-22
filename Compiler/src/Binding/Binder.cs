@@ -13,23 +13,30 @@ namespace Compiler.Binding
 
     internal sealed class Binder
     {
-        public DiagnosticBag Diagnostics { get; }
+        private readonly DiagnosticBag diagnostics;
         private BoundScope scope;
 
-        private Binder(DiagnosticBag diagnostics, BoundScope parentScope)
+        public Binder()
         {
-            Diagnostics = diagnostics;
-            scope = new BoundScope(parentScope);
+            diagnostics = new DiagnosticBag();
+            scope = new BoundScope(null);
         }
 
-        private static BoundScope CreateBoundScopes(BoundGlobalScope previous)
+        internal IEnumerable<Diagnostic> GetDiagnostics()
         {
-            var stack = new Stack<BoundGlobalScope>();
+            return diagnostics;
+        }
+
+        public static BoundScope CreateBoundScopes(BoundCompilationUnit previous)
+        {
+            return null;
+
+            var stack = new Stack<BoundCompilationUnit>();
 
             while (previous != null)
             {
                 stack.Push(previous);
-                previous = previous.Previous;
+                //previous = previous.Previous;
             }
 
             BoundScope current = null;
@@ -38,7 +45,7 @@ namespace Compiler.Binding
             {
                 var global = stack.Pop();
                 var scope = new BoundScope(current);
-                foreach (var variable in global.Variables)
+                foreach (var variable in global.DeclaredVariables)
                     scope.TryDeclare(variable);
 
                 current = scope;
@@ -47,13 +54,11 @@ namespace Compiler.Binding
             return current;
         }
 
-        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax unit, DiagnosticBag bag)
+        public BoundCompilationUnit BindCompilationUnit(CompilationUnitSyntax unit)
         {
-            var parentScope = CreateBoundScopes(previous);
-            var binder = new Binder(bag, parentScope);
-            var stmt = binder.BindStatement(unit.Statement);
-            var variables = binder.scope.GetDeclaredVariables();
-            return new BoundGlobalScope(previous, bag, variables, stmt);
+            var stmt = BindStatement(unit.Statement);
+            var variables = scope.GetDeclaredVariables();
+            return new BoundCompilationUnit(stmt, variables, unit.Span);
         }
 
         private BoundStatement BindStatement(StatementSyntax statement)
@@ -77,7 +82,7 @@ namespace Compiler.Binding
 
             if (condition.ResultType != TypeSymbol.Bool)
             {
-                Diagnostics.ReportWrongType(TypeSymbol.Bool, condition.ResultType, condition.Span);
+                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, condition.Span, TypeSymbol.Bool, condition.ResultType);
                 return new BoundInvalidStatement();
             }
 
@@ -97,13 +102,13 @@ namespace Compiler.Binding
 
             if (expr.ResultType != type)
             {
-                Diagnostics.ReportWrongType(type, expr.ResultType, expr.Span);
+                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, expr.Span, type, expr.ResultType);
                 return new BoundInvalidStatement();
             }
             var variable = new VariableSymbol((string)vs.Identifier.Value, type, null);
             if (!scope.TryDeclare(variable))
             {
-                Diagnostics.ReportVariableAlreadyDeclared(variable.Identifier, vs.Identifier.Span);
+                diagnostics.ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, vs.Identifier.Span, variable.Identifier);
                 return new BoundInvalidStatement();
             }
             return new BoundVariableDeclerationStatement(variable, expr, vs.TypeToken.Span, vs.Identifier.Span, vs.EqualToken.Span, expr.Span);
@@ -150,12 +155,12 @@ namespace Compiler.Binding
             var expr = BindExpression(ee.Expression);
             if (!scope.TryLookUp((string)ee.Identifier.Value, out VariableSymbol variable))
             {
-                Diagnostics.ReportVariableNotDeclared((string)ee.Identifier.Value, ee.Identifier.Span);
+                diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, ee.Identifier.Span, (string)ee.Identifier.Value);
                 return new BoundInvalidExpression();
             }
             else if (variable.Type != expr.ResultType)
             {
-                Diagnostics.ReportWrongType(variable.Type, expr.ResultType, ee.EqualToken.Span);
+                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, ee.EqualToken.Span, variable.Type, expr.ResultType);
                 return new BoundInvalidExpression();
             }
             else return new BoundAssignementExpression(variable, expr, ee.Span, ee.EqualToken.Span);
@@ -167,7 +172,7 @@ namespace Compiler.Binding
             var identifier = (string)ve.Name.Value;
             if (!scope.TryLookUp(identifier, out VariableSymbol variable))
             {
-                Diagnostics.ReportVariableNotDeclared((string)ve.Name.Value, ve.Name.Span);
+                diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, ve.Name.Span, ve.Name.Value);
                 return new BoundInvalidExpression();
             }
             return new BoundVariableExpression(variable, ve.Span);
@@ -183,7 +188,7 @@ namespace Compiler.Binding
 
             if (boundOperator == null || resultType == null)
             {
-                Diagnostics.ReportUnsupportedBinaryOperator(be.Op.Value, left.ResultType, right.ResultType, be.Op.Span);
+                diagnostics.ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, be.Op.Span, be.Op.Value.ToString(), left.ResultType, right.ResultType);
                 return new BoundInvalidExpression();
             }
 
@@ -200,7 +205,7 @@ namespace Compiler.Binding
 
             if (boundOperator == null || resultType == null)
             {
-                Diagnostics.ReportUnsupportedUnaryOperator(ue.Op.Value, right.ResultType, ue.Op.Span);
+                diagnostics.ReportTypeError(ErrorMessage.UnsupportedUnaryOperator, ue.Op.Span, ue.Op.Value.ToString(), right.ResultType);
                 return new BoundInvalidExpression();
             }
 

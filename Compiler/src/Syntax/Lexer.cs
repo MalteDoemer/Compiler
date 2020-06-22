@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Compiler.Diagnostics;
 using Compiler.Text;
 
@@ -27,11 +28,17 @@ namespace Compiler.Syntax
         }
 
 
-        public Lexer(SourceText text, DiagnosticBag diagnostics)
+        public Lexer(SourceText text)
         {
+
             this.text = text;
-            this.diagnostics = diagnostics;
+            diagnostics = new DiagnosticBag();
             pos = 0;
+        }
+
+        internal IEnumerable<Diagnostic> GetDiagnostics()
+        {
+            return diagnostics;
         }
 
         private char Advance()
@@ -71,7 +78,7 @@ namespace Compiler.Syntax
                 double fnum = num;
                 long weight = 1;
 
-                if (!char.IsDigit(current)) diagnostics.ReportInvalidDecimalPoint(pos);
+                if (!char.IsDigit(current)) diagnostics.ReportSyntaxError(ErrorMessage.InvalidDecimalPoint, new TextSpan(pos, 1));
 
                 while (char.IsDigit(current))
                 {
@@ -106,7 +113,7 @@ namespace Compiler.Syntax
             {
                 if (current == '\0')
                 {
-                    diagnostics.ReportNeverClosedString(start, pos);
+                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(start, pos));
                     var t1 = text.ToString(start, pos - start);
                     return new SyntaxToken(SyntaxTokenKind.String, start, t1.Length, t1);
                 }

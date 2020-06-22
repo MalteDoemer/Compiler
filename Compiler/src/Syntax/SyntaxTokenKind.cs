@@ -4,7 +4,7 @@ namespace Compiler.Syntax
     {
         End,
         Invalid,
-        Error,
+        //Error,
         Int,
         Float,
         String,
@@ -40,6 +40,7 @@ namespace Compiler.Syntax
         RCurly,
         Var,
         IfKeyword,
-        ElseKeyword
+        ElseKeyword,
+        SemiColon
     }
 }

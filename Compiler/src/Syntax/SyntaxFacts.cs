@@ -23,6 +23,7 @@ namespace Compiler.Syntax
             {"{", SyntaxTokenKind.LCurly},
             {"}", SyntaxTokenKind.RCurly},
             {"=", SyntaxTokenKind.Equal},
+            {";", SyntaxTokenKind.SemiColon},
         };
 
         private static readonly Dictionary<string, SyntaxTokenKind> DoubleCharacters = new Dictionary<string, SyntaxTokenKind>()
@@ -100,6 +101,13 @@ namespace Compiler.Syntax
             return null;
         }
 
+        internal static string IsKeyWord(SyntaxTokenKind kind)
+        {
+            foreach (var pair in Keywords)
+                if (pair.Value == kind) return pair.Key;
+            return null;
+        }
+
         internal static bool IsTypeKeyword(this SyntaxTokenKind kind)
         {
             switch (kind)
@@ -113,7 +121,6 @@ namespace Compiler.Syntax
                 default: return false;
             }
         }
-
 
         public static int GetBinaryPrecedence(this SyntaxTokenKind kind)
         {

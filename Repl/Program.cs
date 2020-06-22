@@ -42,13 +42,14 @@ namespace Compiler
         private static void Evaluate(string inp)
         {
             var src = new SourceText(inp);
-            var tree = SyntaxTree.ParseSyntaxTree(src);
-            compilation = compilation == null ? new Compilation(tree) : compilation.ContinueWith(tree);
-            var res = compilation.Evaluate(variables);
+            //var tree = SyntaxTree.ParseSyntaxTree(src);
+            //compilation = compilation == null ? new Compilation(tree) : compilation.ContinueWith(tree);
+            compilation = Compilation.Compile(src);
+            var res = compilation.Evaluate();
 
-            if (tree.Diagnostics.Errors > 0)
+            if (compilation.Diagnostics.Length > 0)
             {
-                foreach (var err in tree.Diagnostics.GetErrors())
+                foreach (var err in compilation.Diagnostics)
                 {
                     if (err.Message.EndsWith("<End>.") || err.Message == "Never closed curly brackets.")
                     {
@@ -61,7 +62,7 @@ namespace Compiler
                             continue;
                         }
 
-                        Evaluate(inp + next);
+                        Evaluate(inp + Environment.NewLine + next);
                         break;
                     }
                     else ReportError(src, err);
@@ -78,6 +79,7 @@ namespace Compiler
 
         private static void ReportError(SourceText src, Diagnostic err)
         {
+            compilation = null;
             if (err.HasPositon)
             {
                 var prefix = src.ToString(0, err.Span.Start);
