@@ -60,38 +60,6 @@ namespace Compiler
             return new AnnotatedText(textBuilder.ToString(), spanBuilder.ToImmutable());
         }
 
-        // public static string[] UnindentLines(string text)
-        // {
-        //     var lines = new List<string>();
-
-        //     using (var reader = new StringReader(text))
-        //     {
-        //         string line;
-        //         while ((line = reader.ReadLine()) != null)
-        //             lines.Add(line);
-        //     }
-        //     var minIndent = int.MaxValue;
-        //     foreach (var line in lines)
-        //     {
-        //         var indent = line.Length - line.TrimStart().Length;
-        //         minIndent = Math.Min(minIndent, indent);
-        //     }
-
-        //     for (int i = 0; i < lines.Count; i++)
-        //     {
-        //         if (lines[i].Trim().Length == 0) lines[i] = string.Empty;
-        //         lines[i] = lines[i].Substring(minIndent);
-        //     }
-
-        //     while (lines.Count > 0 && lines[0].Length == 0)
-        //         lines.RemoveAt(0);
-
-        //     while (lines.Count > 0 && lines[lines.Count - 1].Length == 0)
-        //         lines.RemoveAt(lines.Count - 1);
-
-        //     return lines.ToArray();
-        // }
-
         public static string[] UnindentLines(string text)
         {
             var lines = new List<string>();
@@ -141,7 +109,7 @@ namespace Compiler
         }
     }
 
-    public class AnnotatedTest
+    public class ErrorReportTest
     {
         [Fact]
         public static void Report_Varible_Redecleration()
@@ -230,39 +198,6 @@ namespace Compiler
             var text = @"1241234[.] ";
             AssertDiagnosics(text, SpecificErroKind.InvalidDecimalPoint);
         }
-
-
-        [Theory]
-        [InlineData("false [+] 123","+", TypeSymbol.Bool, TypeSymbol.Int)]
-        [InlineData("12.6 [+] true","+", TypeSymbol.Float, TypeSymbol.Bool)]
-        [InlineData("\"hello\" [+] null","+", TypeSymbol.String, TypeSymbol.NullType)]
-        [InlineData("123 [+] null","+", TypeSymbol.Int, TypeSymbol.NullType)]
-        [InlineData("1234.123123 [+] null","+", TypeSymbol.Float, TypeSymbol.NullType)]
-
-        [InlineData("false [-] 123","-", TypeSymbol.Bool, TypeSymbol.Int)]
-        [InlineData("12.6 [-] true","-", TypeSymbol.Float, TypeSymbol.Bool)]
-        [InlineData("\"hello\" [-] null","-", TypeSymbol.String, TypeSymbol.NullType)]
-        [InlineData("123 [-] null","-", TypeSymbol.Int, TypeSymbol.NullType)]
-        [InlineData("1234.123123 [-] null","-", TypeSymbol.Float, TypeSymbol.NullType)]
-        
-        [InlineData("false [*] 123","*", TypeSymbol.Bool, TypeSymbol.Int)]
-        [InlineData("12.6 [*] true","*", TypeSymbol.Float, TypeSymbol.Bool)]
-        [InlineData("\"hello\" [*] 3.6","*", TypeSymbol.String, TypeSymbol.Float)]
-        [InlineData("\"hello\" [*] true", "*",TypeSymbol.String, TypeSymbol.Bool)]
-        [InlineData("123 [*] null","*", TypeSymbol.Int, TypeSymbol.NullType)]
-        [InlineData("1234.123123 [*] null","*", TypeSymbol.Float, TypeSymbol.NullType)]
-        
-        [InlineData("false [/] 123","/", TypeSymbol.Bool, TypeSymbol.Int)]
-        [InlineData("12.6 [/] true","/", TypeSymbol.Float, TypeSymbol.Bool)]
-        [InlineData("\"hello\" [/] 3.6","/", TypeSymbol.String, TypeSymbol.Float)]
-        [InlineData("\"hello\" [/] true","/", TypeSymbol.String, TypeSymbol.Bool)]
-        [InlineData("123 [/] null","/", TypeSymbol.Int, TypeSymbol.NullType)]
-        [InlineData("1234.123123 [/] null","/", TypeSymbol.Float, TypeSymbol.NullType)]
-        public static void Report_UnsupportedBinaryOperator(string text, string op, TypeSymbol left, TypeSymbol right)
-        {
-            AssertDiagnosics(text, SpecificErroKind.UnsupportedBinaryOperator, op,  left.ToString(), right.ToString());
-        }
-
 
         public static void AssertDiagnosics(string text, string diagnosic)
         {

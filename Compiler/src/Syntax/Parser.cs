@@ -39,7 +39,7 @@ namespace Compiler.Syntax
             else
             {
                 diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
-                var res = new SyntaxToken(kind, current.Pos, current.Lenght, current.Value);
+                var res = new SyntaxToken(kind, current.Span.Start, current.Span.Lenght, current.Value);
                 pos++;
                 return res;
             }
@@ -105,7 +105,7 @@ namespace Compiler.Syntax
             {
                 if (current.Kind == SyntaxTokenKind.End)
                 {
-                    var span = TextSpan.FromBounds(lcurly.Span.Start, current.Pos);
+                    var span = TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start);
                     diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedCurlyBrackets, span);
                     return new InvalidStatementSyntax(span);
                 }
@@ -144,7 +144,7 @@ namespace Compiler.Syntax
 
         private ExpressionSyntax ParsePrimaryExpression()
         {
-            if (current.Kind.IsLiteralExpression())
+            if (SyntaxFacts.IsLiteralExpression(current.Kind))
                 return new LiteralExpressionSyntax(Advance());
             else if (current.Kind == SyntaxTokenKind.Identifier)
                 return ParseIdentifier();
@@ -155,7 +155,7 @@ namespace Compiler.Syntax
             else
             {
                 diagnostics.ReportSyntaxError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
-                return new InvalidExpressionSyntax(Advance());
+                return new InvalidExpressionSyntax(Advance().Span);
             }
         }
 

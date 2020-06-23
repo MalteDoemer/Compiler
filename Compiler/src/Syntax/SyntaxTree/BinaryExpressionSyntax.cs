@@ -16,6 +16,5 @@ namespace Compiler.Syntax
         public ExpressionSyntax Right { get; }
 
         public override TextSpan Span => Left.Span + Right.Span;
-        public override string ToString() => $"({Left} {Op.Value} {Right})";
     }
 }

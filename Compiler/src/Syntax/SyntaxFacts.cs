@@ -46,11 +46,10 @@ namespace Compiler.Syntax
             {"float", SyntaxTokenKind.FloatKeyword},
             {"bool", SyntaxTokenKind.BoolKeyword},
             {"string", SyntaxTokenKind.StringKeyword},
-            {"var", SyntaxTokenKind.Var},
+            {"var", SyntaxTokenKind.VarKey},
             {"if", SyntaxTokenKind.IfKeyword},
             {"else", SyntaxTokenKind.ElseKeyword},
         };
-
 
 
         internal static object GetKeywordValue(string keyword)
@@ -64,7 +63,7 @@ namespace Compiler.Syntax
             }
         }
 
-        internal static bool IsLiteralExpression(this SyntaxTokenKind kind)
+        internal static bool IsLiteralExpression(SyntaxTokenKind kind)
         {
             switch (kind)
             {
@@ -115,7 +114,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.FloatKeyword:
                 case SyntaxTokenKind.BoolKeyword:
                 case SyntaxTokenKind.StringKeyword:
-                case SyntaxTokenKind.Var:
+                case SyntaxTokenKind.VarKey:
                     return true;
                 default: return false;
             }
@@ -181,7 +180,7 @@ namespace Compiler.Syntax
             }
         }
 
-        public static bool IsBinaryOperator(this SyntaxTokenKind kind) => kind.GetBinaryPrecedence() > 0;
+        public static bool IsBinaryOperator(this SyntaxTokenKind kind) => GetBinaryPrecedence(kind) > 0;
 
         public static string GetText(this SyntaxTokenKind kind)
         {

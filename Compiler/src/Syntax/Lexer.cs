@@ -33,7 +33,6 @@ namespace Compiler.Syntax
 
             this.text = text;
             diagnostics = new DiagnosticBag();
-            pos = 0;
         }
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
@@ -136,7 +135,7 @@ namespace Compiler.Syntax
             return null;
         }
 
-        public SyntaxToken NextToken()
+        private SyntaxToken NextToken()
         {
             var doubleChar = LexDoubleChar();
             if (doubleChar != null) return doubleChar;

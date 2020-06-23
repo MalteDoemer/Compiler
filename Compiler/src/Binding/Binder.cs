@@ -95,7 +95,7 @@ namespace Compiler.Binding
 
             TypeSymbol type;
 
-            if (vs.TypeToken.Kind == SyntaxTokenKind.Var) type = expr.ResultType;
+            if (vs.TypeToken.Kind == SyntaxTokenKind.VarKey) type = expr.ResultType;
             else type = BindFacts.GetTypeSymbol(vs.TypeToken.Kind);
 
             if (expr.ResultType != type)

@@ -12,10 +12,5 @@ namespace Compiler.Syntax
 
         public override TextSpan Span { get; }
         public StatementSyntax Statement { get; }
-
-        public override string ToString()
-        {
-            return Statement.ToString();
-        }
     }
 }

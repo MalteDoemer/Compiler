@@ -6,10 +6,10 @@ namespace Compiler
 {
     internal sealed class BoundCompilationUnit : BoundNode
     {
-        public BoundCompilationUnit(BoundStatement Statement, ImmutableArray<VariableSymbol> declaredVariables, TextSpan span)
+        public BoundCompilationUnit(BoundStatement statement, ImmutableArray<VariableSymbol> declaredVariables, TextSpan span)
         {
             DeclaredVariables = declaredVariables;
-            this.Statement = Statement;
+            Statement = statement;
             Span = span;
         }
 

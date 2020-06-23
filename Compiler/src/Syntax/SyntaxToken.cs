@@ -5,20 +5,17 @@ namespace Compiler.Syntax
     public class SyntaxToken
     {
         public SyntaxTokenKind Kind { get; }
-        public int Pos { get; }
-        public int Lenght { get; }
         public object Value { get; }
 
-        public TextSpan Span { get => new TextSpan(Pos, Lenght); }
+        public TextSpan Span { get; }
 
         public SyntaxToken(SyntaxTokenKind kind, int pos, int len, object value)
         {
             Kind = kind;
-            Pos = pos;
             Value = value;
-            Lenght = len;
+            Span = new TextSpan(pos, len);
         }
 
-        public override string ToString() => $"{Kind} at {Pos} : {Value}";
+        public override string ToString() => $"{Kind} at {Span.Start} : {Value}";
     }
 }

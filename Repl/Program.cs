@@ -15,7 +15,6 @@ namespace Compiler
 
         public static void Main(string[] args)
         {
-            var env = new Dictionary<string, (TypeSymbol type, dynamic value)>();
             try
             {
                 while (true)

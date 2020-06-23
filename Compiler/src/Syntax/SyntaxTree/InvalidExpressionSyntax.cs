@@ -4,14 +4,11 @@ namespace Compiler.Syntax
 {
     internal sealed class InvalidExpressionSyntax : ExpressionSyntax
     {
-        public InvalidExpressionSyntax(SyntaxToken invalidToken)
+        public InvalidExpressionSyntax(TextSpan span)
         {
-            InvalidToken = invalidToken;
+            Span = span;
         }
 
-    
-        public SyntaxToken InvalidToken { get; }
-
-        public override TextSpan Span => InvalidToken.Span;
+        public override TextSpan Span { get; }
     }
 }
