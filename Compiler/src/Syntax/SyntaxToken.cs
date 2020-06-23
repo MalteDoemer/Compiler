@@ -13,7 +13,7 @@ namespace Compiler.Syntax
         {
             Kind = kind;
             Value = value;
-            Span = new TextSpan(pos, len);
+            Span = TextSpan.FromLength(pos, len);
         }
 
         public override string ToString() => $"{Kind} at {Span.Start} : {Value}";

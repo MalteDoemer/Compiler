@@ -15,7 +15,7 @@ namespace Compiler.Text
         public int Length => Text.Length;
         public char this[int i] { get => Text[i]; }
 
-        public int GetLineNumber(int pos)
+        public int GetLineIndex(int pos)
         {
             var lower = 0;
             var upper = Lines.Length - 1;
@@ -31,14 +31,29 @@ namespace Compiler.Text
             }
 
             return lower - 1;
-
         }
 
+        public int GetLineNumber(int pos)
+        {
+            var lower = 0;
+            var upper = Lines.Length - 1;
+
+            while (lower <= upper)
+            {
+                var index = lower + (upper - lower) / 2;
+                var start = Lines[index].Span.Start;
+
+                if (pos == start) return index;
+                else if (start > pos) upper = index - 1;
+                else if (start < pos) lower = index + 1;
+            }
+
+            return lower;
+        }
 
         public override string ToString() => Text;
-        public string ToString(TextSpan span) => Text.Substring(span.Start, span.Lenght);
+        public string ToString(TextSpan span) => Text.Substring(span.Start, span.Length);
         public string ToString(int pos, int len) => Text.Substring(pos, len);
-
 
         private static ImmutableArray<SourceLine> ParseLines(SourceText src, string text)
         {
@@ -68,8 +83,8 @@ namespace Compiler.Text
         }
         private static void AddLine(SourceText src, ImmutableArray<SourceLine>.Builder result, int pos, int lineStart, int lineBreakLen)
         {
-            var span = new TextSpan(lineStart, pos);
-            var spanWithLineBreak = new TextSpan(lineStart, pos + lineBreakLen);
+            var span = TextSpan.FromLength(lineStart, pos);
+            var spanWithLineBreak = TextSpan.FromLength(lineStart, pos + lineBreakLen);
             result.Add(new SourceLine(src, span, spanWithLineBreak));
         }
         private static int GetLineBreakLength(string text, int pos)

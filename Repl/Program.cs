@@ -80,7 +80,7 @@ namespace Compiler
                 var prefix = src.ToString(0, err.Span.Start);
                 var errorText = src.ToString(err.Span);
                 var posfix = src.ToString(err.Span.End, src.Length - err.Span.End);
-                var line = src.GetLineNumber(err.Span.Start);
+                var line = src.GetLineIndex(err.Span.Start);
 
                 NewLine();
                 NewLine();

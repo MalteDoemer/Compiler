@@ -9,28 +9,13 @@ namespace Compiler.Syntax
     {
         private readonly DiagnosticBag diagnostics;
         private readonly SourceText text;
-        private int pos;
-        private char current
-        {
-            get
-            {
-                if (pos < text.Length) return text[pos];
-                else return '\0';
-            }
-        }
-        private char ahead
-        {
-            get
-            {
-                if (pos + 1 < text.Length) return text[pos + 1];
-                else return '\0';
-            }
-        }
 
+        private int pos;
+        private char current { get => pos < text.Length ? text[pos] : '\0'; }
+        private char ahead { get => pos + 1 < text.Length ? text[pos + 1] : '\0'; }
 
         public Lexer(SourceText text)
         {
-
             this.text = text;
             diagnostics = new DiagnosticBag();
         }
@@ -39,7 +24,7 @@ namespace Compiler.Syntax
 
         private char Advance()
         {
-            char res = current;
+            var res = current;
             pos++;
             return res;
         }
@@ -74,7 +59,7 @@ namespace Compiler.Syntax
                 double fnum = num;
                 long weight = 1;
 
-                if (!char.IsDigit(current)) diagnostics.ReportSyntaxError(ErrorMessage.InvalidDecimalPoint, new TextSpan(pos, 1));
+                if (!char.IsDigit(current)) diagnostics.ReportSyntaxError(ErrorMessage.InvalidDecimalPoint, TextSpan.FromLength(pos, 1));
 
                 while (char.IsDigit(current))
                 {
@@ -98,7 +83,7 @@ namespace Compiler.Syntax
 
             if (isKeyword != null)
                 return new SyntaxToken((SyntaxTokenKind)isKeyword, start, pos - start, SyntaxFacts.GetKeywordValue(tokenText));
-            else return new SyntaxToken(SyntaxTokenKind.Identifier, start, pos - start,  tokenText);
+            else return new SyntaxToken(SyntaxTokenKind.Identifier, start, pos - start, tokenText);
         }
 
         private SyntaxToken LexString()
@@ -131,7 +116,7 @@ namespace Compiler.Syntax
         {
             var kind = SyntaxFacts.IsDoubleCharacter(current, ahead);
             string value = "" + current + ahead;
-            if (kind != null) return new SyntaxToken((SyntaxTokenKind)kind, (pos+=2) -2, 2, value);
+            if (kind != null) return new SyntaxToken((SyntaxTokenKind)kind, (pos += 2) - 2, 2, value);
             return null;
         }
 

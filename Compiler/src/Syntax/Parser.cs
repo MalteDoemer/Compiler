@@ -12,23 +12,15 @@ namespace Compiler.Syntax
         private readonly DiagnosticBag diagnostics;
         private readonly SourceText source;
         private readonly ImmutableArray<SyntaxToken> tokens;
+
+        private SyntaxToken current { get => pos < tokens.Length ? tokens[pos] : tokens[tokens.Length - 1]; }
         private int pos;
-        private SyntaxToken current
-        {
-            get
-            {
-                if (pos < tokens.Length) return tokens[pos];
-                else return tokens[tokens.Length - 1];
-            }
-        }
-        private bool IsFinished { get => current.Kind == SyntaxTokenKind.End; }
 
         public Parser(SourceText source, ImmutableArray<SyntaxToken> tokens)
         {
             this.source = source;
             this.tokens = tokens;
             diagnostics = new DiagnosticBag();
-            pos = 0;
         }
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
@@ -39,7 +31,7 @@ namespace Compiler.Syntax
             else
             {
                 diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
-                var res = new SyntaxToken(kind, current.Span.Start, current.Span.Lenght, current.Value);
+                var res = new SyntaxToken(kind, current.Span.Start, current.Span.Length, current.Value);
                 pos++;
                 return res;
             }
@@ -55,8 +47,8 @@ namespace Compiler.Syntax
         public CompilationUnitSyntax ParseCompilationUnit()
         {
             var stmt = ParseStatement();
-            var unit = new CompilationUnitSyntax(new TextSpan(0, source.Length), stmt);
-            if (!IsFinished) diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, SyntaxTokenKind.End);
+            var unit = new CompilationUnitSyntax(TextSpan.FromLength(0, source.Length), stmt);
+            if (current.Kind != SyntaxTokenKind.End) diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, SyntaxTokenKind.End);
             return unit;
         }
 
@@ -98,7 +90,6 @@ namespace Compiler.Syntax
         private StatementSyntax ParseBlockStatement()
         {
             var lcurly = MatchToken(SyntaxTokenKind.LCurly);
-
             var builder = ImmutableArray.CreateBuilder<StatementSyntax>();
 
             while (current.Kind != SyntaxTokenKind.RCurly)
@@ -120,9 +111,9 @@ namespace Compiler.Syntax
             var typeToken = Advance();
             var identifier = MatchToken(SyntaxTokenKind.Identifier);
             var equalToken = MatchToken(SyntaxTokenKind.Equal);
-            var expr = (ExpressionStatement)ParseExpressionStatement();
+            var expr = ParseExpression();
 
-            return new VariableDeclerationStatement(typeToken, identifier, equalToken, expr.Expression);
+            return new VariableDeclerationStatement(typeToken, identifier, equalToken, expr);
         }
 
         private ExpressionSyntax ParseExpression(int lvl = SyntaxFacts.MaxPrecedence)
@@ -139,7 +130,6 @@ namespace Compiler.Syntax
             }
 
             return left;
-
         }
 
         private ExpressionSyntax ParsePrimaryExpression()

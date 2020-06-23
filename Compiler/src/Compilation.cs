@@ -48,10 +48,8 @@ namespace Compiler
         public Compilation ContinueWith(SourceText text) => new Compilation(this, text, Env);
         public Compilation ContinueWith(string text) => ContinueWith(new SourceText(text));
         public static Compilation Compile(string text) => Compile(new SourceText(text));
-        public static Compilation Compile(SourceText text)
-        {
-            return new Compilation(null, text, new Dictionary<string, VariableSymbol>());
-        }
+        public static Compilation Compile(SourceText text) => new Compilation(null, text, new Dictionary<string, VariableSymbol>());
+
 
     }
 }
