@@ -15,5 +15,10 @@ namespace Compiler.Syntax
         public SyntaxToken EqualToken { get; }
         public ExpressionSyntax Expression { get; }
         public override TextSpan Span => Identifier.Span + Expression.Span;
+
+        public override string ToString()
+        {
+            return $"{Identifier.Value} = {Expression}";
+        }
     }
 }

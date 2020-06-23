@@ -10,6 +10,8 @@ namespace Compiler.Text
             Lines = ParseLines(this, text);
         }
 
+        public static implicit operator SourceText(string text) => new SourceText(text);
+
         public ImmutableArray<SourceLine> Lines { get; }
         public string Text { get; }
         public int Length => Text.Length;
@@ -32,7 +34,6 @@ namespace Compiler.Text
 
             return lower - 1;
         }
-
         public int GetLineNumber(int pos)
         {
             var lower = 0;

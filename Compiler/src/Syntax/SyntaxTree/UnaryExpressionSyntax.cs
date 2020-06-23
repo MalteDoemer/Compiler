@@ -14,5 +14,10 @@ namespace Compiler.Syntax
         public ExpressionSyntax Expression { get; }
 
         public override TextSpan Span => Op.Span + Expression.Span;
+
+        public override string ToString()
+        {
+            return $"({Op.Value}{Expression})";
+        }
     }
 }

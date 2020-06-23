@@ -19,5 +19,10 @@ namespace Compiler.Syntax
         public SyntaxToken Identifier { get; }
         public SyntaxToken EqualToken { get; }
         public ExpressionSyntax Expression { get; }
+
+        public override string ToString()
+        {
+            return $"{TypeToken.Value} {Identifier.Value} = {Expression}";
+        }
     }
 }

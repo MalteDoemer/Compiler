@@ -5,6 +5,7 @@ using Compiler.Text;
 using Compiler.Binding;
 using System.Collections.Generic;
 using Compiler.Diagnostics;
+using System.IO;
 
 namespace Compiler
 {
@@ -37,7 +38,7 @@ namespace Compiler
         public Dictionary<string, VariableSymbol> Env { get; }
         public ImmutableArray<Diagnostic> Diagnostics { get; }
 
-        public dynamic Evaluate()
+        public object Evaluate()
         {
             if (Diagnostics.Length > 0) return null;
             var evaluator = new Evaluator(Root.Statement, Env);
@@ -46,10 +47,22 @@ namespace Compiler
         }
 
         public Compilation ContinueWith(SourceText text) => new Compilation(this, text, Env);
-        public Compilation ContinueWith(string text) => ContinueWith(new SourceText(text));
-        public static Compilation Compile(string text) => Compile(new SourceText(text));
+
         public static Compilation Compile(SourceText text) => new Compilation(null, text, new Dictionary<string, VariableSymbol>());
 
+        public static ImmutableArray<SyntaxToken> Tokenize(SourceText text)
+        {
+            var lexer = new Lexer(text);
+            return lexer.Tokenize().ToImmutableArray();
+        }
 
+        public static string SyntaxTreeToString(SourceText text)
+        {
+            var lexer = new Lexer(text);
+            var tokens = lexer.Tokenize().ToImmutableArray();
+            var parser = new Parser(text, tokens);
+            var root = parser.ParseCompilationUnit();
+            return root.ToString();
+        }
     }
 }

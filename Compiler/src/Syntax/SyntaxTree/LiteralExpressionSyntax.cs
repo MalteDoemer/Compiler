@@ -12,5 +12,10 @@ namespace Compiler.Syntax
         public SyntaxToken Literal { get; }
 
         public override TextSpan Span => Literal.Span;
+
+        public override string ToString()
+        {
+            return Literal.Value.ToString();
+        }
     }
 }

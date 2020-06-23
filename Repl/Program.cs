@@ -25,7 +25,7 @@ namespace Compiler
                     else if (inp == "exit") break;
                     else if (inp == "cls") Console.Clear();
                     else if (inp == "reset") compilation = null;
-                    else Evaluate(inp);
+                    else Console.WriteLine(Compilation.SyntaxTreeToString(inp));
                 }
             }
             catch (Exception e)
@@ -66,15 +66,14 @@ namespace Compiler
             else
             {
                 if (res == null) ColorWriteLine("null", ResolveColor(res));
-                else if (res is bool && res == true) ColorWriteLine("true", ResolveColor(res));
-                else if (res is bool && res == false) ColorWriteLine("false", ResolveColor(res));
+                else if (res is bool b1 && b1 == true) ColorWriteLine("true", ResolveColor(res));
+                else if (res is bool b2 && b2 == false) ColorWriteLine("false", ResolveColor(res));
                 else ColorWriteLine(res, ResolveColor(res));
             }
         }
 
         private static void ReportError(SourceText src, Diagnostic err)
         {
-            //compilation = null;
             if (err.HasPositon)
             {
                 var prefix = src.ToString(0, err.Span.Start);
@@ -90,12 +89,6 @@ namespace Compiler
                 ColorWrite($"{prefix}", ConsoleColor.Gray);
                 ColorWrite(errorText, ConsoleColor.Red);
                 ColorWrite(posfix, ConsoleColor.Gray);
-
-                // NewLine();
-                // for (int i = 0; i < prefix.Length; i++)
-                //     Console.Write(' ');
-                // for (int i = 0; i < errorText.Length; i++)
-                //     ColorWrite('~', ConsoleColor.Red);
 
                 NewLine();
                 NewLine();

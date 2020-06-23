@@ -18,5 +18,20 @@ namespace Compiler.Syntax
         public ImmutableArray<StatementSyntax> Statements { get; }
         public SyntaxToken CloseCurly { get; }
         public override TextSpan Span => OpenCurly.Span + CloseCurly.Span;
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            builder.Append('{');
+            builder.AppendLine();
+            foreach (var stmt in Statements)
+            {
+                builder.Append(stmt);
+                builder.AppendLine();
+            }
+            builder.AppendLine();
+            builder.Append('}');
+            return builder.ToString();
+        }
     }
 }

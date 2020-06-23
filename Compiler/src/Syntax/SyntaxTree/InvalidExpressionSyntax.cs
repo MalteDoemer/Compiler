@@ -10,5 +10,10 @@ namespace Compiler.Syntax
         }
 
         public override TextSpan Span { get; }
+
+        public override string ToString()
+        {
+            return "(Invalid)";
+        }
     }
 }

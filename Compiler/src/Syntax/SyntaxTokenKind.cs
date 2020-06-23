@@ -12,7 +12,6 @@ namespace Compiler.Syntax
         True,
         False,
         Null,
-
         Plus,
         Minus,
         Star,
@@ -33,12 +32,11 @@ namespace Compiler.Syntax
         LCurly,
         RCurly,
         Bang,
-        
         FloatKeyword,
         BoolKeyword,
         StringKeyword,
         IntKeyword,
-        VarKey,
+        VarKeyword,
         IfKeyword,
         ElseKeyword,
     }

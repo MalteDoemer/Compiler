@@ -18,5 +18,10 @@ namespace Compiler.Syntax
         public ExpressionSyntax Expression { get; }
         public StatementSyntax ThenStatement { get; }
         public ElseStatement ElseStatement { get; }
+
+        public override string ToString()
+        {
+            return $"{IfToken.Value} ({Expression} {ThenStatement} {(ElseStatement == null ? "": ElseStatement.ToString())})";
+        }
     }
 }

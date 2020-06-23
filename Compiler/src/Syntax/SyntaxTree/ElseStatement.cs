@@ -14,5 +14,10 @@ namespace Compiler.Syntax
 
         public SyntaxToken ElseToken { get; }
         public StatementSyntax ThenStatement { get; }
+
+        public override string ToString()
+        {
+            return $"{ElseToken.Value} {ThenStatement}";
+        }
     }
 }

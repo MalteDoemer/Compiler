@@ -88,9 +88,9 @@ namespace Compiler.Syntax
 
         private SyntaxToken LexString()
         {
-            pos++;
+            var quote = Advance();
             int start = pos;
-            while (current != '"')
+            while (current != quote)
             {
                 if (current == '\0')
                 {
@@ -129,7 +129,7 @@ namespace Compiler.Syntax
             if (singleChar != null) return singleChar;
 
             if (current == '\0') return new SyntaxToken(SyntaxTokenKind.End, pos, 0, "End");
-            else if (current == '"') return LexString();
+            else if (current == '"' || current == '\'') return LexString();
             else if (char.IsNumber(current)) return LexNumber();
             else if (char.IsWhiteSpace(current)) return LexSpace();
             else if (char.IsLetter(current) || current == '_') return LexIdentifierOrKeyword();
