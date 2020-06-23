@@ -25,7 +25,7 @@ namespace Compiler
                     else if (inp == "exit") break;
                     else if (inp == "cls") Console.Clear();
                     else if (inp == "reset") compilation = null;
-                    else Console.WriteLine(Compilation.SyntaxTreeToString(inp));
+                    else Evaluate(inp);
                 }
             }
             catch (Exception e)

@@ -59,7 +59,7 @@ namespace Compiler.Syntax
                 double fnum = num;
                 long weight = 1;
 
-                if (!char.IsDigit(current)) diagnostics.ReportSyntaxError(ErrorMessage.InvalidDecimalPoint, TextSpan.FromLength(pos, 1));
+                if (!char.IsDigit(current)) diagnostics.ReportSyntaxError(ErrorMessage.InvalidDecimalPoint, TextSpan.FromLength(pos-1, 1));
 
                 while (char.IsDigit(current))
                 {
@@ -88,8 +88,8 @@ namespace Compiler.Syntax
 
         private SyntaxToken LexString()
         {
-            var quote = Advance();
             int start = pos;
+            var quote = Advance();
             while (current != quote)
             {
                 if (current == '\0')

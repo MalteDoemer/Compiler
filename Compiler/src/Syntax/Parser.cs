@@ -151,11 +151,11 @@ namespace Compiler.Syntax
 
         private ExpressionSyntax ParseParenthesizedExpression()
         {
-            var start = pos;
+            var start = current.Span.Start;
             pos++;
             var expr = ParseExpression();
             if (current.Kind != SyntaxTokenKind.RParen)
-                diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, pos));
+                diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, current.Span.End));
             else pos++;
             return expr;
         }

@@ -103,6 +103,11 @@ namespace Compiler.Binding
                 diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, expr.Span, type, expr.ResultType);
                 return new BoundInvalidStatement(expr.Span);
             }
+            var name = vs.Identifier.Value;
+
+            if (!(name is string))
+                return new BoundInvalidStatement(vs.Identifier.Span);
+
             var variable = new VariableSymbol((string)vs.Identifier.Value, type, null);
             if (!scope.TryDeclare(variable))
             {
