@@ -29,7 +29,6 @@ namespace Compiler.Test
         [InlineData("4 >= 4", true)]
         [InlineData("5 >= 4", true)]
         [InlineData("4 >= 5", false)]
-
         [InlineData("1.5", 1.5)]
         [InlineData("+3.2", 3.2)]
         [InlineData("-1.12", -1.12)]
