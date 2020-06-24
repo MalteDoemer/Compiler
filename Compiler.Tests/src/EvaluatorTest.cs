@@ -13,6 +13,7 @@ namespace Compiler.Test
         [InlineData("12 - 3", 9L)]
         [InlineData("4 * 2", 8L)]
         [InlineData("9 / 3", 3L)]
+        [InlineData("9 % 3", 0L)]
         [InlineData("(10)", 10L)]
         [InlineData("12 == 3", false)]
         [InlineData("3 == 3", true)]
@@ -36,6 +37,7 @@ namespace Compiler.Test
         [InlineData("12.5 - 3.5", 9.0)]
         [InlineData("4.5 * 2", 9.0)]
         [InlineData("10 / 3.4", 2.9411764705882352941176470588235)]
+        [InlineData("4.5 % 2", 0.5)]
         [InlineData("(10.10)", 10.10)]
         [InlineData("12.12 == 3", false)]
         [InlineData("3 == 3.0", true)]
@@ -51,7 +53,6 @@ namespace Compiler.Test
         [InlineData("4.23 >= 4.23", true)]
         [InlineData("5.5 >= 4", true)]
         [InlineData("4 >= 5.87", false)]
-
         [InlineData("1 | 2", 3L)]
         [InlineData("1 | 0", 1L)]
         [InlineData("1 & 3", 1L)]
