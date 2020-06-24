@@ -8,7 +8,7 @@ namespace Repl
     public class Repl
     {
         private readonly Dictionary<string, VariableSymbol> variables;
-        private Compilation compilation;
+        //private Compilation compilation;
         private List<string> history;
 
         public Repl()

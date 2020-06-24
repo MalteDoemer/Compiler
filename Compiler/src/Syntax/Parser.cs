@@ -89,17 +89,17 @@ namespace Compiler.Syntax
 
         private StatementSyntax ParseBlockStatement()
         {
-            var lcurly = MatchToken(SyntaxTokenKind.LCurly);
             var builder = ImmutableArray.CreateBuilder<StatementSyntax>();
+            var lcurly = MatchToken(SyntaxTokenKind.LCurly);
 
-            while (current.Kind != SyntaxTokenKind.RCurly)
+            while (current.Kind != SyntaxTokenKind.RCurly && current.Kind != SyntaxTokenKind.End)
             {
-                if (current.Kind == SyntaxTokenKind.End)
-                {
-                    var span = TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start);
-                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedCurlyBrackets, span);
-                    return new InvalidStatementSyntax(span);
-                }
+                // if (current.Kind == SyntaxTokenKind.End)
+                // {
+                //     var span = TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start);
+                //     diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedCurlyBrackets, span);
+                //     return new InvalidStatementSyntax(span);
+                // }
                 builder.Add(ParseStatement());
             }
             var rcurly = MatchToken(SyntaxTokenKind.RCurly);
@@ -136,17 +136,12 @@ namespace Compiler.Syntax
         {
             if (SyntaxFacts.IsLiteralExpression(current.Kind))
                 return new LiteralExpressionSyntax(Advance());
-            else if (current.Kind == SyntaxTokenKind.Identifier)
-                return ParseIdentifier();
             else if (current.Kind.IsUnaryOperator())
                 return new UnaryExpressionSyntax(Advance(), ParsePrimaryExpression());
             else if (current.Kind == SyntaxTokenKind.LParen)
                 return ParseParenthesizedExpression();
             else
-            {
-                diagnostics.ReportSyntaxError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
-                return new InvalidExpressionSyntax(Advance().Span);
-            }
+                return ParseIdentifier();
         }
 
         private ExpressionSyntax ParseParenthesizedExpression()
@@ -162,13 +157,10 @@ namespace Compiler.Syntax
 
         private ExpressionSyntax ParseIdentifier()
         {
-            var identifier = Advance();
+            var identifier = MatchToken(SyntaxTokenKind.Identifier);
 
             if (current.Kind == SyntaxTokenKind.Equal)
-            {
-                var equalToken = Advance();
-                return new AssignmentExpressionSyntax(identifier, equalToken, ParseExpression());
-            }
+                return new AssignmentExpressionSyntax(identifier, MatchToken(SyntaxTokenKind.Equal), ParseExpression());
             else
                 return new VariableExpressionSyntax(identifier);
         }

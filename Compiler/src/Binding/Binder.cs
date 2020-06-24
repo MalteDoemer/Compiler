@@ -69,8 +69,6 @@ namespace Compiler.Binding
                 return BindVariableDeclerationStatement(vs);
             else if (statement is IfStatement ifs)
                 return BindIfStatement(ifs);
-            else if (statement is InvalidStatementSyntax invalid)
-                return new BoundInvalidStatement(invalid.Span);
             else throw new Exception($"Unexpected StatementSyntax <{statement}>");
         }
 
@@ -81,7 +79,7 @@ namespace Compiler.Binding
             if (condition.ResultType != TypeSymbol.Bool)
             {
                 diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, condition.Span, TypeSymbol.Bool, condition.ResultType);
-                return new BoundInvalidStatement(condition.Span);
+                //return new BoundInvalidStatement(condition.Span);
             }
 
             var stmt = BindStatement(ifs.ThenStatement);
@@ -101,18 +99,18 @@ namespace Compiler.Binding
             if (expr.ResultType != type)
             {
                 diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, expr.Span, type, expr.ResultType);
-                return new BoundInvalidStatement(expr.Span);
+                //return new BoundInvalidStatement(expr.Span);
             }
-            var name = vs.Identifier.Value;
+            string name = vs.Identifier.Value is string ? (string)vs.Identifier.Value : vs.Identifier.Value.ToString();
 
-            if (!(name is string))
-                return new BoundInvalidStatement(vs.Identifier.Span);
+            //if (!(name is string))
+                //return new BoundInvalidStatement(vs.Identifier.Span);
 
             var variable = new VariableSymbol((string)vs.Identifier.Value, type, null);
             if (!scope.TryDeclare(variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, vs.Identifier.Span, variable.Identifier);
-                return new BoundInvalidStatement(vs.Identifier.Span);
+                //return new BoundInvalidStatement(vs.Identifier.Span);
             }
             return new BoundVariableDeclerationStatement(variable, expr, vs.TypeToken.Span, vs.Identifier.Span, vs.EqualToken.Span, expr.Span);
         }
@@ -148,8 +146,6 @@ namespace Compiler.Binding
                 return BindVariableExpression(ve);
             else if (syntax is AssignmentExpressionSyntax ee)
                 return BindAssignmentExpression(ee);
-            else if (syntax is InvalidExpressionSyntax ie)
-                return new BoundInvalidExpression(ie.Span);
             else throw new Exception($"Unknown Syntax kind <{syntax}>");
         }
 
@@ -159,14 +155,14 @@ namespace Compiler.Binding
             if (!scope.TryLookUp((string)ee.Identifier.Value, out VariableSymbol variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, ee.Identifier.Span, (string)ee.Identifier.Value);
-                return new BoundInvalidExpression(ee.Identifier.Span);
+                //return new BoundInvalidExpression(ee.Identifier.Span);
             }
             else if (variable.Type != expr.ResultType)
             {
                 diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, ee.EqualToken.Span, variable.Type, expr.ResultType);
-                return new BoundInvalidExpression(ee.EqualToken.Span);
+                //return new BoundInvalidExpression(ee.EqualToken.Span);
             }
-            else return new BoundAssignementExpression(variable, expr, ee.Span, ee.EqualToken.Span);
+            return new BoundAssignementExpression(variable, expr, ee.Span, ee.EqualToken.Span);
 
         }
 
@@ -176,7 +172,7 @@ namespace Compiler.Binding
             if (!scope.TryLookUp(identifier, out VariableSymbol variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, ve.Name.Span, ve.Name.Value);
-                return new BoundInvalidExpression(ve.Name.Span);
+                //return new BoundInvalidExpression(ve.Name.Span);
             }
             return new BoundVariableExpression(variable, ve.Span);
         }
@@ -192,7 +188,7 @@ namespace Compiler.Binding
             if (boundOperator == null || resultType == null)
             {
                 diagnostics.ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, be.Op.Span, be.Op.Value.ToString(), left.ResultType, right.ResultType);
-                return new BoundInvalidExpression(be.Op.Span);
+                //return new BoundInvalidExpression(be.Op.Span);
             }
 
 
@@ -209,7 +205,7 @@ namespace Compiler.Binding
             if (boundOperator == null || resultType == null)
             {
                 diagnostics.ReportTypeError(ErrorMessage.UnsupportedUnaryOperator, ue.Op.Span, ue.Op.Value.ToString(), right.ResultType);
-                return new BoundInvalidExpression(ue.Op.Span);
+                //return new BoundInvalidExpression(ue.Op.Span);
             }
 
             return new BoundUnaryExpression((BoundUnaryOperator)boundOperator, ue.Op.Span, right, (TypeSymbol)resultType);
