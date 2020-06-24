@@ -8,6 +8,7 @@ namespace Compiler.Binding
         Division,
         Power,
         Root,
+        Modulo,
 
         EqualEqual,
         NotEqual,
@@ -18,6 +19,10 @@ namespace Compiler.Binding
 
         LogicalAnd,
         LogicalOr,
+
+        BitwiseAnd,
+        BitwiseOr,
+        BitwiseXor,
 
     }
 }

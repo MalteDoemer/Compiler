@@ -5,5 +5,6 @@ namespace Compiler.Binding
         Identety,
         Negation,
         LogicalNot,
+        BitwiseNot,
     }
 }

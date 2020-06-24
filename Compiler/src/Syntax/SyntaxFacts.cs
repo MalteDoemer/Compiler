@@ -7,7 +7,7 @@ namespace Compiler.Syntax
     public static class SyntaxFacts
     {
 
-        internal const int MaxPrecedence = 5;
+        internal const int MaxPrecedence = 6;
 
         internal static object GetKeywordValue(string keyword)
         {
@@ -65,6 +65,11 @@ namespace Compiler.Syntax
                 case '{': return SyntaxTokenKind.LCurly;
                 case '}': return SyntaxTokenKind.RCurly;
                 case '=': return SyntaxTokenKind.Equal;
+                case '~': return SyntaxTokenKind.Tilde;
+                case '%': return SyntaxTokenKind.Percentage;
+                case '&': return SyntaxTokenKind.Ampersand;
+                case '|': return SyntaxTokenKind.Pipe;
+                case '^': return SyntaxTokenKind.Hat;
                 default: return null;
             }
         }
@@ -119,6 +124,11 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.RParen: return ")";
                 case SyntaxTokenKind.LCurly: return "{";
                 case SyntaxTokenKind.RCurly: return "}";
+                case SyntaxTokenKind.Tilde: return "~";
+                case SyntaxTokenKind.Percentage: return "%";
+                case SyntaxTokenKind.Pipe: return "|";
+                case SyntaxTokenKind.Ampersand: return "&";
+                case SyntaxTokenKind.Hat: return "^";
                 case SyntaxTokenKind.StarStar: return "**";
                 case SyntaxTokenKind.SlashSlah: return "//";
                 case SyntaxTokenKind.EqualEqual: return "==";
@@ -151,6 +161,7 @@ namespace Compiler.Syntax
 
                 case SyntaxTokenKind.Star:
                 case SyntaxTokenKind.Slash:
+                case SyntaxTokenKind.Percentage:
                     return 2;
 
                 case SyntaxTokenKind.Plus:
@@ -165,9 +176,14 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.NotEqual:
                     return 4;
 
+                case SyntaxTokenKind.Ampersand:
+                case SyntaxTokenKind.Pipe:
+                case SyntaxTokenKind.Hat:
+                    return 5;
+
                 case SyntaxTokenKind.AmpersandAmpersand:
                 case SyntaxTokenKind.PipePipe:
-                    return 5;
+                    return 6;
 
                 default: return 0;
             }
@@ -196,6 +212,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.Minus:
                 case SyntaxTokenKind.Plus:
                 case SyntaxTokenKind.Bang:
+                case SyntaxTokenKind.Tilde:
                     return true;
                 default: return false;
             }

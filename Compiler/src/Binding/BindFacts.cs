@@ -6,6 +6,12 @@ namespace Compiler.Binding
 {
     public static class BindFacts
     {
+
+        private static void fett()
+        {
+            var i = 1 % 2.0;
+        }
+
         private static readonly Dictionary<(TypeSymbol, BoundUnaryOperator), TypeSymbol> UnaryResultTypes = new Dictionary<(TypeSymbol, BoundUnaryOperator), TypeSymbol>()
         {
             {(TypeSymbol.Int, BoundUnaryOperator.Identety), TypeSymbol.Int},
@@ -13,6 +19,7 @@ namespace Compiler.Binding
             {(TypeSymbol.Int, BoundUnaryOperator.Negation), TypeSymbol.Int},
             {(TypeSymbol.Float, BoundUnaryOperator.Negation), TypeSymbol.Float},
             {(TypeSymbol.Bool, BoundUnaryOperator.LogicalNot), TypeSymbol.Bool},
+            {(TypeSymbol.Int, BoundUnaryOperator.BitwiseNot), TypeSymbol.Int},
         };
 
         private static readonly Dictionary<(TypeSymbol, TypeSymbol, BoundBinaryOperator), TypeSymbol> BinaryResultTypes = new Dictionary<(TypeSymbol, TypeSymbol, BoundBinaryOperator), TypeSymbol>()
@@ -23,6 +30,10 @@ namespace Compiler.Binding
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Division), TypeSymbol.Int},
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Power), TypeSymbol.Int},
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Root), TypeSymbol.Int},
+            {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Modulo), TypeSymbol.Int},
+            {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.BitwiseAnd), TypeSymbol.Int},
+            {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.BitwiseOr), TypeSymbol.Int},
+            {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.BitwiseXor), TypeSymbol.Int},
 
             {(TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Addition), TypeSymbol.Float},
             {(TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Subtraction), TypeSymbol.Float},
@@ -30,6 +41,7 @@ namespace Compiler.Binding
             {(TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Division), TypeSymbol.Float},
             {(TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Power), TypeSymbol.Float},
             {(TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Root), TypeSymbol.Float},
+            {(TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Modulo), TypeSymbol.Float},
 
             {(TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Addition), TypeSymbol.Float},
             {(TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Subtraction), TypeSymbol.Float},
@@ -37,6 +49,7 @@ namespace Compiler.Binding
             {(TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Division), TypeSymbol.Float},
             {(TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Power), TypeSymbol.Float},
             {(TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Root), TypeSymbol.Float},
+            {(TypeSymbol.Float, TypeSymbol.Float, BoundBinaryOperator.Modulo), TypeSymbol.Float},
 
             {(TypeSymbol.String, TypeSymbol.String, BoundBinaryOperator.Addition), TypeSymbol.String},
             {(TypeSymbol.String, TypeSymbol.Int, BoundBinaryOperator.Addition), TypeSymbol.String},
@@ -102,6 +115,10 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.Slash: return BoundBinaryOperator.Division;
                 case SyntaxTokenKind.StarStar: return BoundBinaryOperator.Power;
                 case SyntaxTokenKind.SlashSlah: return BoundBinaryOperator.Root;
+                case SyntaxTokenKind.Percentage: return BoundBinaryOperator.Modulo;
+                case SyntaxTokenKind.Ampersand: return BoundBinaryOperator.BitwiseAnd;
+                case SyntaxTokenKind.Pipe: return BoundBinaryOperator.BitwiseOr;
+                case SyntaxTokenKind.Hat: return BoundBinaryOperator.BitwiseXor;
                 case SyntaxTokenKind.EqualEqual: return BoundBinaryOperator.EqualEqual;
                 case SyntaxTokenKind.NotEqual: return BoundBinaryOperator.NotEqual;
                 case SyntaxTokenKind.LessThan: return BoundBinaryOperator.LessThan;
@@ -121,6 +138,7 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.Plus: return BoundUnaryOperator.Identety;
                 case SyntaxTokenKind.Minus: return BoundUnaryOperator.Negation;
                 case SyntaxTokenKind.Bang: return BoundUnaryOperator.LogicalNot;
+                case SyntaxTokenKind.Tilde: return BoundUnaryOperator.BitwiseNot;
                 default: return null;
             }
         }

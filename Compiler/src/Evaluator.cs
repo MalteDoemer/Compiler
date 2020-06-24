@@ -37,6 +37,7 @@ namespace Compiler
                     case BoundUnaryOperator.Identety: return val;
                     case BoundUnaryOperator.Negation: return -val;
                     case BoundUnaryOperator.LogicalNot: return !val;
+                    case BoundUnaryOperator.BitwiseNot: return ~val;
                     default:
                         throw new Exception($"Unknown Unary Operator <{ue.Op}>");
                 }
@@ -55,6 +56,10 @@ namespace Compiler
                     case BoundBinaryOperator.Division: return left / right;
                     case BoundBinaryOperator.Power: return Pow(left, right);
                     case BoundBinaryOperator.Root: return Pow(left, 1.0d / right);
+
+                    case BoundBinaryOperator.BitwiseAnd: return left & right;
+                    case BoundBinaryOperator.BitwiseOr: return left | right;
+                    case BoundBinaryOperator.BitwiseXor: return left ^ right;
 
                     case BoundBinaryOperator.EqualEqual: return left == right;
                     case BoundBinaryOperator.NotEqual: return left != right;
