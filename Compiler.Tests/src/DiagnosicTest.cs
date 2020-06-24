@@ -197,7 +197,7 @@ namespace Compiler.Test
                 case TypeSymbol.Int: return "36";
                 case TypeSymbol.Float: return "123.45";
                 case TypeSymbol.String: return "'Fett'";
-                case TypeSymbol.NullType: return "null";
+                case TypeSymbol.Invalid: return "invalid";
                 default: return null;
             }
         }

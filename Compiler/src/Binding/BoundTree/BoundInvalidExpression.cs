@@ -9,7 +9,7 @@ namespace Compiler.Binding
             Span = span;
         }
 
-        public override TypeSymbol ResultType => TypeSymbol.NullType;
+        public override TypeSymbol ResultType => TypeSymbol.Invalid;
 
         public override TextSpan Span { get; }
     }
