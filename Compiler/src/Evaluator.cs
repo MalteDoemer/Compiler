@@ -83,6 +83,7 @@ namespace Compiler
                 Varaibles[variable.Identifier] = variable;
                 return val;
             }
+            else if (expr is BoundInvalidExpression) return null;
             else throw new Exception("Unknown Expression");
         }
 
