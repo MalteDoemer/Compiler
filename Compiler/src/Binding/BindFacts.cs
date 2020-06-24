@@ -6,12 +6,6 @@ namespace Compiler.Binding
 {
     public static class BindFacts
     {
-
-        private static void fett()
-        {
-            var i = 1 % 2.0;
-        }
-
         private static readonly Dictionary<(TypeSymbol, BoundUnaryOperator), TypeSymbol> UnaryResultTypes = new Dictionary<(TypeSymbol, BoundUnaryOperator), TypeSymbol>()
         {
             {(TypeSymbol.Int, BoundUnaryOperator.Identety), TypeSymbol.Int},
@@ -35,6 +29,10 @@ namespace Compiler.Binding
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.BitwiseOr), TypeSymbol.Int},
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.BitwiseXor), TypeSymbol.Int},
 
+            {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.BitwiseAnd), TypeSymbol.Bool},
+            {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.BitwiseOr), TypeSymbol.Bool},
+            {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.BitwiseXor), TypeSymbol.Bool},
+
             {(TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Addition), TypeSymbol.Float},
             {(TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Subtraction), TypeSymbol.Float},
             {(TypeSymbol.Int, TypeSymbol.Float, BoundBinaryOperator.Multiplication), TypeSymbol.Float},
@@ -55,6 +53,9 @@ namespace Compiler.Binding
             {(TypeSymbol.String, TypeSymbol.Int, BoundBinaryOperator.Addition), TypeSymbol.String},
             {(TypeSymbol.String, TypeSymbol.Float, BoundBinaryOperator.Addition), TypeSymbol.String},
             {(TypeSymbol.String, TypeSymbol.Bool, BoundBinaryOperator.Addition), TypeSymbol.String},
+
+            {(TypeSymbol.String, TypeSymbol.String, BoundBinaryOperator.NotEqual), TypeSymbol.Bool},
+            {(TypeSymbol.String, TypeSymbol.String, BoundBinaryOperator.EqualEqual), TypeSymbol.Bool},
 
             {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.EqualEqual), TypeSymbol.Bool},
             {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.NotEqual), TypeSymbol.Bool},

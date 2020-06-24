@@ -54,6 +54,7 @@ namespace Compiler
                     case BoundBinaryOperator.Subtraction: return left - right;
                     case BoundBinaryOperator.Multiplication: return left * right;
                     case BoundBinaryOperator.Division: return left / right;
+                    case BoundBinaryOperator.Modulo: return left % right;
                     case BoundBinaryOperator.Power: return Pow(left, right);
                     case BoundBinaryOperator.Root: return Pow(left, 1.0d / right);
 

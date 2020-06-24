@@ -88,21 +88,22 @@ namespace Compiler.Syntax
 
         private SyntaxToken LexString()
         {
-            int start = pos;
+            int quotePos = pos;
             var quote = Advance();
+            int start = pos;
             while (current != quote)
             {
                 if (current == '\0')
                 {
-                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(start, pos));
+                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(quotePos, pos));
                     var t1 = text.ToString(start, pos - start);
-                    return new SyntaxToken(SyntaxTokenKind.String, start, t1.Length, t1);
+                    return new SyntaxToken(SyntaxTokenKind.String, quotePos, t1.Length, t1);
                 }
                 else pos++;
             }
             pos++;
             var t = text.ToString(start, pos - start - 1);
-            return new SyntaxToken(SyntaxTokenKind.String, start, text.Length, t);
+            return new SyntaxToken(SyntaxTokenKind.String, quotePos, text.Length + 2, t);
         }
 
         private SyntaxToken LexSingleChar()
