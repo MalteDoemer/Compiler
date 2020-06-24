@@ -6,6 +6,7 @@ namespace Compiler.Syntax
     {
         public SyntaxTokenKind Kind { get; }
         public object Value { get; }
+
         public TextSpan Span { get; }
 
         public SyntaxToken(SyntaxTokenKind kind, int pos, int len, object value)

@@ -11,7 +11,7 @@ namespace Compiler.Syntax
 
         True,
         False,
-        //Null,
+        Null,
         Plus,
         Minus,
         Star,
