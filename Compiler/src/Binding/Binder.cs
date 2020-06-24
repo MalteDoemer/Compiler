@@ -185,7 +185,7 @@ namespace Compiler.Binding
         {
             var left = BindExpression(be.Left);
             var right = BindExpression(be.Right);
-            var boundOperator = BindBinaryOperator(be.Op);
+            var boundOperator = BindBinaryOperator(be.Op.Kind);
 
             var resultType = ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
 
@@ -202,7 +202,7 @@ namespace Compiler.Binding
         private BoundExpression BindUnaryExpression(UnaryExpressionSyntax ue)
         {
             var right = BindExpression(ue.Expression);
-            var boundOperator = BindUnaryOperator(ue.Op);
+            var boundOperator = BindUnaryOperator(ue.Op.Kind);
 
             var resultType = ResolveUnaryType(boundOperator, right.ResultType);
 

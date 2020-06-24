@@ -1,6 +1,6 @@
 namespace Compiler.Binding
 {
-    internal enum BoundBinaryOperator
+    public enum BoundBinaryOperator
     {
         Addition,
         Subtraction,

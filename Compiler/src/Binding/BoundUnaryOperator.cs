@@ -1,6 +1,6 @@
 namespace Compiler.Binding
 {
-    internal enum BoundUnaryOperator
+    public enum BoundUnaryOperator
     {
         Identety,
         Negation,

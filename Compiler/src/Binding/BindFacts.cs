@@ -4,7 +4,7 @@ using Compiler.Syntax;
 
 namespace Compiler.Binding
 {
-    internal static class BindFacts
+    public static class BindFacts
     {
         private static readonly Dictionary<(TypeSymbol, BoundUnaryOperator), TypeSymbol> UnaryResultTypes = new Dictionary<(TypeSymbol, BoundUnaryOperator), TypeSymbol>()
         {
@@ -76,7 +76,7 @@ namespace Compiler.Binding
 
         };
 
-        internal static TypeSymbol? ResolveUnaryType(BoundUnaryOperator? op, TypeSymbol type)
+        public static TypeSymbol? ResolveUnaryType(BoundUnaryOperator? op, TypeSymbol type)
         {
             if (op == null) return null;
             foreach (var pair in UnaryResultTypes)
@@ -84,7 +84,7 @@ namespace Compiler.Binding
             return null;
         }
 
-        internal static TypeSymbol? ResolveBinaryType(BoundBinaryOperator? op, TypeSymbol left, TypeSymbol right)
+        public static TypeSymbol? ResolveBinaryType(BoundBinaryOperator? op, TypeSymbol left, TypeSymbol right)
         {
             if (op == null) return null;
             foreach (var pair in BinaryResultTypes)
@@ -92,9 +92,9 @@ namespace Compiler.Binding
             return null;
         }
 
-        internal static BoundBinaryOperator? BindBinaryOperator(SyntaxToken op)
+        public static BoundBinaryOperator? BindBinaryOperator(SyntaxTokenKind op)
         {
-            switch (op.Kind)
+            switch (op)
             {
                 case SyntaxTokenKind.Plus: return BoundBinaryOperator.Addition;
                 case SyntaxTokenKind.Minus: return BoundBinaryOperator.Subtraction;
@@ -114,9 +114,9 @@ namespace Compiler.Binding
             }
         }
 
-        internal static BoundUnaryOperator? BindUnaryOperator(SyntaxToken op)
+        public static BoundUnaryOperator? BindUnaryOperator(SyntaxTokenKind op)
         {
-            switch (op.Kind)
+            switch (op)
             {
                 case SyntaxTokenKind.Plus: return BoundUnaryOperator.Identety;
                 case SyntaxTokenKind.Minus: return BoundUnaryOperator.Negation;
