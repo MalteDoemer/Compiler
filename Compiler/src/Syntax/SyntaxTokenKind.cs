@@ -3,8 +3,7 @@ namespace Compiler.Syntax
     public enum SyntaxTokenKind
     {
         End,
-        Unknown,
-        Error,
+        Invalid,
         Int,
         Float,
         String,

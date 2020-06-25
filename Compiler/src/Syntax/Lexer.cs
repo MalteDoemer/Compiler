@@ -134,7 +134,7 @@ namespace Compiler.Syntax
             else if (char.IsNumber(current)) return LexNumber();
             else if (char.IsWhiteSpace(current)) return LexSpace();
             else if (char.IsLetter(current) || current == '_') return LexIdentifierOrKeyword();
-            else return new SyntaxToken(SyntaxTokenKind.Unknown, pos, 1, Advance());
+            else return new SyntaxToken(SyntaxTokenKind.Invalid, pos, 1, Advance());
         }
 
         public IEnumerable<SyntaxToken> Tokenize()
