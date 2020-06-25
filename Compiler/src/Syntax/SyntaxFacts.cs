@@ -90,6 +90,12 @@ namespace Compiler.Syntax
             }
         }
 
+        internal static bool IsValidExpression(ExpressionSyntax expression)
+        {
+            if (!expression.IsValid) return false;
+            else return true;
+        }
+
         public static SyntaxTokenKind? IsKeyWord(string text)
         {
             switch (text)

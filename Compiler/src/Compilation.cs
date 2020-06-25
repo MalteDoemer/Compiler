@@ -41,6 +41,7 @@ namespace Compiler
         public object Evaluate()
         {
             if (Diagnostics.Length > 0) return null;
+            else if (Root == null) return null;
             var evaluator = new Evaluator(Root.Statement, Env);
             evaluator.Evaluate();
             return evaluator.lastValue;

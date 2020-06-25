@@ -148,7 +148,10 @@ namespace Compiler.Test
             if (diagnostics.Length != annotatedText.Spans.Length)
                 throw new Exception($"Marks and diagnostic must be same amount <{annotatedText.Spans.Length}> <{diagnostics.Length}>");
 
-            for (int i = 0; i < diagnostics.Length; i++)
+            Assert.Equal(diagnostics.Length, compilation.Diagnostics.Length);
+
+            var len = Math.Min(diagnostics.Length, compilation.Diagnostics.Length);
+            for (int i = 0; i < len; i++)
             {
                 var expectedMessage = diagnostics[i];
                 var actualMessage = compilation.Diagnostics[i].Message;

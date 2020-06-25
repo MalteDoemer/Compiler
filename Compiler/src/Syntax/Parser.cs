@@ -84,7 +84,9 @@ namespace Compiler.Syntax
         private StatementSyntax ParseExpressionStatement()
         {
             var expression = ParseExpression();
-            return new ExpressionStatement(expression);
+            if (SyntaxFacts.IsValidExpression(expression))
+                return new ExpressionStatement(expression);
+            else return new InvalidStatementSyntax(expression.Span);
         }
 
         private StatementSyntax ParseBlockStatement()

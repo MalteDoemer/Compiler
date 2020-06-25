@@ -27,6 +27,17 @@ namespace Compiler.Binding
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
+        public BoundCompilationUnit BindCompilationUnit(CompilationUnitSyntax unit)
+        {
+            var stmt = BindStatement(unit.Statement);
+
+            if (stmt is BoundInvalidStatement inv)
+                return new BoundCompilationUnit(inv, unit.Span);
+
+            var variables = scope.GetDeclaredVariables();
+            return new BoundCompilationUnit(stmt, variables, unit.Span);
+        }
+
         private BoundScope CreateBoundScopes(Compilation previous)
         {
             var stack = new Stack<Compilation>();
@@ -52,16 +63,11 @@ namespace Compiler.Binding
             return current;
         }
 
-        public BoundCompilationUnit BindCompilationUnit(CompilationUnitSyntax unit)
-        {
-            var stmt = BindStatement(unit.Statement);
-            var variables = scope.GetDeclaredVariables();
-            return new BoundCompilationUnit(stmt, variables, unit.Span);
-        }
-
         private BoundStatement BindStatement(StatementSyntax statement)
         {
-            if (statement is ExpressionStatement es)
+            if (!statement.IsValid)
+                return new BoundInvalidStatement(statement.Span);
+            else if (statement is ExpressionStatement es)
                 return BindExpressionStatement(es);
             else if (statement is BlockStatment bs)
                 return BindBlockStatement(bs);
@@ -69,14 +75,15 @@ namespace Compiler.Binding
                 return BindVariableDeclerationStatement(vs);
             else if (statement is IfStatement ifs)
                 return BindIfStatement(ifs);
-            else if (statement is InvalidStatementSyntax invalid)
-                return new BoundInvalidStatement(invalid.Span);
             else throw new Exception($"Unexpected StatementSyntax <{statement}>");
         }
 
         private BoundStatement BindIfStatement(IfStatement ifs)
         {
             var condition = BindExpression(ifs.Expression);
+
+            if (condition is BoundInvalidExpression)
+                return new BoundInvalidStatement(ifs.Span);
 
             if (condition.ResultType != TypeSymbol.Bool)
             {
@@ -85,13 +92,26 @@ namespace Compiler.Binding
             }
 
             var stmt = BindStatement(ifs.ThenStatement);
+
+            if (stmt is BoundInvalidStatement)
+                return new BoundInvalidStatement(ifs.Span);
+
             var elseStmt = ifs.ElseStatement == null ? null : BindStatement(ifs.ElseStatement.ThenStatement);
+
+            if (elseStmt != null && elseStmt is BoundInvalidStatement)
+                return new BoundInvalidStatement(ifs.Span);
+
             return new BoundIfStatement(condition, stmt, elseStmt, ifs.IfToken.Span);
         }
 
         private BoundStatement BindVariableDeclerationStatement(VariableDeclerationStatement vs)
         {
             var expr = BindExpression(vs.Expression);
+
+            Console.WriteLine(expr);
+
+            if (expr is BoundInvalidExpression)
+                return new BoundInvalidStatement(vs.Span);
 
             TypeSymbol type;
 
@@ -103,10 +123,6 @@ namespace Compiler.Binding
                 diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, expr.Span, type, expr.ResultType);
                 return new BoundInvalidStatement(expr.Span);
             }
-            var name = vs.Identifier.Value;
-
-            if (!(name is string))
-                return new BoundInvalidStatement(vs.Identifier.Span);
 
             var variable = new VariableSymbol((string)vs.Identifier.Value, type, null);
             if (!scope.TryDeclare(variable))
@@ -123,7 +139,14 @@ namespace Compiler.Binding
             scope = new BoundScope(scope);
 
             foreach (var stmt in bs.Statements)
+            {
+                if (!stmt.IsValid)
+                {
+                    scope = scope.Parent;
+                    return new BoundInvalidStatement(bs.Span);
+                }
                 builder.Add(BindStatement(stmt));
+            }
 
             scope = scope.Parent;
 
@@ -133,12 +156,17 @@ namespace Compiler.Binding
         private BoundStatement BindExpressionStatement(ExpressionStatement es)
         {
             var expr = BindExpression(es.Expression);
+            if (expr is BoundInvalidExpression)
+                return new BoundInvalidStatement(es.Span);
+
             return new BoundExpressionStatement(expr, es.Span);
         }
 
         private BoundExpression BindExpression(ExpressionSyntax syntax)
         {
-            if (syntax is LiteralExpressionSyntax le)
+            if (!syntax.IsValid)
+                return new BoundInvalidExpression(syntax.Span);
+            else if (syntax is LiteralExpressionSyntax le)
                 return BindLiteralExpression(le);
             else if (syntax is UnaryExpressionSyntax ue)
                 return BindUnaryExpression(ue);
@@ -148,14 +176,16 @@ namespace Compiler.Binding
                 return BindVariableExpression(ve);
             else if (syntax is AssignmentExpressionSyntax ee)
                 return BindAssignmentExpression(ee);
-            else if (syntax is InvalidExpressionSyntax ie)
-                return new BoundInvalidExpression(ie.Span);
             else throw new Exception($"Unknown Syntax kind <{syntax}>");
         }
 
         private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax ee)
         {
             var expr = BindExpression(ee.Expression);
+
+            if (expr is BoundInvalidExpression)
+                return new BoundInvalidExpression(ee.Span);
+
             if (!scope.TryLookUp((string)ee.Identifier.Value, out VariableSymbol variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, ee.Identifier.Span, (string)ee.Identifier.Value);
@@ -185,8 +215,11 @@ namespace Compiler.Binding
         {
             var left = BindExpression(be.Left);
             var right = BindExpression(be.Right);
-            var boundOperator = BindBinaryOperator(be.Op.Kind);
 
+            if (left is BoundInvalidExpression || right is BoundInvalidExpression)
+                return new BoundInvalidExpression(be.Span);
+
+            var boundOperator = BindBinaryOperator(be.Op.Kind);
             var resultType = ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
 
             if (boundOperator == null || resultType == null)
@@ -202,8 +235,10 @@ namespace Compiler.Binding
         private BoundExpression BindUnaryExpression(UnaryExpressionSyntax ue)
         {
             var right = BindExpression(ue.Expression);
-            var boundOperator = BindUnaryOperator(ue.Op.Kind);
+            if (right is BoundInvalidExpression)
+                return new BoundInvalidExpression(ue.Span);
 
+            var boundOperator = BindUnaryOperator(ue.Op.Kind);
             var resultType = ResolveUnaryType(boundOperator, right.ResultType);
 
             if (boundOperator == null || resultType == null)
@@ -219,6 +254,7 @@ namespace Compiler.Binding
         {
             var value = le.Literal.Value;
             var type = BindFacts.GetTypeSymbol(le.Literal.Kind);
+
             return new BoundLiteralExpression(le.Span, value, type);
         }
     }

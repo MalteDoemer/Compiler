@@ -20,7 +20,16 @@ namespace Compiler.Syntax
         public SyntaxToken CloseCurly { get; }
         public override TextSpan Span => OpenCurly.Span + CloseCurly.Span;
 
-        public override bool IsValid => OpenCurly.IsValid && Statements.Select(s => s.IsValid).Count() == 0 && CloseCurly.IsValid; 
+        public override bool IsValid
+        {
+            get
+            {
+                bool res = OpenCurly.IsValid && CloseCurly.IsValid;
+                foreach (var s in Statements)
+                    res = res && s.IsValid;
+                return res;
+            }
+        }
 
         public override string ToString()
         {

@@ -14,6 +14,7 @@ namespace Compiler.Syntax
             Kind = kind;
             Value = value;
             Span = TextSpan.FromLength(pos, len);
+            IsValid = isValid;
         }
 
         public override string ToString() => $"{Kind} at {Span.Start} : {Value}";
