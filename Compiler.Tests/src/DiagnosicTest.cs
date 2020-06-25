@@ -56,7 +56,7 @@ namespace Compiler.Test
         }
 
         [Theory]
-        [InlineData("[§]", SyntaxTokenKind.Invalid)]
+        [InlineData("[§]", SyntaxTokenKind.Unknown)]
         [InlineData("[else]", SyntaxTokenKind.ElseKeyword)]
         public static void Report_Unexpected_Token(string text, SyntaxTokenKind unExpectedKind)
         {

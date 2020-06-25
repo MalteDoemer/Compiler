@@ -31,7 +31,7 @@ namespace Compiler.Syntax
             else
             {
                 diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
-                var res = new SyntaxToken(kind, current.Span.Start, current.Span.Length, current.Value);
+                var res = new SyntaxToken(SyntaxTokenKind.Error, current.Span.Start, current.Span.Length, current.Value);
                 pos++;
                 return res;
             }
@@ -92,15 +92,18 @@ namespace Compiler.Syntax
             var lcurly = MatchToken(SyntaxTokenKind.LCurly);
             var builder = ImmutableArray.CreateBuilder<StatementSyntax>();
 
-            while (current.Kind != SyntaxTokenKind.RCurly)
+            while (current.Kind != SyntaxTokenKind.RCurly || current.Kind != SyntaxTokenKind.End)
             {
-                if (current.Kind == SyntaxTokenKind.End)
-                {
-                    var span = TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start);
-                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedCurlyBrackets, span);
-                    return new InvalidStatementSyntax(span);
-                }
+                var start = current;
+                // if (current.Kind == SyntaxTokenKind.End)
+                // {
+                //     var span = TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start);
+                //     diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedCurlyBrackets, span);
+                //     return new InvalidStatementSyntax(span);
+                // }  
                 builder.Add(ParseStatement());
+                if (start == current)
+                    pos++;
             }
             var rcurly = MatchToken(SyntaxTokenKind.RCurly);
             return new BlockStatment(lcurly, builder.ToImmutable(), rcurly);
