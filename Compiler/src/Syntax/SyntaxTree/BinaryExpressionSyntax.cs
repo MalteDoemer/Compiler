@@ -14,8 +14,8 @@ namespace Compiler.Syntax
         public SyntaxToken Op { get; }
         public ExpressionSyntax Left { get; }
         public ExpressionSyntax Right { get; }
-
         public override TextSpan Span => Left.Span + Right.Span;
+        public override bool IsValid => Op.IsValid && Left.IsValid && Right.IsValid;
 
         public override string ToString()
         {

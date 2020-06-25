@@ -13,6 +13,8 @@ namespace Compiler.Syntax
         public override TextSpan Span { get; }
         public StatementSyntax Statement { get; }
 
+        public override bool IsValid => Statement.IsValid;
+
         public override string ToString()
         {
             return Statement.ToString();

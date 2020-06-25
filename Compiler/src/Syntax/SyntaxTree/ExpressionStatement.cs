@@ -13,6 +13,8 @@ namespace Compiler.Syntax
 
         public ExpressionSyntax Expression { get; }
 
+        public override bool IsValid => Expression.IsValid;
+
         public override string ToString()
         {
             return Expression.ToString();

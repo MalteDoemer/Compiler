@@ -20,6 +20,8 @@ namespace Compiler.Syntax
         public SyntaxToken EqualToken { get; }
         public ExpressionSyntax Expression { get; }
 
+        public override bool IsValid => TypeToken.IsValid && Identifier.IsValid && EqualToken.IsValid && Expression.IsValid;
+
         public override string ToString()
         {
             return $"{TypeToken.Value} {Identifier.Value} = {Expression}";

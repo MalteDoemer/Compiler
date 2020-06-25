@@ -6,10 +6,10 @@ namespace Compiler.Syntax
     {
         public SyntaxTokenKind Kind { get; }
         public object Value { get; }
-
         public TextSpan Span { get; }
+        public bool IsValid { get; }
 
-        public SyntaxToken(SyntaxTokenKind kind, int pos, int len, object value)
+        public SyntaxToken(SyntaxTokenKind kind, int pos, int len, object value, bool isValid = true)
         {
             Kind = kind;
             Value = value;

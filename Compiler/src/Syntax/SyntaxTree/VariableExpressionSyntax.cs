@@ -14,6 +14,8 @@ namespace Compiler.Syntax
 
         public override TextSpan Span => Name.Span;
 
+        public override bool IsValid => Name.IsValid;
+
         public override string ToString()
         {
             return Name.Value.ToString();

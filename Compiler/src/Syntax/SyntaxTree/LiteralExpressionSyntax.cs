@@ -13,6 +13,8 @@ namespace Compiler.Syntax
 
         public override TextSpan Span => Literal.Span;
 
+        public override bool IsValid => Literal.IsValid;
+
         public override string ToString()
         {
             return Literal.Value.ToString();

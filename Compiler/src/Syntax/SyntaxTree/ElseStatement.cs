@@ -15,6 +15,8 @@ namespace Compiler.Syntax
         public SyntaxToken ElseToken { get; }
         public StatementSyntax ThenStatement { get; }
 
+        public override bool IsValid => ElseToken.IsValid && ThenStatement.IsValid;
+
         public override string ToString()
         {
             return $"{ElseToken.Value} {ThenStatement}";

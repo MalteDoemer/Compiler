@@ -31,7 +31,7 @@ namespace Compiler.Syntax
             else
             {
                 diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
-                var res = new SyntaxToken(kind, current.Span.Start, current.Span.Length, current.Value);
+                var res = new SyntaxToken(kind, current.Span.Start, current.Span.Length, current.Value, false);
                 pos++;
                 return res;
             }

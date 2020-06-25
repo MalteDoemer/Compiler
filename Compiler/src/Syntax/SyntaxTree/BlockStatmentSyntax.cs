@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Immutable;
 using System.Text;
 using Compiler.Text;
@@ -18,6 +19,8 @@ namespace Compiler.Syntax
         public ImmutableArray<StatementSyntax> Statements { get; }
         public SyntaxToken CloseCurly { get; }
         public override TextSpan Span => OpenCurly.Span + CloseCurly.Span;
+
+        public override bool IsValid => OpenCurly.IsValid && Statements.Select(s => s.IsValid).Count() == 0 && CloseCurly.IsValid; 
 
         public override string ToString()
         {

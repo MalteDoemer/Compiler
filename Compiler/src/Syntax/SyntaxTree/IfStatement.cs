@@ -19,6 +19,8 @@ namespace Compiler.Syntax
         public StatementSyntax ThenStatement { get; }
         public ElseStatement ElseStatement { get; }
 
+        public override bool IsValid => IfToken.IsValid && Expression.IsValid && ThenStatement.IsValid && (ElseStatement == null ? true : ElseStatement.IsValid);
+
         public override string ToString()
         {
             return $"{IfToken.Value} ({Expression} {ThenStatement} {(ElseStatement == null ? "": ElseStatement.ToString())})";

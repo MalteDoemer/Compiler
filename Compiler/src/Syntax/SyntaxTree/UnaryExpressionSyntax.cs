@@ -15,6 +15,8 @@ namespace Compiler.Syntax
 
         public override TextSpan Span => Op.Span + Expression.Span;
 
+        public override bool IsValid => Op.IsValid && Expression.IsValid;
+
         public override string ToString()
         {
             return $"({Op.Value}{Expression})";

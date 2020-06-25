@@ -16,6 +16,8 @@ namespace Compiler.Syntax
         public ExpressionSyntax Expression { get; }
         public override TextSpan Span => Identifier.Span + Expression.Span;
 
+        public override bool IsValid => Identifier.IsValid && EqualToken.IsValid && Expression.IsValid;
+
         public override string ToString()
         {
             return $"{Identifier.Value} = {Expression}";
