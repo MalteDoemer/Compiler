@@ -75,7 +75,30 @@ namespace Compiler.Binding
                 return BindVariableDeclerationStatement(vs);
             else if (statement is IfStatement ifs)
                 return BindIfStatement(ifs);
+            else if (statement is WhileStatement ws)
+                return BindWhileStatement(ws);
             else throw new Exception($"Unexpected StatementSyntax <{statement}>");
+        }
+
+        private BoundStatement BindWhileStatement(WhileStatement ws)
+        {
+            var condition = BindExpression(ws.Condition);
+
+            if (condition is BoundInvalidExpression)
+                return new BoundInvalidStatement(ws.Span);
+
+            if (condition.ResultType != TypeSymbol.Bool)
+            {
+                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, condition.Span, TypeSymbol.Bool, condition.ResultType);
+                return new BoundInvalidStatement(condition.Span);
+            }
+
+            var body = BindStatement(ws.Body);
+
+            if (body is BoundInvalidStatement)
+                return new BoundInvalidStatement(ws.Span);
+
+            return new BoundWhileStatement(condition, body, ws.WhileToken.Span);
         }
 
         private BoundStatement BindIfStatement(IfStatement ifs)
@@ -107,8 +130,6 @@ namespace Compiler.Binding
         private BoundStatement BindVariableDeclerationStatement(VariableDeclerationStatement vs)
         {
             var expr = BindExpression(vs.Expression);
-
-            Console.WriteLine(expr);
 
             if (expr is BoundInvalidExpression)
                 return new BoundInvalidStatement(vs.Span);

@@ -26,6 +26,7 @@ namespace Compiler
                     else if (inp == "cls") Console.Clear();
                     else if (inp == "reset") compilation = null;
                     else Evaluate(inp);
+
                 }
             }
             catch (Exception e)

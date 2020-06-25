@@ -43,5 +43,7 @@ namespace Compiler.Syntax
         VarKeyword,
         IfKeyword,
         ElseKeyword,
+        ForKeyword,
+        WhileKeyword,
     }
 }

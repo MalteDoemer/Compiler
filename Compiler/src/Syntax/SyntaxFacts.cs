@@ -107,6 +107,8 @@ namespace Compiler.Syntax
                 case "var": return SyntaxTokenKind.VarKeyword;
                 case "if": return SyntaxTokenKind.IfKeyword;
                 case "else": return SyntaxTokenKind.ElseKeyword;
+                case "while": return SyntaxTokenKind.WhileKeyword;
+                case "for": return SyntaxTokenKind.ForKeyword;
                 default: return null;
             }
         }
@@ -149,6 +151,8 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.StringKeyword: return "string";
                 case SyntaxTokenKind.IfKeyword: return "if";
                 case SyntaxTokenKind.ElseKeyword: return "else";
+                case SyntaxTokenKind.WhileKeyword: return "while";
+                case SyntaxTokenKind.ForKeyword: return "for";
                 default: return null;
             }
         }

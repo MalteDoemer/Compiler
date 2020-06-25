@@ -60,6 +60,8 @@ namespace Compiler.Syntax
                 return ParseBlockStatement();
             else if (current.Kind == SyntaxTokenKind.IfKeyword)
                 return ParseIfStatement();
+            else if (current.Kind == SyntaxTokenKind.WhileKeyword)
+                return ParseWhileStatement();
             else return ParseExpressionStatement();
         }
 
@@ -72,13 +74,13 @@ namespace Compiler.Syntax
             return new IfStatement(ifToken, expr, statement, elseClause);
         }
 
-        private ElseStatement ParseElseClause()
+        
+        private StatementSyntax ParseWhileStatement()
         {
-            if (current.Kind != SyntaxTokenKind.ElseKeyword)
-                return null;
-            var elseKeyword = Advance();
-            var statement = ParseStatement();
-            return new ElseStatement(elseKeyword, statement);
+            var whileToken = MatchToken(SyntaxTokenKind.WhileKeyword);
+            var condition = ParseExpression();
+            var body = ParseStatement();
+            return new WhileStatement(whileToken, condition, body);
         }
 
         private StatementSyntax ParseExpressionStatement()
@@ -174,5 +176,17 @@ namespace Compiler.Syntax
             else
                 return new VariableExpressionSyntax(identifier);
         }
+
+
+        private ElseStatement ParseElseClause()
+        {
+            if (current.Kind != SyntaxTokenKind.ElseKeyword)
+                return null;
+            var elseKeyword = Advance();
+            var statement = ParseStatement();
+            return new ElseStatement(elseKeyword, statement);
+        }
+
+
     }
 }

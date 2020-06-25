@@ -114,6 +114,12 @@ namespace Compiler
                 var variable = new VariableSymbol(vs.Variable.Identifier, vs.Variable.Type, val);
                 Varaibles[variable.Identifier] = variable;
             }
+            else if (stmt is BoundWhileStatement ws)
+            {
+                while (EvaluateExpression(ws.Condition))
+                    EvaluateStatement(ws.Body);
+            }
+
         }
 
         public void Evaluate() => EvaluateStatement(Root);
