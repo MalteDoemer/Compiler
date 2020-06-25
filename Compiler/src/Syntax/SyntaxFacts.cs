@@ -15,7 +15,6 @@ namespace Compiler.Syntax
             {
                 case "true": return true;
                 case "false": return false;
-                case "null": return null;
                 default: return keyword;
             }
         }
@@ -29,7 +28,6 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.String:
                 case SyntaxTokenKind.True:
                 case SyntaxTokenKind.False:
-                case SyntaxTokenKind.Null:
                     return true;
                 default: return false;
             }
@@ -102,7 +100,6 @@ namespace Compiler.Syntax
             {
                 case "true": return SyntaxTokenKind.True;
                 case "false": return SyntaxTokenKind.False;
-                case "null": return SyntaxTokenKind.Null;
                 case "int": return SyntaxTokenKind.IntKeyword;
                 case "float": return SyntaxTokenKind.FloatKeyword;
                 case "bool": return SyntaxTokenKind.BoolKeyword;
@@ -145,7 +142,6 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.PipePipe: return "||";
                 case SyntaxTokenKind.True: return "true";
                 case SyntaxTokenKind.False: return "false";
-                case SyntaxTokenKind.Null: return "null";
                 case SyntaxTokenKind.VarKeyword: return "var";
                 case SyntaxTokenKind.IntKeyword: return "int";
                 case SyntaxTokenKind.FloatKeyword: return "float";

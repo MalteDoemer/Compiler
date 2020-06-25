@@ -6,6 +6,6 @@ namespace Compiler.Binding
         Float,
         Bool,
         String,
-        NullType,
+        ErrorType,
     }
 }

@@ -151,7 +151,7 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.Int: return TypeSymbol.Int;
                 case SyntaxTokenKind.Float: return TypeSymbol.Float;
                 case SyntaxTokenKind.String: return TypeSymbol.String;
-                case SyntaxTokenKind.Null: return TypeSymbol.NullType;
+                //case SyntaxTokenKind.Null: return TypeSymbol.NullType;
                 case SyntaxTokenKind.False: return TypeSymbol.Bool;
                 case SyntaxTokenKind.True: return TypeSymbol.Bool;
                 case SyntaxTokenKind.IntKeyword: return TypeSymbol.Int;

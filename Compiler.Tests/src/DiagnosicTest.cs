@@ -7,8 +7,6 @@ using Compiler.Diagnostics;
 using Compiler.Syntax;
 using Xunit;
 
-// ganguage Gayy-Language
-
 namespace Compiler.Test
 {
     public class DiagnosicTest
@@ -189,7 +187,8 @@ namespace Compiler.Test
         private static IEnumerable<TypeSymbol> GetTypes()
         {
             var types = (TypeSymbol[])Enum.GetValues(typeof(TypeSymbol));
-            return types;
+
+            return types.Where(t => t != TypeSymbol.ErrorType);
         }
 
         private static string GetSampleText(TypeSymbol symbol)
@@ -200,7 +199,6 @@ namespace Compiler.Test
                 case TypeSymbol.Int: return "36";
                 case TypeSymbol.Float: return "123.45";
                 case TypeSymbol.String: return "'Fett'";
-                case TypeSymbol.NullType: return "null";
                 default: return null;
             }
         }
