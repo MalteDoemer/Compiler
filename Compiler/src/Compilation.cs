@@ -38,9 +38,17 @@ namespace Compiler
         public Dictionary<string, VariableSymbol> Env { get; }
         public ImmutableArray<Diagnostic> Diagnostics { get; }
 
-        public object Evaluate()
+        public void Evaluate()
         {
-            if (Diagnostics.Length > 0) return null;
+            if (Diagnostics.Length > 0) return;
+            else if (Root == null) return;
+            var evaluator = new Evaluator(Root.Statement, Env);
+            evaluator.Evaluate();
+        }
+
+        public object EvaluateExpression()
+        {
+             if (Diagnostics.Length > 0) return null;
             else if (Root == null) return null;
             var evaluator = new Evaluator(Root.Statement, Env);
             evaluator.Evaluate();

@@ -77,7 +77,18 @@ namespace Compiler.Binding
                 return BindIfStatement(ifs);
             else if (statement is WhileStatement ws)
                 return BindWhileStatement(ws);
+            else if (statement is PrintStatement ps)
+                return BindPrintStatement(ps);
             else throw new Exception($"Unexpected StatementSyntax <{statement}>");
+        }
+
+        private BoundStatement BindPrintStatement(PrintStatement ps)
+        {
+            var expr = BindExpression(ps.Expression);
+
+            if (expr is BoundInvalidExpression)
+                return new BoundInvalidStatement(ps.Span);
+            return new BoundPrintStatement(expr, ps.PrintToken.Span);
         }
 
         private BoundStatement BindWhileStatement(WhileStatement ws)

@@ -90,7 +90,7 @@ namespace Compiler.Test
         public static void Evaluate_Result(string text, object expceted)
         {
             var compiltaion = Compilation.Compile(text);
-            var res = compiltaion.Evaluate();
+            var res = compiltaion.EvaluateExpression();
 
             Assert.Empty(compiltaion.Diagnostics);
             Assert.Equal(expceted, res);

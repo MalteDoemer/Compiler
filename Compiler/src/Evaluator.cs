@@ -119,6 +119,8 @@ namespace Compiler
                 while (EvaluateExpression(ws.Condition))
                     EvaluateStatement(ws.Body);
             }
+            else if (stmt is BoundPrintStatement ps)
+                Console.WriteLine(EvaluateExpression(ps.Expression));
 
         }
 

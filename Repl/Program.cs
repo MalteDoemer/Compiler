@@ -41,7 +41,7 @@ namespace Compiler
         {
             var src = new SourceText(inp);
             compilation = compilation == null ? Compilation.Compile(src) : compilation.ContinueWith(src);
-            var res = compilation.Evaluate();
+            compilation.Evaluate();//Expression();
 
             if (compilation.Diagnostics.Length > 0)
             {
@@ -66,10 +66,10 @@ namespace Compiler
             }
             else
             {
-                if (res == null) ColorWriteLine("null", ResolveColor(res));
-                else if (res is bool b1 && b1 == true) ColorWriteLine("true", ResolveColor(res));
-                else if (res is bool b2 && b2 == false) ColorWriteLine("false", ResolveColor(res));
-                else ColorWriteLine(res, ResolveColor(res));
+                //if (res == null) ColorWriteLine("null", ResolveColor(res));
+                //else if (res is bool b1 && b1 == true) ColorWriteLine("true", ResolveColor(res));
+                //else if (res is bool b2 && b2 == false) ColorWriteLine("false", ResolveColor(res));
+                //else ColorWriteLine(res, ResolveColor(res));
             }
         }
 

@@ -140,7 +140,7 @@ namespace Compiler.Test
         {
             var annotatedText = AnnotatedText.Parse(text);
             var compilation = Compilation.Compile(annotatedText.Text);
-            var res = compilation.Evaluate();
+            compilation.Evaluate();
             var diagnostics = AnnotatedText.UnindentLines(expected);
 
             if (diagnostics.Length != annotatedText.Spans.Length)
