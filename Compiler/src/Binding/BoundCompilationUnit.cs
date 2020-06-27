@@ -7,23 +7,20 @@ namespace Compiler
 
     internal sealed class BoundCompilationUnit : BoundNode
     {
-        public BoundCompilationUnit(BoundInvalidStatement statement, TextSpan span)
+        public BoundCompilationUnit(BoundInvalidStatement statement)
         {  
             IsValid = false;
-            Span = span;
             DeclaredVariables = ImmutableArray<VariableSymbol>.Empty;
             Statement = statement;
         }
 
-        public BoundCompilationUnit(BoundStatement statement, ImmutableArray<VariableSymbol> declaredVariables, TextSpan span)
+        public BoundCompilationUnit(BoundStatement statement, ImmutableArray<VariableSymbol> declaredVariables)
         {
             DeclaredVariables = declaredVariables;
             Statement = statement;
-            Span = span;
             IsValid = true;
         }
 
-        public override TextSpan Span { get; }
         public BoundStatement Statement { get; }
         public ImmutableArray<VariableSymbol> DeclaredVariables { get; }
         public bool IsValid{ get; }

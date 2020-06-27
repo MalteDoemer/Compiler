@@ -4,17 +4,11 @@ namespace Compiler.Binding
 {
     internal sealed class BoundPrintStatement : BoundStatement
     {
-        public BoundPrintStatement(BoundExpression expression, TextSpan printTokenSpan)
+        public BoundPrintStatement(BoundExpression expression)
         {
             Expression = expression;
-            PrintTokenSpan = printTokenSpan;
         }
 
         public BoundExpression Expression { get; }
-        public TextSpan PrintTokenSpan { get; }
-        
-        public override TextSpan Span => PrintTokenSpan + Expression.Span;
     }
-
-    
 }
