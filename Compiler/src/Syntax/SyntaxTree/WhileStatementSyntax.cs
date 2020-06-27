@@ -2,9 +2,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class WhileStatement : StatementSyntax
+    internal sealed class WhileStatementSyntax : StatementSyntax
     {
-        public WhileStatement(SyntaxToken whileToken, ExpressionSyntax condition, StatementSyntax body)
+        public WhileStatementSyntax(SyntaxToken whileToken, ExpressionSyntax condition, StatementSyntax body)
         {
             WhileToken = whileToken;
             Condition = condition;

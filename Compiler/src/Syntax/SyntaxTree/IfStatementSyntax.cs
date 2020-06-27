@@ -2,10 +2,10 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class IfStatement : StatementSyntax
+    internal sealed class IfStatementSyntax : StatementSyntax
     {
 
-        public IfStatement(SyntaxToken ifToken, ExpressionSyntax expression, StatementSyntax thenStatement, ElseStatement elseStatement = null)
+        public IfStatementSyntax(SyntaxToken ifToken, ExpressionSyntax expression, StatementSyntax thenStatement, ElseStatementSyntax elseStatement = null)
         {
             IfToken = ifToken;
             Expression = expression;
@@ -17,7 +17,7 @@ namespace Compiler.Syntax
         public SyntaxToken IfToken { get; }
         public ExpressionSyntax Expression { get; }
         public StatementSyntax ThenStatement { get; }
-        public ElseStatement ElseStatement { get; }
+        public ElseStatementSyntax ElseStatement { get; }
 
         public override bool IsValid => IfToken.IsValid && Expression.IsValid && ThenStatement.IsValid && (ElseStatement == null ? true : ElseStatement.IsValid);
 

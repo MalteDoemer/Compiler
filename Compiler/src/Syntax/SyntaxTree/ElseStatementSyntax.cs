@@ -1,10 +1,10 @@
-using Compiler.Text;
+﻿using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class ElseStatement : StatementSyntax
+    internal sealed class ElseStatementSyntax : StatementSyntax
     {
-        public ElseStatement(SyntaxToken elseToken, StatementSyntax thenStatement)
+        public ElseStatementSyntax(SyntaxToken elseToken, StatementSyntax thenStatement)
         {
             ElseToken = elseToken;
             ThenStatement = thenStatement;

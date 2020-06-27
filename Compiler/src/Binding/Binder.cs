@@ -73,16 +73,16 @@ namespace Compiler.Binding
                 return BindBlockStatement(bs);
             else if (statement is VariableDeclerationStatement vs)
                 return BindVariableDeclerationStatement(vs);
-            else if (statement is IfStatement ifs)
+            else if (statement is IfStatementSyntax ifs)
                 return BindIfStatement(ifs);
-            else if (statement is WhileStatement ws)
+            else if (statement is WhileStatementSyntax ws)
                 return BindWhileStatement(ws);
-            else if (statement is PrintStatement ps)
+            else if (statement is PrintStatementSyntax ps)
                 return BindPrintStatement(ps);
             else throw new Exception($"Unexpected StatementSyntax <{statement}>");
         }
 
-        private BoundStatement BindPrintStatement(PrintStatement ps)
+        private BoundStatement BindPrintStatement(PrintStatementSyntax ps)
         {
             var expr = BindExpression(ps.Expression);
 
@@ -91,7 +91,7 @@ namespace Compiler.Binding
             return new BoundPrintStatement(expr, ps.PrintToken.Span);
         }
 
-        private BoundStatement BindWhileStatement(WhileStatement ws)
+        private BoundStatement BindWhileStatement(WhileStatementSyntax ws)
         {
             var condition = BindExpression(ws.Condition);
 
@@ -112,7 +112,7 @@ namespace Compiler.Binding
             return new BoundWhileStatement(condition, body, ws.WhileToken.Span);
         }
 
-        private BoundStatement BindIfStatement(IfStatement ifs)
+        private BoundStatement BindIfStatement(IfStatementSyntax ifs)
         {
             var condition = BindExpression(ifs.Expression);
 

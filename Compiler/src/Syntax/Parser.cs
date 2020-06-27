@@ -77,7 +77,7 @@ namespace Compiler.Syntax
             if (!expr.IsValid)
                 return new InvalidStatementSyntax(expr.Span);
 
-            return new PrintStatement(printToken, expr);
+            return new PrintStatementSyntax(printToken, expr);
         }
 
         private StatementSyntax ParseIfStatement()
@@ -95,7 +95,7 @@ namespace Compiler.Syntax
                 return new InvalidStatementSyntax(expr.Span);
 
             var elseClause = ParseElseClause();
-            return new IfStatement(ifToken, expr, statement, elseClause);
+            return new IfStatementSyntax(ifToken, expr, statement, elseClause);
         }
 
         private StatementSyntax ParseWhileStatement()
@@ -112,7 +112,7 @@ namespace Compiler.Syntax
             if (!body.IsValid)
                 return new InvalidStatementSyntax(body.Span);
 
-            return new WhileStatement(whileToken, condition, body);
+            return new WhileStatementSyntax(whileToken, condition, body);
         }
 
         private StatementSyntax ParseExpressionStatement()
@@ -235,13 +235,13 @@ namespace Compiler.Syntax
             }
         }
 
-        private ElseStatement ParseElseClause()
+        private ElseStatementSyntax ParseElseClause()
         {
             if (current.Kind != SyntaxTokenKind.ElseKeyword)
                 return null;
             var elseKeyword = Advance();
             var statement = ParseStatement();
-            return new ElseStatement(elseKeyword, statement);
+            return new ElseStatementSyntax(elseKeyword, statement);
         }
 
 

@@ -2,9 +2,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class PrintStatement : StatementSyntax
+    internal sealed class PrintStatementSyntax : StatementSyntax
     {
-        public PrintStatement(SyntaxToken printToken, ExpressionSyntax expression)
+        public PrintStatementSyntax(SyntaxToken printToken, ExpressionSyntax expression)
         {
             PrintToken = printToken;
             Expression = expression;
