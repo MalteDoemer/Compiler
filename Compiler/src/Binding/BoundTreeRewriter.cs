@@ -29,7 +29,7 @@ namespace Compiler.Binding
             else throw new Exception($"Unknown BoundStatement <{statement}>");
         }
 
-        private BoundStatement RewriteVariableDecleration(BoundVariableDecleration node)
+        protected virtual BoundStatement RewriteVariableDecleration(BoundVariableDecleration node)
         {
             var expression = RewriteExpression(node.Expression);
             if (expression == node.Expression)
@@ -38,7 +38,7 @@ namespace Compiler.Binding
             return new BoundVariableDecleration(node.Variable, expression);
         }
 
-        private BoundStatement RewritePrintStatement(BoundPrintStatement node)
+        protected virtual BoundStatement RewritePrintStatement(BoundPrintStatement node)
         {
             var expression = RewriteExpression(node.Expression);
             if (expression == node.Expression)
@@ -46,7 +46,7 @@ namespace Compiler.Binding
             return new BoundPrintStatement(expression);
         }
 
-        private BoundStatement RewriteWhileStatement(BoundWhileStatement node)
+        protected virtual BoundStatement RewriteWhileStatement(BoundWhileStatement node)
         {
             var condition = RewriteExpression(node.Condition);
             var body = RewriteStatement(node.Body);
@@ -55,7 +55,7 @@ namespace Compiler.Binding
             return new BoundWhileStatement(condition, body);
         }
 
-        private BoundStatement RewriteIfStatement(BoundIfStatement node)
+        protected virtual BoundStatement RewriteIfStatement(BoundIfStatement node)
         {
             var condition = RewriteExpression(node.Condition);
             var body = RewriteStatement(node.Body);
@@ -65,7 +65,7 @@ namespace Compiler.Binding
             return new BoundIfStatement(condition, body, elseStatement);
         }
 
-        private BoundStatement RewriteForStatement(BoundForStatement node)
+        protected virtual BoundStatement RewriteForStatement(BoundForStatement node)
         {
             var variableDecl = RewriteStatement(node.VariableDecleration);
             var condition = RewriteExpression(node.Condition);
@@ -78,33 +78,36 @@ namespace Compiler.Binding
             return new BoundForStatement(variableDecl, condition, increment, body);
         }
 
-        private BoundStatement RewriteBlockStatement(BoundBlockStatement node)
+        protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
         {
             ImmutableArray<BoundStatement>.Builder builder = null;
 
-            for (int i = 0; i < node.Statements.Length; i++)
+            for (var i = 0; i < node.Statements.Length; i++)
             {
-                var oldStmt = node.Statements[i];
-                var newStmt = RewriteStatement(oldStmt);
-
-                if (newStmt != oldStmt)
+                var oldStatement = node.Statements[i];
+                var newStatement = RewriteStatement(oldStatement);
+                if (newStatement != oldStatement)
                 {
                     if (builder == null)
                     {
                         builder = ImmutableArray.CreateBuilder<BoundStatement>(node.Statements.Length);
+
                         for (var j = 0; j < i; j++)
                             builder.Add(node.Statements[j]);
                     }
-                    builder.Add(newStmt);
                 }
+
+                if (builder != null)
+                    builder.Add(newStatement);
             }
+
             if (builder == null)
                 return node;
 
             return new BoundBlockStatement(builder.MoveToImmutable());
         }
 
-        private BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
+        protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
         {
             var expr = RewriteExpression(node.Expression);
             if (expr == node.Expression)

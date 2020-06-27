@@ -123,15 +123,6 @@ namespace Compiler
             {
                 Console.WriteLine(EvaluateExpression(ps.Expression));
             }
-            else if (stmt is BoundForStatement fs)
-            {
-                EvaluateStatement(fs.VariableDecleration);
-                while (EvaluateExpression(fs.Condition))
-                {
-                    EvaluateStatement(fs.Body);
-                    EvaluateExpression(fs.Increment);
-                }
-            }
         }
 
         public void Evaluate() => EvaluateStatement(Root);
