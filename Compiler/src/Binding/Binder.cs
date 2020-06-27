@@ -210,7 +210,33 @@ namespace Compiler.Binding
                 return BindAssignmentExpression(ee);
             else if (syntax is AdditionalAssignmentExpression ae)
                 return BindAdditioalAssignmentExpression(ae);
+            else if (syntax is PostIncDecExpression ide)
+                return BindPostIncDecExpression(ide);
             else throw new Exception($"Unknown Syntax kind <{syntax}>");
+        }
+
+        private BoundExpression BindPostIncDecExpression(PostIncDecExpression ide)
+        {
+            if (!scope.TryLookUp((string)ide.Identifier.Value, out VariableSymbol variable))
+            {
+                diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, ide.Identifier.Span, (string)ide.Identifier.Value);
+                return new BoundInvalidExpression(ide.Identifier.Span);
+            }
+
+            var left = new BoundVariableExpression(variable, ide.Identifier.Span);
+            var right = new BoundLiteralExpression(ide.Op.Span, 1, TypeSymbol.Int);
+
+            var op = BindBinaryOperator(ide.Op.Kind);
+            var resultType = ResolveBinaryType(op, left.ResultType, right.ResultType);
+
+            if (op == null || resultType == null)
+            {
+                diagnostics.ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, ide.Op.Span, ide.Op.Value.ToString(), left.ResultType, right.ResultType);
+                return new BoundInvalidExpression(ide.Op.Span);
+            }
+
+            var binaryExpression = new BoundBinaryExpression((BoundBinaryOperator)op, ide.Op.Span, left, right, (TypeSymbol)resultType);
+            return new BoundAssignementExpression(variable, binaryExpression, ide.Identifier.Span, ide.Op.Span);
         }
 
         private BoundExpression BindAdditioalAssignmentExpression(AdditionalAssignmentExpression ae)
