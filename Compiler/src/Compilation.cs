@@ -42,18 +42,28 @@ namespace Compiler
         {
             if (Diagnostics.Length > 0) return;
             else if (Root == null) return;
-            var evaluator = new Evaluator(Root.Statement, Env);
+            var statement = GetStatement();
+            var evaluator = new Evaluator(statement, Env);
             evaluator.Evaluate();
         }
 
         public object EvaluateExpression()
         {
-             if (Diagnostics.Length > 0) return null;
+            if (Diagnostics.Length > 0) return null;
             else if (Root == null) return null;
-            var evaluator = new Evaluator(Root.Statement, Env);
+            var statement = GetStatement();
+            var evaluator = new Evaluator(statement, Env);
             evaluator.Evaluate();
             return evaluator.lastValue;
         }
+
+        private BoundStatement GetStatement()
+        {
+            var stmt = Root.Statement;
+            return Lowering.Lowerer.Lower(stmt);
+        }
+
+
 
         public Compilation ContinueWith(SourceText text) => new Compilation(this, text, Env);
 
