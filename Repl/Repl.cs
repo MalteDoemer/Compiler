@@ -8,9 +8,9 @@ namespace Editor
 {
     public class ConsoleEditor
     {
-        private int cursorX;
-        private int cursorY;
-        private List<string> document;
+        //private int cursorX;
+        //private int cursorY;
+        //private List<string> document;
 
         private void Start()
         {
