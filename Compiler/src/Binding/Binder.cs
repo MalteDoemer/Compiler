@@ -32,7 +32,7 @@ namespace Compiler.Binding
             var stmt = BindStatement(unit.Statement);
 
             if (stmt is BoundInvalidStatement inv)
-                return new BoundCompilationUnit(inv);
+                return null;
 
             var variables = scope.GetDeclaredVariables();
             return new BoundCompilationUnit(stmt, variables);
@@ -44,7 +44,8 @@ namespace Compiler.Binding
 
             while (previous != null)
             {
-                stack.Push(previous);
+                if (previous.Root != null) 
+                    stack.Push(previous);
                 previous = previous.Previous;
             }
 

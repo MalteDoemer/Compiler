@@ -26,7 +26,24 @@ namespace Compiler.Binding
                 return RewritePrintStatement(ps);
             else if (statement is BoundVariableDecleration vs)
                 return RewriteVariableDecleration(vs);
+            else if (statement is BoundGotoStatement gs)
+                return RewriteGotoStatement(gs);
+            else if (statement is BoundConditionalGotoStatement gcs)
+                return RewriteConditionalGotoStatement(gcs);
+            else if (statement is BoundLabelStatement ls)
+                return RewriteLabelStatement(ls);
+
             else throw new Exception($"Unknown BoundStatement <{statement}>");
+        }
+
+
+        protected virtual BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
+        {
+            var condition = RewriteExpression(node.Condition);
+            if (condition == node.Condition)
+                return node;
+
+            return new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfFalse);
         }
 
         protected virtual BoundStatement RewriteVariableDecleration(BoundVariableDecleration node)
@@ -115,6 +132,7 @@ namespace Compiler.Binding
             return new BoundExpressionStatement(expr);
         }
 
+
         public virtual BoundExpression RewriteExpression(BoundExpression expression)
         {
             if (expression is BoundInvalidExpression)
@@ -160,14 +178,10 @@ namespace Compiler.Binding
             return new BoundUnaryExpression(node.Op, right, node.ResultType);
         }
 
-        protected virtual BoundExpression RewriteVaraibleExpression(BoundVariableExpression node)
-        {
-            return node;
-        }
 
-        protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node)
-        {
-            return node;
-        }
+        protected virtual BoundStatement RewriteLabelStatement(BoundLabelStatement node) => node;
+        protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node) => node;
+        protected virtual BoundExpression RewriteVaraibleExpression(BoundVariableExpression node) => node;
+        protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node) => node;
     }
 }

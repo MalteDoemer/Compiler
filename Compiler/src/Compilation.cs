@@ -16,7 +16,7 @@ namespace Compiler
         {
             Previous = previous;
             Text = text;
-            Env = env;
+            Variables = env;
             var lexer = new Lexer(text);
             var tokens = lexer.Tokenize().ToImmutableArray();
             var parser = new Parser(text, tokens);
@@ -35,29 +35,31 @@ namespace Compiler
         internal BoundCompilationUnit Root { get; }
         public Compilation Previous { get; }
         public SourceText Text { get; }
-        public Dictionary<string, VariableSymbol> Env { get; }
+        public Dictionary<string, VariableSymbol> Variables { get; }
         public ImmutableArray<Diagnostic> Diagnostics { get; }
 
         public void Evaluate()
         {
-            if (Diagnostics.Length > 0) return;
-            else if (Root == null) return;
+            if (Diagnostics.Length > 0 || Root == null) return;
+
+            
             var statement = GetStatement();
-            var evaluator = new Evaluator(statement, Env);
+            var evaluator = new Evaluator(statement, Variables);
             evaluator.Evaluate();
         }
 
         public object EvaluateExpression()
         {
-            if (Diagnostics.Length > 0) return null;
-            else if (Root == null) return null;
+           if (Diagnostics.Length > 0 || Root == null) return null;
+
+
             var statement = GetStatement();
-            var evaluator = new Evaluator(statement, Env);
+            var evaluator = new Evaluator(statement, Variables);
             evaluator.Evaluate();
             return evaluator.lastValue;
         }
 
-        private BoundStatement GetStatement()
+        private BoundBlockStatement GetStatement()
         {
             var stmt = Root.Statement;
             return Lowering.Lowerer.Lower(stmt);
@@ -65,7 +67,7 @@ namespace Compiler
 
 
 
-        public Compilation ContinueWith(SourceText text) => new Compilation(this, text, Env);
+        public Compilation ContinueWith(SourceText text) => new Compilation(this, text, Variables);
 
         public static Compilation Compile(SourceText text) => new Compilation(null, text, new Dictionary<string, VariableSymbol>());
 
