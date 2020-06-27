@@ -104,10 +104,10 @@ namespace Compiler
             {
                 bool condition = EvaluateExpression(ifs.Condition);
                 if (condition)
-                    EvaluateStatement(ifs.ThenStatement);
+                    EvaluateStatement(ifs.Body);
                 else if (ifs.ElseStatement != null) EvaluateStatement(ifs.ElseStatement);
             }
-            else if (stmt is BoundVariableDeclerationStatement vs)
+            else if (stmt is BoundVariableDecleration vs)
             {
                 var val = EvaluateExpression(vs.Expression);
                 lastValue = val;

@@ -4,15 +4,15 @@ namespace Compiler.Binding
 {
     internal sealed class BoundIfStatement : BoundStatement
     {
-        public BoundIfStatement(BoundExpression condition, BoundStatement thenStatement, BoundStatement elseStatement)
+        public BoundIfStatement(BoundExpression condition, BoundStatement body, BoundStatement elseStatement)
         {
             Condition = condition;
-            ThenStatement = thenStatement;
+            Body = body;
             ElseStatement = elseStatement;
         }
 
         public BoundExpression Condition { get; }
-        public BoundStatement ThenStatement { get; }
+        public BoundStatement Body { get; }
         public BoundStatement ElseStatement { get; }
     }
 }

@@ -15,12 +15,113 @@ namespace Compiler.Binding
     {
         public virtual BoundStatement RewriteStatement(BoundStatement statement)
         {
-            throw new NotImplementedException();
+            if (statement is BoundInvalidStatement)
+                return statement;
+            else if (statement is BoundExpressionStatement es)
+                return RewriteExpressionStatement(es);
+            else if (statement is BoundBlockStatement bs)
+                return RewriteBlockStatement(bs);
+            else if (statement is BoundForStatement fs)
+                return RewriteForStatement(fs);
+            else if (statement is BoundIfStatement ifs)
+                return RewriteIfStatement(ifs);
+            else if (statement is BoundWhileStatement ws)
+                return RewriteWhileStatement(ws);
+            else if (statement is BoundPrintStatement ps)
+                return RewritePrintStatement(ps);
+            else if (statement is BoundVariableDecleration vs)
+                return RewriteVariableDecleration(vs);
+            else throw new Exception($"Unknown BoundStatement <{statement}>");
+        }
+
+        private BoundStatement RewriteVariableDecleration(BoundVariableDecleration node)
+        {
+            var expression = RewriteExpression(node.Expression);
+            if (expression == node.Expression)
+                return node;
+
+            return new BoundVariableDecleration(node.Variable, expression);
+        }
+
+        private BoundStatement RewritePrintStatement(BoundPrintStatement node)
+        {
+            var expression = RewriteExpression(node.Expression);
+            if (expression == node.Expression)
+                return node;
+            return new BoundPrintStatement(expression);
+        }
+
+        private BoundStatement RewriteWhileStatement(BoundWhileStatement node)
+        {
+            var condition = RewriteExpression(node.Condition);
+            var body = RewriteStatement(node.Body);
+            if (condition == node.Condition && body == node.Body)
+                return node;
+            return new BoundWhileStatement(condition, body);
+        }
+
+        private BoundStatement RewriteIfStatement(BoundIfStatement node)
+        {
+            var condition = RewriteExpression(node.Condition);
+            var body = RewriteStatement(node.Body);
+            var elseStatement = node.ElseStatement == null ? null : RewriteStatement(node.ElseStatement);
+            if (condition == node.Condition && body == node.Body && elseStatement == node.ElseStatement)
+                return node;
+            return new BoundIfStatement(condition, body, elseStatement);
+        }
+
+        private BoundStatement RewriteForStatement(BoundForStatement node)
+        {
+            var variableDecl = RewriteStatement(node.VariableDecleration);
+            var condition = RewriteExpression(node.Condition);
+            var increment = RewriteExpression(node.Increment);
+            var body = RewriteStatement(node.Body);
+
+            if (variableDecl == node.VariableDecleration && condition == node.Condition && increment == node.Increment && body == node.Body)
+                return node;
+
+            return new BoundForStatement(variableDecl, condition, increment, body);
+        }
+
+        private BoundStatement RewriteBlockStatement(BoundBlockStatement node)
+        {
+            ImmutableArray<BoundStatement>.Builder builder = null;
+
+            for (int i = 0; i < node.Statements.Length; i++)
+            {
+                var oldStmt = node.Statements[i];
+                var newStmt = RewriteStatement(oldStmt);
+
+                if (newStmt != oldStmt)
+                {
+                    if (builder == null)
+                    {
+                        builder = ImmutableArray.CreateBuilder<BoundStatement>(node.Statements.Length);
+                        for (var j = 0; j < i; j++)
+                            builder.Add(node.Statements[j]);
+                    }
+                    builder.Add(newStmt);
+                }
+            }
+            if (builder == null)
+                return node;
+
+            return new BoundBlockStatement(builder.MoveToImmutable());
+        }
+
+        private BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
+        {
+            var expr = RewriteExpression(node.Expression);
+            if (expr == node.Expression)
+                return node;
+            return new BoundExpressionStatement(expr);
         }
 
         public virtual BoundExpression RewriteExpression(BoundExpression expression)
         {
-            if (expression is BoundLiteralExpression le)
+            if (expression is BoundInvalidExpression)
+                return expression;
+            else if (expression is BoundLiteralExpression le)
                 return RewriteLiteralExpression(le);
             else if (expression is BoundUnaryExpression ue)
                 return RewriteUnaryExpression(ue);
@@ -41,7 +142,6 @@ namespace Compiler.Binding
                 return node;
             return new BoundAssignementExpression(node.Variable, expr);
         }
-
 
         protected virtual BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)
         {
@@ -214,18 +314,18 @@ namespace Compiler.Binding
 
         private BoundStatement BindIfStatement(IfStatementSyntax ifs)
         {
-            var condition = BindExpression(ifs.Expression);
+            var condition = BindExpression(ifs.Condition);
 
             if (condition is BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
             if (condition.ResultType != TypeSymbol.Bool)
             {
-                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, ifs.Expression.Span, TypeSymbol.Bool, condition.ResultType);
+                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, ifs.Condition.Span, TypeSymbol.Bool, condition.ResultType);
                 return new BoundInvalidStatement();
             }
 
-            var stmt = BindStatement(ifs.ThenStatement);
+            var stmt = BindStatement(ifs.Body);
 
             if (stmt is BoundInvalidStatement)
                 return new BoundInvalidStatement();
@@ -262,7 +362,7 @@ namespace Compiler.Binding
                 diagnostics.ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, vs.Identifier.Span, variable.Identifier);
                 return new BoundInvalidStatement();
             }
-            return new BoundVariableDeclerationStatement(variable, expr);
+            return new BoundVariableDecleration(variable, expr);
         }
 
         private BoundStatement BindBlockStatement(BlockStatment bs)
