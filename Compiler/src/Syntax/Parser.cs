@@ -64,7 +64,48 @@ namespace Compiler.Syntax
                 return ParseWhileStatement();
             else if (current.Kind == SyntaxTokenKind.PrintKeyWord)
                 return ParsePrintStatement();
+            else if (current.Kind == SyntaxTokenKind.ForKeyword)
+                return ParseForStatement();
             else return ParseExpressionStatement();
+        }
+
+        private StatementSyntax ParseForStatement()
+        {
+            var forToken = MatchToken(SyntaxTokenKind.ForKeyword);
+            if (!forToken.IsValid)
+                return new InvalidStatementSyntax(forToken.Span);
+
+            var variableDecleration = ParseVariableDecleration();
+
+            if (!variableDecleration.IsValid)
+                return new InvalidStatementSyntax(variableDecleration.Span);
+
+            var comma1 = MatchToken(SyntaxTokenKind.Comma);
+
+            if (!comma1.IsValid)
+                return new InvalidStatementSyntax(comma1.Span);
+
+            var condition = ParseExpression();
+
+            if (!condition.IsValid)
+                return new InvalidStatementSyntax(condition.Span);
+
+            var comma2 = MatchToken(SyntaxTokenKind.Comma);
+
+            if (!comma2.IsValid)
+                return new InvalidStatementSyntax(comma2.Span);
+
+            var increment = ParseExpression();
+
+            if (!increment.IsValid)
+                return new InvalidStatementSyntax(increment.Span); ;
+
+            var body = ParseStatement();
+
+            if (!body.IsValid)
+                return new InvalidStatementSyntax(body.Span);
+
+            return new ForStatementSyntax(forToken, variableDecleration, condition, increment, body);
         }
 
         private StatementSyntax ParsePrintStatement()

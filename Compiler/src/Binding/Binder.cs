@@ -79,7 +79,45 @@ namespace Compiler.Binding
                 return BindWhileStatement(ws);
             else if (statement is PrintStatementSyntax ps)
                 return BindPrintStatement(ps);
+            else if (statement is ForStatementSyntax fs)
+            {
+                scope = new BoundScope(scope);
+                var res = BindForStatement(fs);
+                scope = scope.Parent;
+                return res;
+            }
             else throw new Exception($"Unexpected StatementSyntax <{statement}>");
+        }
+
+        private BoundStatement BindForStatement(ForStatementSyntax fs)
+        {
+            var variableDecl = BindStatement(fs.VariableDecleration);
+
+            if (variableDecl is BoundInvalidStatement)
+                return new BoundInvalidStatement(fs.Span);
+
+            var condition = BindExpression(fs.Condition);
+
+            if (condition is BoundInvalidExpression)
+                return new BoundInvalidStatement(fs.Span);
+
+            if (condition.ResultType != TypeSymbol.Bool)
+            {
+                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, condition.Span, TypeSymbol.Bool, condition.ResultType);
+                return new BoundInvalidStatement(condition.Span);
+            }
+
+            var increment = BindExpression(fs.Increment);
+
+            if (increment is BoundInvalidExpression)
+                return new BoundInvalidStatement(fs.Span);
+
+            var body = BindStatement(fs.Body);
+
+            if (body is BoundInvalidStatement)
+                return new BoundInvalidStatement(fs.Span);
+
+            return new BoundForStatement(variableDecl, condition, increment, body, fs.ForToken.Span);
         }
 
         private BoundStatement BindPrintStatement(PrintStatementSyntax ps)

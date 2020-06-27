@@ -68,6 +68,7 @@ namespace Compiler.Syntax
                 case '&': return SyntaxTokenKind.Ampersand;
                 case '|': return SyntaxTokenKind.Pipe;
                 case '^': return SyntaxTokenKind.Hat;
+                case ',': return SyntaxTokenKind.Comma;
                 default: return null;
             }
         }
@@ -143,6 +144,8 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.Pipe: return "|";
                 case SyntaxTokenKind.Ampersand: return "&";
                 case SyntaxTokenKind.Hat: return "^";
+                case SyntaxTokenKind.Comma: return ",";
+
                 case SyntaxTokenKind.StarStar: return "**";
                 case SyntaxTokenKind.SlashSlah: return "//";
                 case SyntaxTokenKind.EqualEqual: return "==";
