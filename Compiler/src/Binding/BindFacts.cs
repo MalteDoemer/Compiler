@@ -128,6 +128,13 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.GreaterEqual: return BoundBinaryOperator.GreaterEqual;
                 case SyntaxTokenKind.AmpersandAmpersand: return BoundBinaryOperator.LogicalAnd;
                 case SyntaxTokenKind.PipePipe: return BoundBinaryOperator.LogicalOr;
+
+                case SyntaxTokenKind.PlusEqual: return BoundBinaryOperator.Addition;
+                case SyntaxTokenKind.MinusEqual: return BoundBinaryOperator.Subtraction;
+                case SyntaxTokenKind.StarEqual: return BoundBinaryOperator.Multiplication;
+                case SyntaxTokenKind.SlashEqual: return BoundBinaryOperator.Division;
+                case SyntaxTokenKind.AmpersandEqual: return BoundBinaryOperator.BitwiseAnd;
+                case SyntaxTokenKind.PipeEqual: return BoundBinaryOperator.BitwiseOr;
                 default: return null;
             }
         }
@@ -151,7 +158,6 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.Int: return TypeSymbol.Int;
                 case SyntaxTokenKind.Float: return TypeSymbol.Float;
                 case SyntaxTokenKind.String: return TypeSymbol.String;
-                //case SyntaxTokenKind.Null: return TypeSymbol.NullType;
                 case SyntaxTokenKind.False: return TypeSymbol.Bool;
                 case SyntaxTokenKind.True: return TypeSymbol.Bool;
                 case SyntaxTokenKind.IntKeyword: return TypeSymbol.Int;

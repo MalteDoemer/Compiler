@@ -48,7 +48,7 @@ namespace Compiler.Syntax
         {
             var stmt = ParseStatement();
             var unit = new CompilationUnitSyntax(TextSpan.FromLength(0, source.Length), stmt);
-            if (current.Kind != SyntaxTokenKind.End) diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, SyntaxTokenKind.End);
+            if (stmt.IsValid && current.Kind != SyntaxTokenKind.End) diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, SyntaxTokenKind.End);
             return unit;
         }
 
@@ -70,24 +70,48 @@ namespace Compiler.Syntax
         private StatementSyntax ParsePrintStatement()
         {
             var printToken = MatchToken(SyntaxTokenKind.PrintKeyWord);
+            if (!printToken.IsValid)
+                return new InvalidStatementSyntax(printToken.Span);
+
             var expr = ParseExpression();
+            if (!expr.IsValid)
+                return new InvalidStatementSyntax(expr.Span);
+
             return new PrintStatement(printToken, expr);
         }
 
         private StatementSyntax ParseIfStatement()
         {
             var ifToken = MatchToken(SyntaxTokenKind.IfKeyword);
+            if (!ifToken.IsValid)
+                return new InvalidStatementSyntax(ifToken.Span);
+
             var expr = ParseExpression();
+            if (!expr.IsValid)
+                return new InvalidStatementSyntax(expr.Span);
+
             var statement = ParseStatement();
+            if (!statement.IsValid)
+                return new InvalidStatementSyntax(expr.Span);
+
             var elseClause = ParseElseClause();
             return new IfStatement(ifToken, expr, statement, elseClause);
         }
- 
+
         private StatementSyntax ParseWhileStatement()
         {
             var whileToken = MatchToken(SyntaxTokenKind.WhileKeyword);
+            if (!whileToken.IsValid)
+                return new InvalidStatementSyntax(whileToken.Span);
+
             var condition = ParseExpression();
+            if (!condition.IsValid)
+                return new InvalidStatementSyntax(condition.Span);
+
             var body = ParseStatement();
+            if (!body.IsValid)
+                return new InvalidStatementSyntax(body.Span);
+
             return new WhileStatement(whileToken, condition, body);
         }
 
@@ -121,9 +145,20 @@ namespace Compiler.Syntax
         private StatementSyntax ParseVariableDecleration()
         {
             var typeToken = Advance();
+            if (!typeToken.IsValid)
+                return new InvalidStatementSyntax(typeToken.Span);
+
             var identifier = MatchToken(SyntaxTokenKind.Identifier);
+            if (!identifier.IsValid)
+                return new InvalidStatementSyntax(identifier.Span);
+
             var equalToken = MatchToken(SyntaxTokenKind.Equal);
+            if (!equalToken.IsValid)
+                return new InvalidStatementSyntax(equalToken.Span);
+
             var expr = ParseExpression();
+            if (!expr.IsValid)
+                return new InvalidStatementSyntax(expr.Span);
 
             return new VariableDeclerationStatement(typeToken, identifier, equalToken, expr);
         }
@@ -164,27 +199,41 @@ namespace Compiler.Syntax
         private ExpressionSyntax ParseParenthesizedExpression()
         {
             var start = current.Span.Start;
-            pos++;
+            MatchToken(SyntaxTokenKind.LParen);
             var expr = ParseExpression();
             if (current.Kind != SyntaxTokenKind.RParen)
                 diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, current.Span.End));
-            else pos++;
+            else MatchToken(SyntaxTokenKind.RParen);
             return expr;
         }
 
         private ExpressionSyntax ParseIdentifier()
         {
-            var identifier = Advance();
+            var identifier = MatchToken(SyntaxTokenKind.Identifier);
 
-            if (current.Kind == SyntaxTokenKind.Equal)
+            switch (current.Kind)
             {
-                var equalToken = Advance();
-                return new AssignmentExpressionSyntax(identifier, equalToken, ParseExpression());
+                case SyntaxTokenKind.Equal:
+                    var equalToken = Advance();
+                    var expr1 = ParseExpression();
+                    return new AssignmentExpressionSyntax(identifier, equalToken, expr1);
+                case SyntaxTokenKind.PlusEqual:
+                case SyntaxTokenKind.MinusEqual:
+                case SyntaxTokenKind.StarEqual:
+                case SyntaxTokenKind.SlashEqual:
+                case SyntaxTokenKind.AmpersandEqual:
+                case SyntaxTokenKind.PipeEqual:
+                    var op1 = Advance();
+                    var expr2 = ParseExpression();
+                    return new AdditionalAssignmentExpression(identifier, op1, expr2);
+                case SyntaxTokenKind.PlusPlus:
+                case SyntaxTokenKind.MinusMinus:
+                    var op2 = Advance();
+                    return new PostIncDecExpression(identifier, op2);
+                default:
+                    return new VariableExpressionSyntax(identifier);
             }
-            else
-                return new VariableExpressionSyntax(identifier);
         }
-
 
         private ElseStatement ParseElseClause()
         {

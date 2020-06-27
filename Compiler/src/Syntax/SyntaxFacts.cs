@@ -76,14 +76,22 @@ namespace Compiler.Syntax
         {
             switch (c1, c2)
             {
+                case ('+', '+'): return SyntaxTokenKind.PlusPlus;
+                case ('-', '-'): return SyntaxTokenKind.MinusMinus;
                 case ('*', '*'): return SyntaxTokenKind.StarStar;
                 case ('/', '/'): return SyntaxTokenKind.SlashSlah;
+                case ('+', '='): return SyntaxTokenKind.PlusEqual;
+                case ('-', '='): return SyntaxTokenKind.MinusEqual;
+                case ('*', '='): return SyntaxTokenKind.StarEqual;
+                case ('/', '='): return SyntaxTokenKind.SlashEqual;
                 case ('=', '='): return SyntaxTokenKind.EqualEqual;
                 case ('!', '='): return SyntaxTokenKind.NotEqual;
                 case ('<', '='): return SyntaxTokenKind.LessEqual;
                 case ('>', '='): return SyntaxTokenKind.GreaterEqual;
                 case ('&', '&'): return SyntaxTokenKind.AmpersandAmpersand;
                 case ('|', '|'): return SyntaxTokenKind.PipePipe;
+                case ('&', '='): return SyntaxTokenKind.AmpersandEqual;
+                case ('|', '='): return SyntaxTokenKind.PipeEqual;
                 default: return null;
             }
         }
@@ -143,6 +151,16 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.GreaterEqual: return ">=";
                 case SyntaxTokenKind.AmpersandAmpersand: return "&&";
                 case SyntaxTokenKind.PipePipe: return "||";
+
+                case SyntaxTokenKind.PlusPlus: return "++";
+                case SyntaxTokenKind.MinusMinus: return "--";
+                case SyntaxTokenKind.PlusEqual: return "+=";
+                case SyntaxTokenKind.MinusEqual: return "-=";
+                case SyntaxTokenKind.StarEqual: return "*=";
+                case SyntaxTokenKind.SlashEqual: return "/=";
+                case SyntaxTokenKind.AmpersandEqual: return "&=";
+                case SyntaxTokenKind.PipeEqual: return "|=";
+
                 case SyntaxTokenKind.True: return "true";
                 case SyntaxTokenKind.False: return "false";
                 case SyntaxTokenKind.VarKeyword: return "var";

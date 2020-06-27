@@ -31,6 +31,14 @@ namespace Compiler.Syntax
         PipePipe,
         AmpersandAmpersand,
         Equal,
+        PlusPlus,
+        MinusMinus,
+        PlusEqual,
+        MinusEqual,
+        StarEqual,
+        SlashEqual,
+        AmpersandEqual,
+        PipeEqual,
         LParen,
         RParen,
         LCurly,
@@ -45,6 +53,6 @@ namespace Compiler.Syntax
         ElseKeyword,
         ForKeyword,
         WhileKeyword,
-        PrintKeyWord
+        PrintKeyWord,
     }
 }

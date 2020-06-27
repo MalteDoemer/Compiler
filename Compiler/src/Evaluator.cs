@@ -120,8 +120,9 @@ namespace Compiler
                     EvaluateStatement(ws.Body);
             }
             else if (stmt is BoundPrintStatement ps)
+            {
                 Console.WriteLine(EvaluateExpression(ps.Expression));
-
+            }
         }
 
         public void Evaluate() => EvaluateStatement(Root);
