@@ -11,6 +11,68 @@ using static Compiler.Binding.BindFacts;
 namespace Compiler.Binding
 {
 
+    internal abstract class BoundTreeRewriter
+    {
+        public virtual BoundStatement RewriteStatement(BoundStatement statement)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual BoundExpression RewriteExpression(BoundExpression expression)
+        {
+            if (expression is BoundLiteralExpression le)
+                return RewriteLiteralExpression(le);
+            else if (expression is BoundUnaryExpression ue)
+                return RewriteUnaryExpression(ue);
+            else if (expression is BoundBinaryExpression be)
+                return RewriteBinaryExpression(be);
+            else if (expression is BoundVariableExpression ve)
+                return RewriteVaraibleExpression(ve);
+            else if (expression is BoundAssignementExpression ae)
+                return RewriteAssignmentExpression(ae);
+            else throw new Exception($"Unknown BoundExpression <{expression}>");
+        
+        }
+
+        protected virtual BoundExpression RewriteAssignmentExpression(BoundAssignementExpression node)
+        {
+            var expr = RewriteExpression(node.Expression);
+            if (expr == node.Expression)
+                return node;
+            return new BoundAssignementExpression(node.Variable, expr, node.IdentifierSpan, node.EqualSpan);
+        }
+
+
+        protected virtual BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)
+        {
+            var left = RewriteExpression(node.Left);
+            var right = RewriteExpression(node.Right);
+
+            if (left == node.Left && right == node.Right)
+                return node;
+
+            return new BoundBinaryExpression(node.Op, node.OperatorSpan, left, right, node.ResultType);
+        }
+
+        protected virtual BoundExpression RewriteUnaryExpression(BoundUnaryExpression node)
+        {
+            var right = RewriteExpression(node.Right);
+            if (right == node.Right)
+                return node;
+            return new BoundUnaryExpression(node.Op, node.OperatorSpan, right, node.ResultType);
+        }
+
+        protected virtual BoundExpression RewriteVaraibleExpression(BoundVariableExpression node)
+        {
+            return node;
+        }
+
+        protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node)
+        {
+            return node;
+        }
+    }
+
     internal sealed class Binder
     {
         private readonly DiagnosticBag diagnostics;
