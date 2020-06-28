@@ -1,8 +1,8 @@
 namespace Compiler.Binding
 {
-    public class LabelSymbol
+    public class BoundLabel
     {
-        public LabelSymbol(string identifier)
+        public BoundLabel(string identifier)
         {
             Identifier = identifier;
         }

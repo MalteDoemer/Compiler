@@ -14,7 +14,7 @@ namespace Compiler.Lowering
 
         }
 
-        private LabelSymbol CreateLabel() => new LabelSymbol($"Label{labelCount}");
+        private BoundLabel CreateLabel() => new BoundLabel($"Label{labelCount}");
 
         private static BoundBlockStatement Flatten(BoundStatement statement)
         {
