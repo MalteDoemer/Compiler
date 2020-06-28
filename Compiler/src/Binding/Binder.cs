@@ -187,7 +187,7 @@ namespace Compiler.Binding
             if (vs.TypeToken.Kind == SyntaxTokenKind.VarKeyword) type = expr.ResultType;
             else type = BindFacts.GetTypeSymbol(vs.TypeToken.Kind);
 
-            if (type != TypeSymbol.Object && expr.ResultType != type)
+            if (expr.ResultType != type)
             {
                 diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, vs.Expression.Span, type, expr.ResultType);
                 return new BoundInvalidStatement();
@@ -196,7 +196,7 @@ namespace Compiler.Binding
             var variable = new VariableSymbol((string)vs.Identifier.Value, type);
             if (!scope.TryDeclare(variable))
             {
-                diagnostics.ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, vs.Identifier.Span, variable.Identifier);
+                diagnostics.ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, vs.Identifier.Span, variable.Name);
                 return new BoundInvalidStatement();
             }
             return new BoundVariableDecleration(variable, expr);

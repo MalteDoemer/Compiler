@@ -72,7 +72,7 @@ namespace Compiler
                 case BoundLiteralExpression le:
                     return le.Value;
                 case BoundVariableExpression ve:
-                    return varaibles[ve.Variable.Identifier];
+                    return varaibles[ve.Variable.Name];
                 case BoundUnaryExpression ue:
                     return EvaluateUnaryExpression(ue);
                 case BoundBinaryExpression be:
@@ -89,7 +89,7 @@ namespace Compiler
         private dynamic EvaluateAssignment(BoundAssignementExpression ae)
         {
             var val = EvaluateExpression(ae.Expression);
-            varaibles[ae.Variable.Identifier] = val;
+            varaibles[ae.Variable.Name] = val;
             return val;
         }
 
@@ -145,7 +145,7 @@ namespace Compiler
         {
             var val = EvaluateExpression(vs.Expression);
             lastValue = val;
-            varaibles[vs.Variable.Identifier] = val;
+            varaibles[vs.Variable.Name] = val;
         }
 
         private void EvaluatePrintStatement(BoundPrintStatement ps)

@@ -7,6 +7,7 @@ using Compiler.Diagnostics;
 using Compiler.Syntax;
 using Xunit;
 using Compiler.Symbols;
+using System.Reflection;
 
 namespace Compiler.Test
 {
@@ -187,21 +188,19 @@ namespace Compiler.Test
 
         private static IEnumerable<TypeSymbol> GetTypes()
         {
-            var types = (TypeSymbol[])Enum.GetValues(typeof(TypeSymbol));
-
-            return types.Where(t => t != TypeSymbol.ErrorType);
+            yield return TypeSymbol.Int;
+            yield return TypeSymbol.Float;
+            yield return TypeSymbol.Bool;
+            yield return TypeSymbol.String;
         }
 
         private static string GetSampleText(TypeSymbol symbol)
         {
-            switch (symbol)
-            {
-                case TypeSymbol.Bool: return "false";
-                case TypeSymbol.Int: return "36";
-                case TypeSymbol.Float: return "123.45";
-                case TypeSymbol.String: return "'Fett'";
-                default: return null;
-            }
+            if (symbol == TypeSymbol.Int) return "36";
+            else if (symbol == TypeSymbol.Float) return "123.45";
+            else if (symbol == TypeSymbol.Bool) return "false";
+            else if (symbol == TypeSymbol.String) return "'Fett'";
+            else return "";
         }
     }
 }

@@ -1,14 +1,12 @@
 namespace Compiler.Symbols
 {
-    public class VariableSymbol
+    public class VariableSymbol : Symbol
     {
-        public VariableSymbol(string identifier, TypeSymbol type)
+        public VariableSymbol(string name, TypeSymbol type) : base(name)
         {
-            Identifier = identifier;
             Type = type;
         }
 
-        public string Identifier { get; }
         public TypeSymbol Type { get; }
     }
 }

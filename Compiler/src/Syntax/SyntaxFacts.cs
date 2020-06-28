@@ -42,7 +42,6 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.BoolKeyword:
                 case SyntaxTokenKind.StringKeyword:
                 case SyntaxTokenKind.VarKeyword:
-                case SyntaxTokenKind.ObjKeyword:
                     return true;
                 default: return false;
             }
@@ -104,7 +103,7 @@ namespace Compiler.Syntax
             else return true;
         }
 
-        public static SyntaxTokenKind? IsKeyWord(string text)
+        public static SyntaxTokenKind? IsKeyWord(string text)   
         {
             switch (text)
             {
@@ -114,7 +113,6 @@ namespace Compiler.Syntax
                 case "float": return SyntaxTokenKind.FloatKeyword;
                 case "bool": return SyntaxTokenKind.BoolKeyword;
                 case "string": return SyntaxTokenKind.StringKeyword;
-                case "obj": return SyntaxTokenKind.ObjKeyword;
                 case "var": return SyntaxTokenKind.VarKeyword;
                 case "if": return SyntaxTokenKind.IfKeyword;
                 case "else": return SyntaxTokenKind.ElseKeyword;

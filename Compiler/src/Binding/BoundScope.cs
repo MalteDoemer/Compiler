@@ -30,9 +30,9 @@ namespace Compiler.Binding
 
         public bool TryDeclare(VariableSymbol variable)
         {
-            if (variables.ContainsKey(variable.Identifier))
+            if (variables.ContainsKey(variable.Name))
                 return false;
-            variables.Add(variable.Identifier, variable);
+            variables.Add(variable.Name, variable);
             return true;
         }
 

@@ -92,19 +92,19 @@ namespace Compiler.Binding
 
         };
 
-        public static TypeSymbol? ResolveUnaryType(BoundUnaryOperator? op, TypeSymbol type)
+        public static TypeSymbol ResolveUnaryType(BoundUnaryOperator? op, TypeSymbol type)
         {
             if (op == null) return null;
-            if (type == TypeSymbol.Object) return TypeSymbol.Object;
+            //if (type == TypeSymbol.Object) return TypeSymbol.Object;
             foreach (var pair in UnaryResultTypes)
                 if (pair.Key.Item2 == op && pair.Key.Item1 == type) return pair.Value;
             return null;
         }
 
-        public static TypeSymbol? ResolveBinaryType(BoundBinaryOperator? op, TypeSymbol left, TypeSymbol right)
+        public static TypeSymbol ResolveBinaryType(BoundBinaryOperator? op, TypeSymbol left, TypeSymbol right)
         {
             if (op == null) return null;
-            if (left == TypeSymbol.Object || right == TypeSymbol.Object) return TypeSymbol.Object;
+            //if (left == TypeSymbol.Object || right == TypeSymbol.Object) return TypeSymbol.Object;
             foreach (var pair in BinaryResultTypes)
                 if (((pair.Key.Item1 == left && pair.Key.Item2 == right) || (pair.Key.Item2 == left && pair.Key.Item1 == right)) && pair.Key.Item3 == op) return pair.Value;
             return null;
@@ -169,24 +169,12 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.FloatKeyword: return TypeSymbol.Float;
                 case SyntaxTokenKind.StringKeyword: return TypeSymbol.String;
                 case SyntaxTokenKind.BoolKeyword: return TypeSymbol.Bool;
-                case SyntaxTokenKind.ObjKeyword: return TypeSymbol.Object;
+                //case SyntaxTokenKind.ObjKeyword: return TypeSymbol.Object;
                 default: throw new Exception($"<{kind}> canno't be converted to a TypeSymbol");
             }
         }
 
-        private static Type GetDotnetType(TypeSymbol typeSymbol)
-        {
-            switch (typeSymbol)
-            {
-                case TypeSymbol.Int: return typeof(long);
-                case TypeSymbol.Float: return typeof(double);
-                case TypeSymbol.Bool: return typeof(bool);
-                case TypeSymbol.String: return typeof(string);
-                default: return typeof(void);
-            }
-        }
-
-        private static TypeSymbol? GetTypeSymbolFromDotnetType(Type t)
+        private static TypeSymbol GetTypeSymbolFromDotnetType(Type t)
         {
             if (t == typeof(long))
                 return TypeSymbol.Int;
