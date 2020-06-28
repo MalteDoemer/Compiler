@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compiler.Tests", "Compiler.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repl", "Repl\Repl.csproj", "{4DD9C0D8-2008-4B0E-82C7-3DB6BBE8B0E4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gsharp", "gsharp\gsharp.csproj", "{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,5 +60,17 @@ Global
 		{4DD9C0D8-2008-4B0E-82C7-3DB6BBE8B0E4}.Release|x64.Build.0 = Release|Any CPU
 		{4DD9C0D8-2008-4B0E-82C7-3DB6BBE8B0E4}.Release|x86.ActiveCfg = Release|Any CPU
 		{4DD9C0D8-2008-4B0E-82C7-3DB6BBE8B0E4}.Release|x86.Build.0 = Release|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Debug|x64.Build.0 = Debug|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Debug|x86.Build.0 = Debug|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Release|x64.ActiveCfg = Release|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Release|x64.Build.0 = Release|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Release|x86.ActiveCfg = Release|Any CPU
+		{9A286106-84C5-4A77-BF13-E0C7E3CA4B02}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
