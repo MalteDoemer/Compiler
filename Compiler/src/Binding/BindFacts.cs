@@ -95,7 +95,6 @@ namespace Compiler.Binding
         public static TypeSymbol ResolveUnaryType(BoundUnaryOperator? op, TypeSymbol type)
         {
             if (op == null) return null;
-            //if (type == TypeSymbol.Object) return TypeSymbol.Object;
             foreach (var pair in UnaryResultTypes)
                 if (pair.Key.Item2 == op && pair.Key.Item1 == type) return pair.Value;
             return null;
@@ -104,7 +103,6 @@ namespace Compiler.Binding
         public static TypeSymbol ResolveBinaryType(BoundBinaryOperator? op, TypeSymbol left, TypeSymbol right)
         {
             if (op == null) return null;
-            //if (left == TypeSymbol.Object || right == TypeSymbol.Object) return TypeSymbol.Object;
             foreach (var pair in BinaryResultTypes)
                 if (((pair.Key.Item1 == left && pair.Key.Item2 == right) || (pair.Key.Item2 == left && pair.Key.Item1 == right)) && pair.Key.Item3 == op) return pair.Value;
             return null;
@@ -169,7 +167,6 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.FloatKeyword: return TypeSymbol.Float;
                 case SyntaxTokenKind.StringKeyword: return TypeSymbol.String;
                 case SyntaxTokenKind.BoolKeyword: return TypeSymbol.Bool;
-                //case SyntaxTokenKind.ObjKeyword: return TypeSymbol.Object;
                 default: throw new Exception($"<{kind}> canno't be converted to a TypeSymbol");
             }
         }
@@ -195,8 +192,6 @@ namespace Compiler.Binding
                 case BoundBinaryOperator.Subtraction: return "op_Subtraction";
                 case BoundBinaryOperator.Multiplication: return "op_Multiply";
                 case BoundBinaryOperator.Division: return "op_Division";
-                //case BoundBinaryOperator.Power: return "op_";
-                //case BoundBinaryOperator.Root: return "op_";
                 case BoundBinaryOperator.Modulo: return "op_Modulus";
                 case BoundBinaryOperator.EqualEqual: return "op_Equality";
                 case BoundBinaryOperator.NotEqual: return "op_Inequality";

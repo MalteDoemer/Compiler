@@ -62,8 +62,6 @@ namespace Compiler.Syntax
                 return ParseIfStatement();
             else if (current.Kind == SyntaxTokenKind.WhileKeyword)
                 return ParseWhileStatement();
-            else if (current.Kind == SyntaxTokenKind.PrintKeyWord)
-                return ParsePrintStatement();
             else if (current.Kind == SyntaxTokenKind.ForKeyword)
                 return ParseForStatement();
             else return ParseExpressionStatement();
@@ -106,19 +104,6 @@ namespace Compiler.Syntax
                 return new InvalidStatementSyntax(body.Span);
 
             return new ForStatementSyntax(forToken, variableDecleration, condition, increment, body);
-        }
-
-        private StatementSyntax ParsePrintStatement()
-        {
-            var printToken = MatchToken(SyntaxTokenKind.PrintKeyWord);
-            if (!printToken.IsValid)
-                return new InvalidStatementSyntax(printToken.Span);
-
-            var expr = ParseExpression();
-            if (!expr.IsValid)
-                return new InvalidStatementSyntax(expr.Span);
-
-            return new PrintStatementSyntax(printToken, expr);
         }
 
         private StatementSyntax ParseIfStatement()

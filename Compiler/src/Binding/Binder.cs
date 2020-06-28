@@ -76,8 +76,6 @@ namespace Compiler.Binding
                 return BindIfStatement(ifs);
             else if (statement is WhileStatementSyntax ws)
                 return BindWhileStatement(ws);
-            else if (statement is PrintStatementSyntax ps)
-                return BindPrintStatement(ps);
             else if (statement is ForStatementSyntax fs)
             {
                 scope = new BoundScope(scope);
@@ -117,15 +115,6 @@ namespace Compiler.Binding
                 return new BoundInvalidStatement();
 
             return new BoundForStatement(variableDecl, condition, increment, body);
-        }
-
-        private BoundStatement BindPrintStatement(PrintStatementSyntax ps)
-        {
-            var expr = BindExpression(ps.Expression);
-
-            if (expr is BoundInvalidExpression)
-                return new BoundInvalidStatement();
-            return new BoundPrintStatement(expr);
         }
 
         private BoundStatement BindWhileStatement(WhileStatementSyntax ws)

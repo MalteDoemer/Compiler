@@ -53,7 +53,6 @@ namespace Compiler.Syntax
         ElseKeyword,
         ForKeyword,
         WhileKeyword,
-        PrintKeyWord,
         Comma,
     }
 }

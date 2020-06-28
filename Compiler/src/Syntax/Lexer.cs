@@ -111,10 +111,6 @@ namespace Compiler.Syntax
                             pos++;
                         break;
                 }
-
-                //    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(quotePos, pos));
-                //    var t1 = text.ToString(start, pos - start);
-                //    return new SyntaxToken(SyntaxTokenKind.String, quotePos, t1.Length, t1);
             }
             pos++;
             var t = text.ToString(start, pos - start - 1);
