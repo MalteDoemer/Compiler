@@ -1,3 +1,5 @@
+using Compiler.Symbols;
+
 namespace Compiler.Binding
 {
     internal abstract class BoundExpression : BoundNode

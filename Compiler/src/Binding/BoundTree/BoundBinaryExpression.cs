@@ -1,3 +1,4 @@
+using Compiler.Symbols;
 using Compiler.Text;
 
 namespace Compiler.Binding

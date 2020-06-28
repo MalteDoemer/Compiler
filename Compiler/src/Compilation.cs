@@ -6,6 +6,7 @@ using Compiler.Binding;
 using System.Collections.Generic;
 using Compiler.Diagnostics;
 using System.IO;
+using Compiler.Symbols;
 
 namespace Compiler
 {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Compiler.Syntax;
 using System.Reflection;
+using Compiler.Symbols;
 
 namespace Compiler.Binding
 {

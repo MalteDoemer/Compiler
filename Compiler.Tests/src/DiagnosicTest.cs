@@ -6,6 +6,7 @@ using Compiler.Binding;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
 using Xunit;
+using Compiler.Symbols;
 
 namespace Compiler.Test
 {

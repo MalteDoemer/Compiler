@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Compiler.Binding;
+using Compiler.Symbols;
 using Compiler.Text;
 
 namespace Compiler

@@ -1,4 +1,4 @@
-namespace Compiler.Binding
+namespace Compiler.Symbols
 {
     public class VariableSymbol
     {

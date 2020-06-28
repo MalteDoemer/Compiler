@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Compiler.Binding;
 using Compiler.Diagnostics;
+using Compiler.Symbols;
 using static System.Math;
 
 namespace Compiler

@@ -7,6 +7,7 @@ using Compiler.Diagnostics;
 using Compiler.Syntax;
 using Compiler.Text;
 using System.Reflection;
+using Compiler.Symbols;
 
 namespace Compiler
 {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Compiler.Diagnostics;
+using Compiler.Symbols;
 using Compiler.Syntax;
 using static Compiler.Binding.BindFacts;
 
