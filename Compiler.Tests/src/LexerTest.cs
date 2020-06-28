@@ -77,7 +77,7 @@ namespace Compiler.Test
         private static IEnumerable<(string, SyntaxTokenKind)> GetStringTokens()
         {
             yield return ("'Hello'", SyntaxTokenKind.String);
-            yield return ("'\t\r\n\the l l o \r\n'", SyntaxTokenKind.String);
+            yield return ("'\tthe l l o'", SyntaxTokenKind.String);
             yield return ("'Fett'", SyntaxTokenKind.String);
             yield return ("'Trololololololololol'", SyntaxTokenKind.String);
             yield return ("'1231235.023'", SyntaxTokenKind.String);

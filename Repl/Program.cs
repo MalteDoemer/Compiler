@@ -6,6 +6,7 @@ using Compiler.Binding;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
 using Compiler.Text;
+using System.Reflection;
 
 namespace Compiler
 {
@@ -14,6 +15,7 @@ namespace Compiler
         private static readonly Dictionary<string, VariableSymbol> variables = new Dictionary<string, VariableSymbol>();
         private static Compilation compilation = null;
 
+        
         public static void Main(string[] args)
         {
             try

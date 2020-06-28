@@ -1,6 +1,3 @@
-
-
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -189,7 +186,7 @@ namespace Compiler.Binding
             if (vs.TypeToken.Kind == SyntaxTokenKind.VarKeyword) type = expr.ResultType;
             else type = BindFacts.GetTypeSymbol(vs.TypeToken.Kind);
 
-            if (expr.ResultType != type)
+            if (type != TypeSymbol.Object && expr.ResultType != type)
             {
                 diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, vs.Expression.Span, type, expr.ResultType);
                 return new BoundInvalidStatement();
@@ -266,6 +263,7 @@ namespace Compiler.Binding
             var right = new BoundLiteralExpression(1, TypeSymbol.Int);
 
             var op = BindBinaryOperator(ide.Op.Kind);
+
             var resultType = ResolveBinaryType(op, left.ResultType, right.ResultType);
 
             if (op == null || resultType == null)
@@ -364,6 +362,7 @@ namespace Compiler.Binding
                 return new BoundInvalidExpression();
 
             var boundOperator = BindUnaryOperator(ue.Op.Kind);
+
             var resultType = ResolveUnaryType(boundOperator, right.ResultType);
 
             if (boundOperator == null || resultType == null)

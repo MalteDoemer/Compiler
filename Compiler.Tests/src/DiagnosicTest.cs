@@ -69,7 +69,7 @@ namespace Compiler.Test
             var boundOp = BindFacts.BindBinaryOperator(op);
             Assert.NotNull(boundOp);
 
-            var resType = BindFacts.ResolveBinaryType(boundOp, t1, t2);
+            var resType = BindFacts.ResolveBinaryType((BoundBinaryOperator)boundOp, t1, t2);
 
             if (resType != null)
                 return;

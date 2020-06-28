@@ -59,7 +59,7 @@ namespace Compiler.Syntax
                 double fnum = num;
                 long weight = 1;
 
-                if (!char.IsDigit(current)) diagnostics.ReportSyntaxError(ErrorMessage.InvalidDecimalPoint, TextSpan.FromLength(pos-1, 1));
+                if (!char.IsDigit(current)) diagnostics.ReportSyntaxError(ErrorMessage.InvalidDecimalPoint, TextSpan.FromLength(pos - 1, 1));
 
                 while (char.IsDigit(current))
                 {
@@ -91,15 +91,30 @@ namespace Compiler.Syntax
             int quotePos = pos;
             var quote = Advance();
             int start = pos;
-            while (current != quote)
+
+            var done = false;
+
+            while (!done)
             {
-                if (current == '\0')
+                switch (current)
                 {
-                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(quotePos, pos));
-                    var t1 = text.ToString(start, pos - start);
-                    return new SyntaxToken(SyntaxTokenKind.String, quotePos, t1.Length, t1);
+                    case '\0':
+                    case '\r':
+                    case '\n':
+                        diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(quotePos, pos));
+                        var t1 = text.ToString(start, pos - start);
+                        return new SyntaxToken(SyntaxTokenKind.String, quotePos, t1.Length, t1, false);
+                    default:
+                        if (current == quote)
+                            done = true;
+                        else 
+                            pos++;
+                        break;
                 }
-                else pos++;
+
+                //    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(quotePos, pos));
+                //    var t1 = text.ToString(start, pos - start);
+                //    return new SyntaxToken(SyntaxTokenKind.String, quotePos, t1.Length, t1);
             }
             pos++;
             var t = text.ToString(start, pos - start - 1);

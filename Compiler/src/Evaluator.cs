@@ -130,8 +130,6 @@ namespace Compiler
         private dynamic EvaluateUnaryExpression(BoundUnaryExpression ue)
         {
             dynamic val = EvaluateExpression(ue.Right);
-
-
             switch (ue.Op)
             {
                 case BoundUnaryOperator.Identety: return val;
