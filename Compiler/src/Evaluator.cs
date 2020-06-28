@@ -11,10 +11,10 @@ namespace Compiler
     internal class Evaluator
     {
         internal dynamic lastValue;
-        private readonly Dictionary<string, VariableSymbol> varaibles;
+        private readonly Dictionary<string, object> varaibles;
         private readonly BoundBlockStatement root;
 
-        public Evaluator(BoundBlockStatement root, Dictionary<string, VariableSymbol> varaibles)
+        public Evaluator(BoundBlockStatement root, Dictionary<string, object> varaibles)
         {
             this.root = root;
             this.varaibles = varaibles;
@@ -72,7 +72,7 @@ namespace Compiler
                 case BoundLiteralExpression le:
                     return le.Value;
                 case BoundVariableExpression ve:
-                    return varaibles[ve.Variable.Identifier].Value;
+                    return varaibles[ve.Variable.Identifier];
                 case BoundUnaryExpression ue:
                     return EvaluateUnaryExpression(ue);
                 case BoundBinaryExpression be:
@@ -89,8 +89,7 @@ namespace Compiler
         private dynamic EvaluateAssignment(BoundAssignementExpression ae)
         {
             var val = EvaluateExpression(ae.Expression);
-            var variable = new VariableSymbol(ae.Variable.Identifier, ae.Variable.Type, val);
-            varaibles[variable.Identifier] = variable;
+            varaibles[ae.Variable.Identifier] = val;
             return val;
         }
 
@@ -146,8 +145,7 @@ namespace Compiler
         {
             var val = EvaluateExpression(vs.Expression);
             lastValue = val;
-            var variable = new VariableSymbol(vs.Variable.Identifier, vs.Variable.Type, val);
-            varaibles[variable.Identifier] = variable;
+            varaibles[vs.Variable.Identifier] = val;
         }
 
         private void EvaluatePrintStatement(BoundPrintStatement ps)

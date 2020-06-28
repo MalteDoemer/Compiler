@@ -193,7 +193,7 @@ namespace Compiler.Binding
                 return new BoundInvalidStatement();
             }
 
-            var variable = new VariableSymbol((string)vs.Identifier.Value, type, null);
+            var variable = new VariableSymbol((string)vs.Identifier.Value, type);
             if (!scope.TryDeclare(variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, vs.Identifier.Span, variable.Identifier);

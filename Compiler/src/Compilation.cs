@@ -13,7 +13,7 @@ namespace Compiler
 
     public sealed class Compilation
     {
-        private Compilation(Compilation previous, SourceText text, Dictionary<string, VariableSymbol> env)
+        private Compilation(Compilation previous, SourceText text, Dictionary<string, object> env)
         {
             Previous = previous;
             Text = text;
@@ -36,7 +36,7 @@ namespace Compiler
         internal BoundCompilationUnit Root { get; }
         public Compilation Previous { get; }
         public SourceText Text { get; }
-        public Dictionary<string, VariableSymbol> Variables { get; }
+        public Dictionary<string, object> Variables { get; }
         public ImmutableArray<Diagnostic> Diagnostics { get; }
 
         public void Evaluate()
@@ -70,7 +70,7 @@ namespace Compiler
 
         public Compilation ContinueWith(SourceText text) => new Compilation(this, text, Variables);
 
-        public static Compilation Compile(SourceText text) => new Compilation(null, text, new Dictionary<string, VariableSymbol>());
+        public static Compilation Compile(SourceText text) => new Compilation(null, text, new Dictionary<string, object>());
 
         public static ImmutableArray<SyntaxToken> Tokenize(SourceText text)
         {
