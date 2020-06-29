@@ -161,9 +161,9 @@ namespace Compiler
             {
                 if (random == null)
                     random = new Random();
-                var lowerBound = EvaluateExpression(bc.Arguments[0]);
-                var upperBound = EvaluateExpression(bc.Arguments[1]);
-                return random.Next(lowerBound, upperBound);
+                long lowerBound = EvaluateExpression(bc.Arguments[0]);
+                long upperBound = EvaluateExpression(bc.Arguments[1]);
+                return random.Next((int)lowerBound, (int)upperBound);
             }
             else if (bc.Symbol == BuiltInFunctions.RandomFloat)
             {
