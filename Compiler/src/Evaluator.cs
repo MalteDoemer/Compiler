@@ -10,9 +10,10 @@ namespace Compiler
 
     internal class Evaluator
     {
-        internal dynamic lastValue;
         private readonly Dictionary<string, object> varaibles;
         private readonly BoundBlockStatement root;
+        internal dynamic lastValue;
+        private Random random;
 
         public Evaluator(BoundBlockStatement root, Dictionary<string, object> varaibles)
         {
@@ -156,7 +157,21 @@ namespace Compiler
                 Console.Clear();
                 return null;
             }
-            else throw new Exception($"Unexpected function <{bc.Symbol.Name}>"); 
+            else if (bc.Symbol == BuiltInFunctions.Random)
+            {
+                if (random == null)
+                    random = new Random();
+                var lowerBound = EvaluateExpression(bc.Arguments[0]);
+                var upperBound = EvaluateExpression(bc.Arguments[1]);
+                return random.Next(lowerBound, upperBound);
+            }
+            else if (bc.Symbol == BuiltInFunctions.RandomFloat)
+            {
+                if (random == null)
+                    random = new Random();
+                return random.NextDouble();
+            }
+            else throw new Exception($"Unexpected function <{bc.Symbol.Name}>");
         }
 
         private void EvaluateVariableDecleration(BoundVariableDecleration vs)

@@ -46,7 +46,8 @@ namespace Compiler.Binding
                 return null;
 
             var variables = scope.GetDeclaredVariables();
-            return new BoundCompilationUnit(stmt, variables);
+            var functions = scope.GetDeclaredFunctions();
+            return new BoundCompilationUnit(stmt, variables, functions);
         }
 
         private BoundScope CreateBoundScopes(Compilation previous)
@@ -68,6 +69,9 @@ namespace Compiler.Binding
                 var scope = new BoundScope(current);
                 foreach (var variable in global.Root.DeclaredVariables)
                     scope.TryDeclareVariable(variable);
+
+                foreach (var function in global.Root.DeclaredFunctions)
+                    scope.TryDeclareFunction(function);
 
                 current = scope;
             }
