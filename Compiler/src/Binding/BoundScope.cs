@@ -8,6 +8,7 @@ namespace Compiler.Binding
     internal sealed class BoundScope
     {
         private Dictionary<string, VariableSymbol> variables;
+        private Dictionary<string, FunctionSymbol> functions;
 
         public BoundScope Parent { get; }
 
@@ -15,20 +16,19 @@ namespace Compiler.Binding
         {
             Parent = parent;
             variables = new Dictionary<string, VariableSymbol>();
+            functions = new Dictionary<string, FunctionSymbol>();
         }
 
-        public bool TryLookUp(string identifier, out VariableSymbol value)
+        public bool TryLookUpVariable(string identifier, out VariableSymbol value)
         {
             if (variables.TryGetValue(identifier, out value))
                 return true;
-
             if (Parent == null) return false;
-
-            return Parent.TryLookUp(identifier, out value);
+            return Parent.TryLookUpVariable(identifier, out value);
 
         }
 
-        public bool TryDeclare(VariableSymbol variable)
+        public bool TryDeclareVariable(VariableSymbol variable)
         {
             if (variables.ContainsKey(variable.Name))
                 return false;
@@ -36,9 +36,30 @@ namespace Compiler.Binding
             return true;
         }
 
+        public bool TryLookUpFunction(string identifier, out FunctionSymbol value)
+        {
+            if (functions.TryGetValue(identifier, out value))
+                return true;
+            if (Parent == null) return false;
+            return Parent.TryLookUpFunction(identifier, out value);
+        }
+
+        public bool TryDeclareFunction(FunctionSymbol function)
+        {
+            if (functions.ContainsKey(function.Name))
+                return false;
+            functions.Add(function.Name, function);
+            return true;
+        }
+
         public ImmutableArray<VariableSymbol> GetDeclaredVariables()
         {
             return variables.Values.ToImmutableArray();
+        }
+
+        public ImmutableArray<FunctionSymbol> GetDeclaredFunctions()
+        {
+            return functions.Values.ToImmutableArray();
         }
     }
 }

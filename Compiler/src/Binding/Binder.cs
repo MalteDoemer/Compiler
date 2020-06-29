@@ -20,8 +20,20 @@ namespace Compiler.Binding
         {
             diagnostics = new DiagnosticBag();
             var parentScope = CreateBoundScopes(previous);
-            scope = new BoundScope(parentScope);
+
+            if (parentScope == null)
+                scope = CreateRootScope();
+            else
+                scope = new BoundScope(parentScope);
             this.previous = previous;
+        }
+
+        private BoundScope CreateRootScope()
+        {
+            var scope = new BoundScope(null);
+            foreach (var b in BuiltInFunctions.GetAll())
+                scope.TryDeclareFunction(b);
+            return scope;
         }
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
@@ -55,7 +67,7 @@ namespace Compiler.Binding
                 var global = stack.Pop();
                 var scope = new BoundScope(current);
                 foreach (var variable in global.Root.DeclaredVariables)
-                    scope.TryDeclare(variable);
+                    scope.TryDeclareVariable(variable);
 
                 current = scope;
             }
@@ -203,7 +215,7 @@ namespace Compiler.Binding
             }
 
             var variable = new VariableSymbol((string)vs.Identifier.Value, type);
-            if (!scope.TryDeclare(variable))
+            if (!scope.TryDeclareVariable(variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, vs.Identifier.Span, variable.Name);
                 return new BoundInvalidStatement();
@@ -276,9 +288,7 @@ namespace Compiler.Binding
 
         private BoundExpression BindCallExpession(CallExpressionSyntax cs)
         {
-            var symbol = BuiltInFunctions.GetAll().SingleOrDefault(s => s.Name == (string)cs.Identifier.Value);
-
-            if (symbol == null)
+            if (!scope.TryLookUpFunction((string)cs.Identifier.Value, out var symbol))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, cs.Identifier.Span, (string)cs.Identifier.Value);
                 return new BoundInvalidExpression();
@@ -319,7 +329,7 @@ namespace Compiler.Binding
 
         private BoundExpression BindPostIncDecExpression(PostIncDecExpression ide)
         {
-            if (!scope.TryLookUp((string)ide.Identifier.Value, out VariableSymbol variable))
+            if (!scope.TryLookUpVariable((string)ide.Identifier.Value, out VariableSymbol variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, ide.Identifier.Span, (string)ide.Identifier.Value);
                 return new BoundInvalidExpression();
@@ -344,7 +354,7 @@ namespace Compiler.Binding
 
         private BoundExpression BindAdditioalAssignmentExpression(AdditionalAssignmentExpression ae)
         {
-            if (!scope.TryLookUp((string)ae.Identifier.Value, out VariableSymbol variable))
+            if (!scope.TryLookUpVariable((string)ae.Identifier.Value, out VariableSymbol variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, ae.Identifier.Span, (string)ae.Identifier.Value);
                 return new BoundInvalidExpression();
@@ -375,7 +385,7 @@ namespace Compiler.Binding
             if (expr is BoundInvalidExpression)
                 return new BoundInvalidExpression();
 
-            if (!scope.TryLookUp((string)ee.Identifier.Value, out VariableSymbol variable))
+            if (!scope.TryLookUpVariable((string)ee.Identifier.Value, out VariableSymbol variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, ee.Identifier.Span, (string)ee.Identifier.Value);
                 return new BoundInvalidExpression();
@@ -392,7 +402,7 @@ namespace Compiler.Binding
         private BoundExpression BindVariableExpression(VariableExpressionSyntax ve)
         {
             var identifier = (string)ve.Name.Value;
-            if (!scope.TryLookUp(identifier, out VariableSymbol variable))
+            if (!scope.TryLookUpVariable(identifier, out VariableSymbol variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, ve.Name.Span, ve.Name.Value);
                 return new BoundInvalidExpression();
