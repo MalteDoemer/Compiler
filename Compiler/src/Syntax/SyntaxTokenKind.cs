@@ -55,5 +55,6 @@ namespace Compiler.Syntax
         WhileKeyword,
         Comma,
         VoidKeyword,
+        DoKeyword,
     }
 }

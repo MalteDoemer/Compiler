@@ -64,7 +64,31 @@ namespace Compiler.Syntax
                 return ParseWhileStatement();
             else if (current.Kind == SyntaxTokenKind.ForKeyword)
                 return ParseForStatement();
+            else if (current.Kind == SyntaxTokenKind.DoKeyword)
+                return ParseDoWhileStatement();
             else return ParseExpressionStatement();
+        }
+
+        private StatementSyntax ParseDoWhileStatement()
+        {
+            var doToken = MatchToken(SyntaxTokenKind.DoKeyword);
+
+            if (!doToken.IsValid)
+                return new InvalidStatementSyntax(doToken.Span);
+
+            var stmt = ParseStatement();
+
+            if (!stmt.IsValid)
+                return new InvalidStatementSyntax(stmt.Span);
+
+            var whileToken = MatchToken(SyntaxTokenKind.WhileKeyword);
+
+            if (!whileToken.IsValid)
+                return new InvalidStatementSyntax(whileToken.Span);
+
+            var condition = ParseExpression();
+
+            return new DoWhileStatementSyntax(doToken, stmt, whileToken, condition);
         }
 
         private StatementSyntax ParseForStatement()

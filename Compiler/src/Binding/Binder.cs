@@ -77,6 +77,8 @@ namespace Compiler.Binding
                 return BindIfStatement(ifs);
             else if (statement is WhileStatementSyntax ws)
                 return BindWhileStatement(ws);
+            else if (statement is DoWhileStatementSyntax dws)
+                return BindDoWhileStatement(dws);
             else if (statement is ForStatementSyntax fs)
             {
                 scope = new BoundScope(scope);
@@ -85,6 +87,23 @@ namespace Compiler.Binding
                 return res;
             }
             else throw new Exception($"Unexpected StatementSyntax <{statement}>");
+        }
+
+        private BoundStatement BindDoWhileStatement(DoWhileStatementSyntax dws)
+        {
+            var body = BindStatement(dws.Body);
+            if (body is BoundInvalidStatement)
+                return new BoundInvalidStatement();
+
+            var condition = BindExpression(dws.Condition);
+
+            if (condition.ResultType != TypeSymbol.Bool)
+            {
+                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, dws.Condition.Span, TypeSymbol.Bool, condition.ResultType);
+                return new BoundInvalidStatement();
+            }
+
+            return new BoundDoWhileStatement(body, condition);
         }
 
         private BoundStatement BindForStatement(ForStatementSyntax fs)

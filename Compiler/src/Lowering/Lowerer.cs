@@ -39,12 +39,28 @@ namespace Compiler.Lowering
             return new BoundBlockStatement(builder.ToImmutable());
         }
 
-
         public static BoundBlockStatement Lower(BoundStatement statement)
         {
             var lowerer = new Lowerer();
             var res = lowerer.RewriteStatement(statement);
             return Flatten(res);
+        }
+
+
+        protected override BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
+        {
+            var startLabel = CreateLabel();
+
+            var boundStartLabel = new BoundLabelStatement(startLabel);
+            var gotoStart = new BoundConditionalGotoStatement(startLabel, node.Condition, false);
+
+            var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
+                boundStartLabel,
+                node.Body,
+                gotoStart    
+            ));
+
+            return RewriteStatement(res);
         }
 
         protected override BoundStatement RewriteForStatement(BoundForStatement node)

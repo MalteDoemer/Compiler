@@ -117,6 +117,7 @@ namespace Compiler.Syntax
                 case "if": return SyntaxTokenKind.IfKeyword;
                 case "else": return SyntaxTokenKind.ElseKeyword;
                 case "while": return SyntaxTokenKind.WhileKeyword;
+                case "do": return SyntaxTokenKind.DoKeyword;
                 case "for": return SyntaxTokenKind.ForKeyword;
                 case "void": return SyntaxTokenKind.VoidKeyword;
                 default: return null;
