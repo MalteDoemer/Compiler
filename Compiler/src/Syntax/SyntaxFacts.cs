@@ -118,6 +118,7 @@ namespace Compiler.Syntax
                 case "else": return SyntaxTokenKind.ElseKeyword;
                 case "while": return SyntaxTokenKind.WhileKeyword;
                 case "for": return SyntaxTokenKind.ForKeyword;
+                case "void": return SyntaxTokenKind.VoidKeyword;
                 default: return null;
             }
         }
