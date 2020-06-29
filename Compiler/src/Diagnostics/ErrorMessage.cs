@@ -14,5 +14,6 @@ namespace Compiler.Diagnostics
         UnsupportedUnaryOperator,
         VariableAlreadyDeclared,
         WrongAmountOfArguments,
+        CannotBeVoid,
     }
 }

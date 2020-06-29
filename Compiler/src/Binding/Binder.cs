@@ -233,14 +233,25 @@ namespace Compiler.Binding
 
         private BoundStatement BindExpressionStatement(ExpressionStatement es)
         {
-            var expr = BindExpression(es.Expression);
+            var expr = BindExpression(es.Expression, true);
             if (expr is BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
             return new BoundExpressionStatement(expr);
         }
 
-        private BoundExpression BindExpression(ExpressionSyntax syntax)
+        private BoundExpression BindExpression(ExpressionSyntax syntax, bool canBeVoid = false)
+        {
+            var res = BindExpressionInternal(syntax);
+            if (!canBeVoid && res.ResultType == TypeSymbol.Void)
+            {
+                diagnostics.ReportTypeError(ErrorMessage.CannotBeVoid, syntax.Span);
+                return new BoundInvalidExpression();
+            }
+            return res;
+        }
+
+        private BoundExpression BindExpressionInternal(ExpressionSyntax syntax)
         {
             if (!syntax.IsValid)
                 return new BoundInvalidExpression();

@@ -132,6 +132,12 @@ namespace Compiler.Test
             AssertDiagnostic(text, ErrorMessage.VariableAlreadyDeclared, identifierName);
         }
 
+        [Fact]
+        public static void Report_Expression_Cannot_Be_Void()
+        {
+            var text = "var i = [print('')]";
+            AssertDiagnostic(text, ErrorMessage.CannotBeVoid);
+        }
 
         private static void AssertDiagnostic(string text, ErrorMessage message, params object[] values)
         {

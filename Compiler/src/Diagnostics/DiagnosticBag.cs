@@ -25,6 +25,7 @@ namespace Compiler.Diagnostics
            "Unary operator '{0}' cannot be applied to '{1}'.",
            "Variable '{0}' is already declared",
            "Function {0} requires {1} arguments but recived {2}",
+           "Expression cannot be void.",
         };
 
         private readonly List<Diagnostic> builder;
