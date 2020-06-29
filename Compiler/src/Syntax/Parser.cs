@@ -256,9 +256,36 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.MinusMinus:
                     var op2 = Advance();
                     return new PostIncDecExpression(identifier, op2);
+                case SyntaxTokenKind.LParen:
+                    return ParseFunctionCall(identifier);
                 default:
                     return new VariableExpressionSyntax(identifier);
             }
+        }
+
+        private ExpressionSyntax ParseFunctionCall(SyntaxToken identifier)
+        {
+            var argBuilder = ImmutableArray.CreateBuilder<ExpressionSyntax>();
+            var commaBuilder = ImmutableArray.CreateBuilder<SyntaxToken>();
+            var lparen = MatchToken(SyntaxTokenKind.LParen);
+
+            while (current.Kind != SyntaxTokenKind.RParen)
+            {
+                if (current.Kind == SyntaxTokenKind.End)
+                {
+                    var span = TextSpan.FromBounds(lparen.Span.Start, current.Span.End);
+                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, span);
+                    return new InvalidExpressionSyntax(span);
+                }
+
+                argBuilder.Add(ParseExpression());
+
+                if (current.Kind != SyntaxTokenKind.RParen)
+                    commaBuilder.Add(MatchToken(SyntaxTokenKind.Comma));
+            }
+            var rparen = MatchToken(SyntaxTokenKind.RParen);
+            
+            return new CallExpressionSyntax(identifier, new ArgumentList(lparen, argBuilder.ToImmutable(), commaBuilder.ToImmutable(), rparen));
         }
 
         private ElseStatementSyntax ParseElseClause()

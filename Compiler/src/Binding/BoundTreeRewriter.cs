@@ -147,8 +147,39 @@ namespace Compiler.Binding
                 return RewriteVaraibleExpression(ve);
             else if (expression is BoundAssignementExpression ae)
                 return RewriteAssignmentExpression(ae);
+            else if (expression is BoundCallExpression bc)
+                return RewriteCallExpression(bc);
             else throw new Exception($"Unknown BoundExpression <{expression}>");
 
+        }
+
+        protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)
+        {
+            ImmutableArray<BoundExpression>.Builder builder = null;
+
+            for (var i = 0; i < node.Arguments.Length; i++)
+            {
+                var oldStatement = node.Arguments[i];
+                var newStatement = RewriteExpression(oldStatement);
+                if (newStatement != oldStatement)
+                {
+                    if (builder == null)
+                    {
+                        builder = ImmutableArray.CreateBuilder<BoundExpression>(node.Arguments.Length);
+
+                        for (var j = 0; j < i; j++)
+                            builder.Add(node.Arguments[j]);
+                    }
+                }
+
+                if (builder != null)
+                    builder.Add(newStatement);
+            }
+
+            if (builder == null)
+                return node;
+
+            return new BoundCallExpression(node.Symbol, builder.MoveToImmutable());
         }
 
         protected virtual BoundExpression RewriteAssignmentExpression(BoundAssignementExpression node)

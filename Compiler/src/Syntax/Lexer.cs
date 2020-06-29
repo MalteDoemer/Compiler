@@ -132,6 +132,12 @@ namespace Compiler.Syntax
             return null;
         }
 
+        private SyntaxToken LexComment()
+        {
+            while (!(current == '\0' || current == '\n' || current == '\r')) pos++;
+            return NextToken();
+        }
+
         private SyntaxToken NextToken()
         {
             var doubleChar = LexDoubleChar();
@@ -144,6 +150,7 @@ namespace Compiler.Syntax
             else if (current == '"' || current == '\'') return LexString();
             else if (char.IsNumber(current)) return LexNumber();
             else if (char.IsWhiteSpace(current)) return LexSpace();
+            else if (current == '#') return LexComment();
             else if (char.IsLetter(current) || current == '_') return LexIdentifierOrKeyword();
             else return new SyntaxToken(SyntaxTokenKind.Invalid, pos, 1, Advance());
         }

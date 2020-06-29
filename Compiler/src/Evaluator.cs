@@ -79,6 +79,8 @@ namespace Compiler
                     return EvaluateBinaryExpression(be);
                 case BoundAssignementExpression ae:
                     return EvaluateAssignment(ae);
+                case BoundCallExpression boundCall:
+                    return EvaluateFunctionCall(boundCall);
                 case BoundInvalidExpression _:
                     return null;
                 default:
@@ -139,6 +141,26 @@ namespace Compiler
                 default:
                     throw new Exception($"Unknown Unary Operator <{ue.Op}>");
             }
+        }
+
+        private dynamic EvaluateFunctionCall(BoundCallExpression bc)
+        {
+            if (bc.Symbol == BuiltInFunctions.Input)
+            {
+                return Console.ReadLine();
+            }
+            else if (bc.Symbol == BuiltInFunctions.Print)
+            {
+                var message = EvaluateExpression(bc.Arguments[0]);
+                Console.WriteLine(message);
+                return null;
+            }
+            else if (bc.Symbol == BuiltInFunctions.Clear)
+            {
+                Console.Clear();
+                return null;
+            }
+            else throw new Exception($"Unexpected function <{bc.Symbol.Name}>"); 
         }
 
         private void EvaluateVariableDecleration(BoundVariableDecleration vs)

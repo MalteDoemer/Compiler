@@ -4,7 +4,6 @@ namespace Compiler.Binding
 {
     internal abstract class BoundNode
     {
-        
-    }
 
+    }
 }

@@ -24,6 +24,7 @@ namespace Compiler.Diagnostics
            "Binary operator '{0}' cannot be applied to '{1}' and '{2}'.",
            "Unary operator '{0}' cannot be applied to '{1}'.",
            "Variable '{0}' is already declared",
+           "Function {0} requires {1} arguments but recived {2}",
         };
 
         private readonly List<Diagnostic> builder;

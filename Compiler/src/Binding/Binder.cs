@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Compiler.Diagnostics;
 using Compiler.Symbols;
 using Compiler.Syntax;
@@ -42,7 +43,7 @@ namespace Compiler.Binding
 
             while (previous != null)
             {
-                if (previous.Root != null) 
+                if (previous.Root != null)
                     stack.Push(previous);
                 previous = previous.Previous;
             }
@@ -238,7 +239,52 @@ namespace Compiler.Binding
                 return BindAdditioalAssignmentExpression(ae);
             else if (syntax is PostIncDecExpression ide)
                 return BindPostIncDecExpression(ide);
+            else if (syntax is CallExpressionSyntax cs)
+                return BindCallExpession(cs);
             else throw new Exception($"Unknown Syntax kind <{syntax}>");
+        }
+
+        private BoundExpression BindCallExpession(CallExpressionSyntax cs)
+        {
+            var symbol = BuiltInFunctions.GetAll().SingleOrDefault(s => s.Name == (string)cs.Identifier.Value);
+
+            if (symbol == null)
+            {
+                diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, cs.Identifier.Span, (string)cs.Identifier.Value);
+                return new BoundInvalidExpression();
+            }
+
+            if (cs.Arguments.Arguments.Length != symbol.Parameters.Length)
+            {
+                diagnostics.ReportSyntaxError(ErrorMessage.WrongAmountOfArguments, cs.Arguments.LeftParenthesis.Span + cs.Arguments.RightParenthesis.Span, symbol.Name, symbol.Parameters.Length, cs.Arguments.Arguments.Length);
+                return new BoundInvalidExpression();
+            }
+
+
+            var argBuilder = ImmutableArray.CreateBuilder<BoundExpression>();
+
+            foreach (var arg in cs.Arguments)
+            {
+                var boundArg = BindExpression(arg);
+                if (boundArg is BoundInvalidExpression)
+                    return new BoundInvalidExpression();
+                argBuilder.Add(boundArg);
+            }
+
+            var boundArguments = argBuilder.ToImmutable();
+
+            for (int i = 0; i < symbol.Parameters.Length; i++)
+            {
+                var arg = boundArguments[i];
+                var param = symbol.Parameters[i];
+
+                if (arg.ResultType != param.Type)
+                {
+                    diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, cs.Arguments[i].Span, arg.ResultType, param.Type);
+                    return new BoundInvalidExpression();
+                }
+            }
+            return new BoundCallExpression(symbol, boundArguments);
         }
 
         private BoundExpression BindPostIncDecExpression(PostIncDecExpression ide)

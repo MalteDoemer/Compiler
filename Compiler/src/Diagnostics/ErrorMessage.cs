@@ -13,5 +13,6 @@ namespace Compiler.Diagnostics
         UnsupportedBinaryOperator,
         UnsupportedUnaryOperator,
         VariableAlreadyDeclared,
+        WrongAmountOfArguments,
     }
 }
