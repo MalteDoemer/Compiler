@@ -53,10 +53,6 @@ namespace Compiler
                     case BoundGotoStatement gs:
                         index = labelToIndex[gs.Label];
                         break;
-                    case BoundPrintStatement ps:
-                        EvaluatePrintStatement(ps);
-                        index++;
-                        break;
                     case BoundLabelStatement _:
                         index++;
                         break;
@@ -168,11 +164,6 @@ namespace Compiler
             var val = EvaluateExpression(vs.Expression);
             lastValue = val;
             varaibles[vs.Variable.Name] = val;
-        }
-
-        private void EvaluatePrintStatement(BoundPrintStatement ps)
-        {
-            Console.WriteLine(EvaluateExpression(ps.Expression));
         }
     }
 }
