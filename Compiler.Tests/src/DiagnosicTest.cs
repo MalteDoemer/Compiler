@@ -139,6 +139,36 @@ namespace Compiler.Test
             AssertDiagnostic(text, ErrorMessage.CannotBeVoid);
         }
 
+        [Fact]
+        public static void No_Cascading_Errors_In_BlockStatments()
+        {
+            var text = @"
+                {
+                    var done = true
+                    do {
+                        do{
+                            do {
+                                do {
+                                    do {
+                                        do {
+                                            do {
+                                                do{
+                                                    1 [+] false
+                                                } while (!done)
+                                            } while (!done)
+                                        } while (!done)
+                                    } while (!done)
+                                } while (!done)
+                            } while (!done)
+                        } while (!done)
+                    } while (!done)
+                }
+            ";
+
+            AssertDiagnostic(text, ErrorMessage.UnsupportedBinaryOperator, '+', TypeSymbol.Int.Name, TypeSymbol.Bool.Name);
+        }
+
+
         private static void AssertDiagnostic(string text, ErrorMessage message, params object[] values)
         {
             AssertDiagnostic(text, string.Format(DiagnosticBag.ErrorFormats[(int)message], values));
