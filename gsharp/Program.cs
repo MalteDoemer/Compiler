@@ -7,7 +7,7 @@ using Compiler.Diagnostics;
 
 namespace Compiler
 {
-    class Program
+    public class Program
     {
         public static void Main(string[] args)
         {

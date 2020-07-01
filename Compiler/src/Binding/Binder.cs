@@ -299,7 +299,7 @@ namespace Compiler.Binding
 
         private BoundExpression BindCallExpession(CallExpressionSyntax cs)
         {
-            if (cs.Arguments.Arguments.Length == 1 && TypeSymbol.Lookup((string)cs.Identifier.Value) is TypeSymbol type)
+            if (cs.Arguments.Length == 1 && TypeSymbol.Lookup((string)cs.Identifier.Value) is TypeSymbol type)
                 return BindExplicitConversion(type, cs.Arguments[0]);
 
             if (!scope.TryLookUpFunction((string)cs.Identifier.Value, out var symbol))
@@ -308,9 +308,9 @@ namespace Compiler.Binding
                 return new BoundInvalidExpression();
             }
 
-            if (cs.Arguments.Arguments.Length != symbol.Parameters.Length)
+            if (cs.Arguments.Length != symbol.Parameters.Length)
             {
-                diagnostics.ReportSyntaxError(ErrorMessage.WrongAmountOfArguments, cs.Arguments.LeftParenthesis.Span + cs.Arguments.RightParenthesis.Span, symbol.Name, symbol.Parameters.Length, cs.Arguments.Arguments.Length);
+                diagnostics.ReportSyntaxError(ErrorMessage.WrongAmountOfArguments, cs.LeftParenthesis.Span + cs.RightParenthesis.Span, symbol.Name, symbol.Parameters.Length, cs.Arguments.Length);
                 return new BoundInvalidExpression();
             }
 

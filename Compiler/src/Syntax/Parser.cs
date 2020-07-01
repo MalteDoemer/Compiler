@@ -340,7 +340,7 @@ namespace Compiler.Syntax
             }
             var rparen = MatchToken(SyntaxTokenKind.RParen);
 
-            return new CallExpressionSyntax(identifier, new ArgumentList(lparen, argBuilder.ToImmutable(), commaBuilder.ToImmutable(), rparen));
+            return new CallExpressionSyntax(identifier, lparen, new SeperatedSyntaxList<ExpressionSyntax>(argBuilder.ToImmutable(), commaBuilder.ToImmutable()), rparen);
         }
 
         private ElseStatementSyntax ParseElseClause()
