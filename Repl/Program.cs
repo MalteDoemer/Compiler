@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Compiler.Binding;
 using Compiler.Diagnostics;
-using Compiler.Syntax;
 using Compiler.Text;
-using System.Reflection;
 using Compiler.Symbols;
 
 namespace Compiler
