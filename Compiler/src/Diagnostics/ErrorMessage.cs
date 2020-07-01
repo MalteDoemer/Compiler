@@ -15,5 +15,8 @@ namespace Compiler.Diagnostics
         VariableAlreadyDeclared,
         WrongAmountOfArguments,
         CannotBeVoid,
+        MissingExplicitConversion,
+        CannotConvert,
+        InvalidStatement,
     }
 }

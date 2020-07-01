@@ -145,8 +145,18 @@ namespace Compiler.Binding
                 return RewriteAssignmentExpression(ae);
             else if (expression is BoundCallExpression bc)
                 return RewriteCallExpression(bc);
+            else if (expression is BoundConversionExpression cc)
+                return RewriteConversionExpression(cc);
             else throw new Exception($"Unknown BoundExpression <{expression}>");
 
+        }
+
+        protected virtual BoundExpression RewriteConversionExpression(BoundConversionExpression node)
+        {
+            var expr = RewriteExpression(node.Expression);
+            if (expr == node.Expression)
+                return node;
+            return new BoundConversionExpression(node.Type, expr);
         }
 
         protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)

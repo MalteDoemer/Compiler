@@ -41,7 +41,9 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.FloatKeyword:
                 case SyntaxTokenKind.BoolKeyword:
                 case SyntaxTokenKind.StringKeyword:
+                case SyntaxTokenKind.AnyKeyword:
                 case SyntaxTokenKind.VarKeyword:
+                case SyntaxTokenKind.VoidKeyword:
                     return true;
                 default: return false;
             }
@@ -97,10 +99,21 @@ namespace Compiler.Syntax
             }
         }
 
-        internal static bool IsValidExpression(ExpressionSyntax expression)
+        internal static bool IsValidExpression(ExpressionSyntax expression, bool IsScripting = true)
         {
-            if (!expression.IsValid) return false;
-            else return true;
+            if (IsScripting) return true;
+            else
+            {
+                switch (expression)
+                {
+                    case CallExpressionSyntax _:
+                    case AssignmentExpressionSyntax __:
+                    case AdditionalAssignmentExpression ___:
+                    case PostIncDecExpression ____:
+                        return true;
+                    default: return false;
+                }
+            }
         }
 
         public static SyntaxTokenKind? IsKeyWord(string text)
@@ -113,13 +126,14 @@ namespace Compiler.Syntax
                 case "float": return SyntaxTokenKind.FloatKeyword;
                 case "bool": return SyntaxTokenKind.BoolKeyword;
                 case "string": return SyntaxTokenKind.StringKeyword;
+                case "void": return SyntaxTokenKind.VoidKeyword;
+                case "any": return SyntaxTokenKind.AnyKeyword;
                 case "var": return SyntaxTokenKind.VarKeyword;
                 case "if": return SyntaxTokenKind.IfKeyword;
                 case "else": return SyntaxTokenKind.ElseKeyword;
                 case "while": return SyntaxTokenKind.WhileKeyword;
                 case "do": return SyntaxTokenKind.DoKeyword;
                 case "for": return SyntaxTokenKind.ForKeyword;
-                case "void": return SyntaxTokenKind.VoidKeyword;
                 default: return null;
             }
         }
@@ -168,6 +182,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.True: return "true";
                 case SyntaxTokenKind.False: return "false";
                 case SyntaxTokenKind.VarKeyword: return "var";
+                case SyntaxTokenKind.AnyKeyword: return "any";
                 case SyntaxTokenKind.IntKeyword: return "int";
                 case SyntaxTokenKind.FloatKeyword: return "float";
                 case SyntaxTokenKind.BoolKeyword: return "bool";

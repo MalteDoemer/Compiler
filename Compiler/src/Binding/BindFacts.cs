@@ -95,6 +95,8 @@ namespace Compiler.Binding
         public static TypeSymbol ResolveUnaryType(BoundUnaryOperator? op, TypeSymbol type)
         {
             if (op == null) return null;
+            if (type == TypeSymbol.Any) return TypeSymbol.Any;
+
             foreach (var pair in UnaryResultTypes)
                 if (pair.Key.Item2 == op && pair.Key.Item1 == type) return pair.Value;
             return null;
@@ -103,6 +105,8 @@ namespace Compiler.Binding
         public static TypeSymbol ResolveBinaryType(BoundBinaryOperator? op, TypeSymbol left, TypeSymbol right)
         {
             if (op == null) return null;
+            if (left == TypeSymbol.Any || right == TypeSymbol.Any) return TypeSymbol.Any;
+
             foreach (var pair in BinaryResultTypes)
                 if (((pair.Key.Item1 == left && pair.Key.Item2 == right) || (pair.Key.Item2 == left && pair.Key.Item1 == right)) && pair.Key.Item3 == op) return pair.Value;
             return null;
@@ -167,7 +171,9 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.FloatKeyword: return TypeSymbol.Float;
                 case SyntaxTokenKind.StringKeyword: return TypeSymbol.String;
                 case SyntaxTokenKind.BoolKeyword: return TypeSymbol.Bool;
-                default: throw new Exception($"<{kind}> canno't be converted to a TypeSymbol");
+                case SyntaxTokenKind.VoidKeyword: return TypeSymbol.Void;
+                case SyntaxTokenKind.AnyKeyword: return TypeSymbol.Any;
+                default: return null;
             }
         }
 
@@ -205,6 +211,23 @@ namespace Compiler.Binding
                 case BoundBinaryOperator.BitwiseOr: return "op_BitwiseOr";
                 case BoundBinaryOperator.BitwiseXor: return "op_ExclusiveOr";
                 default: return "";
+            }
+        }
+    
+        internal static ConversionType ClassifyConversion(TypeSymbol from, TypeSymbol to)
+        {
+            if (from == to) return ConversionType.Identety;
+
+            if (to == TypeSymbol.Any || from == TypeSymbol.Any) return ConversionType.Implicit;
+
+            switch (from.Name, to.Name)
+            {
+                case ("int", "float"): return ConversionType.Implicit;
+                case ("float", "int"): return ConversionType.Explicit;
+                case ("float", "string"): return ConversionType.Explicit;
+                case ("int", "string"): return ConversionType.Explicit;
+                case ("bool", "string"): return ConversionType.Explicit;
+                default : return ConversionType.None;
             }
         }
     }

@@ -5,7 +5,7 @@ namespace Compiler.Symbols
 {
     internal static class BuiltInFunctions
     {
-        public static readonly FunctionSymbol Print = new FunctionSymbol("print", ImmutableArray.Create<ParameterSymbol>(new ParameterSymbol("text", TypeSymbol.String)), TypeSymbol.Void);
+        public static readonly FunctionSymbol Print = new FunctionSymbol("print", ImmutableArray.Create<ParameterSymbol>(new ParameterSymbol("text", TypeSymbol.Any)), TypeSymbol.Void);
         public static readonly FunctionSymbol Input = new FunctionSymbol("input", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.String);
         public static readonly FunctionSymbol Clear = new FunctionSymbol("clear", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
         public static readonly FunctionSymbol Random = new FunctionSymbol("rand", ImmutableArray.Create<ParameterSymbol>(new ParameterSymbol("start", TypeSymbol.Int), new ParameterSymbol("stop", TypeSymbol.Int)), TypeSymbol.Int);

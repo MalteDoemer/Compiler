@@ -56,5 +56,6 @@ namespace Compiler.Syntax
         Comma,
         VoidKeyword,
         DoKeyword,
+        AnyKeyword,
     }
 }

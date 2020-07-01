@@ -78,6 +78,8 @@ namespace Compiler
                     return EvaluateAssignment(ae);
                 case BoundCallExpression boundCall:
                     return EvaluateFunctionCall(boundCall);
+                case BoundConversionExpression boundConversion:
+                    return EvaluateConversion(boundConversion);
                 case BoundInvalidExpression _:
                     return null;
                 default:
@@ -85,19 +87,19 @@ namespace Compiler
             }
         }
 
-        private dynamic EvaluateAssignment(BoundAssignementExpression ae)
+        private dynamic EvaluateAssignment(BoundAssignementExpression expr)
         {
-            var val = EvaluateExpression(ae.Expression);
-            varaibles[ae.Variable.Name] = val;
+            var val = EvaluateExpression(expr.Expression);
+            varaibles[expr.Variable.Name] = val;
             return val;
         }
 
-        private dynamic EvaluateBinaryExpression(BoundBinaryExpression be)
+        private dynamic EvaluateBinaryExpression(BoundBinaryExpression expr)
         {
-            var left = EvaluateExpression(be.Left);
-            var right = EvaluateExpression(be.Right);
+            var left = EvaluateExpression(expr.Left);
+            var right = EvaluateExpression(expr.Right);
 
-            switch (be.Op)
+            switch (expr.Op)
             {
                 case BoundBinaryOperator.Addition: return left + right;
                 case BoundBinaryOperator.Subtraction: return left - right;
@@ -122,56 +124,82 @@ namespace Compiler
                 case BoundBinaryOperator.LogicalOr: return left || right;
 
                 default:
-                    throw new Exception($"Unknown binary operator <{be.Op}>");
+                    throw new Exception($"Unknown binary operator <{expr.Op}>");
             }
         }
 
-        private dynamic EvaluateUnaryExpression(BoundUnaryExpression ue)
+        private dynamic EvaluateUnaryExpression(BoundUnaryExpression expr)
         {
-            dynamic val = EvaluateExpression(ue.Right);
-            switch (ue.Op)
+            dynamic val = EvaluateExpression(expr.Right);
+            switch (expr.Op)
             {
                 case BoundUnaryOperator.Identety: return val;
                 case BoundUnaryOperator.Negation: return -val;
                 case BoundUnaryOperator.LogicalNot: return !val;
                 case BoundUnaryOperator.BitwiseNot: return ~val;
                 default:
-                    throw new Exception($"Unknown Unary Operator <{ue.Op}>");
+                    throw new Exception($"Unknown Unary Operator <{expr.Op}>");
             }
         }
 
-        private dynamic EvaluateFunctionCall(BoundCallExpression bc)
+        private dynamic EvaluateFunctionCall(BoundCallExpression expr)
         {
-            if (bc.Symbol == BuiltInFunctions.Input)
+            if (expr.Symbol == BuiltInFunctions.Input)
             {
                 return Console.ReadLine();
             }
-            else if (bc.Symbol == BuiltInFunctions.Print)
+            else if (expr.Symbol == BuiltInFunctions.Print)
             {
-                var message = EvaluateExpression(bc.Arguments[0]);
+                var message = EvaluateExpression(expr.Arguments[0]);
                 Console.WriteLine(message);
                 return null;
             }
-            else if (bc.Symbol == BuiltInFunctions.Clear)
+            else if (expr.Symbol == BuiltInFunctions.Clear)
             {
                 Console.Clear();
                 return null;
             }
-            else if (bc.Symbol == BuiltInFunctions.Random)
+            else if (expr.Symbol == BuiltInFunctions.Random)
             {
                 if (random == null)
                     random = new Random();
-                long lowerBound = EvaluateExpression(bc.Arguments[0]);
-                long upperBound = EvaluateExpression(bc.Arguments[1]);
+                long lowerBound = EvaluateExpression(expr.Arguments[0]);
+                long upperBound = EvaluateExpression(expr.Arguments[1]);
                 return random.Next((int)lowerBound, (int)upperBound);
             }
-            else if (bc.Symbol == BuiltInFunctions.RandomFloat)
+            else if (expr.Symbol == BuiltInFunctions.RandomFloat)
             {
                 if (random == null)
                     random = new Random();
                 return random.NextDouble();
             }
-            else throw new Exception($"Unexpected function <{bc.Symbol.Name}>");
+            else throw new Exception($"Unexpected function <{expr.Symbol.Name}>");
+        }
+
+        private dynamic EvaluateConversion(BoundConversionExpression expr)
+        {
+            object val = EvaluateExpression(expr.Expression);
+
+            if (expr.Type == TypeSymbol.Bool)
+                return Convert.ToBoolean(val);
+            else if (expr.Type == TypeSymbol.Int)
+                return Convert.ToInt64(val);
+            else if (expr.Type == TypeSymbol.Float)
+                return Convert.ToDouble(val);
+            else if (expr.Type == TypeSymbol.String)
+                return Convert.ToString(val);
+            else if (expr.Type == TypeSymbol.Any)
+            {
+                switch (val)
+                {
+                    case long l: return l;
+                    case double d: return d;
+                    case bool b: return b;
+                    case string s: return s;
+                    default: return val;
+                }
+            }
+            else throw new Exception($"Unexpected Conversion Type <{expr.Type}>");
         }
 
         private void EvaluateVariableDecleration(BoundVariableDecleration vs)

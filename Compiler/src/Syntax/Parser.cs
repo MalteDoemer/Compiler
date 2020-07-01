@@ -54,9 +54,7 @@ namespace Compiler.Syntax
 
         private StatementSyntax ParseStatement()
         {
-            if (current.Kind.IsTypeKeyword())
-                return ParseVariableDecleration();
-            else if (current.Kind == SyntaxTokenKind.LCurly)
+            if (current.Kind == SyntaxTokenKind.LCurly)
                 return ParseBlockStatement();
             else if (current.Kind == SyntaxTokenKind.IfKeyword)
                 return ParseIfStatement();
@@ -66,6 +64,8 @@ namespace Compiler.Syntax
                 return ParseForStatement();
             else if (current.Kind == SyntaxTokenKind.DoKeyword)
                 return ParseDoWhileStatement();
+            else if (current.Kind.IsTypeKeyword())
+                return ParseVariableDecleration();
             else return ParseExpressionStatement();
         }
 
@@ -168,9 +168,16 @@ namespace Compiler.Syntax
         private StatementSyntax ParseExpressionStatement()
         {
             var expression = ParseExpression();
+            if (expression is InvalidExpressionSyntax)
+                return new InvalidStatementSyntax(expression.Span);
+
             if (SyntaxFacts.IsValidExpression(expression))
                 return new ExpressionStatement(expression);
-            else return new InvalidStatementSyntax(expression.Span);
+            else
+            {
+                diagnostics.ReportSyntaxError(ErrorMessage.InvalidStatement, expression.Span);
+                return new InvalidStatementSyntax(expression.Span);
+            }
         }
 
         private StatementSyntax ParseBlockStatement()
@@ -239,6 +246,8 @@ namespace Compiler.Syntax
                 return new UnaryExpressionSyntax(Advance(), ParsePrimaryExpression());
             else if (current.Kind == SyntaxTokenKind.LParen)
                 return ParseParenthesizedExpression();
+            else if (SyntaxFacts.IsTypeKeyword(current.Kind))
+                return ParseFunctionCall(Advance());
             else
             {
                 diagnostics.ReportSyntaxError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
@@ -308,7 +317,7 @@ namespace Compiler.Syntax
                     commaBuilder.Add(MatchToken(SyntaxTokenKind.Comma));
             }
             var rparen = MatchToken(SyntaxTokenKind.RParen);
-            
+
             return new CallExpressionSyntax(identifier, new ArgumentList(lparen, argBuilder.ToImmutable(), commaBuilder.ToImmutable(), rparen));
         }
 

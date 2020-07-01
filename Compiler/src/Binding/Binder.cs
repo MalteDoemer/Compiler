@@ -111,13 +111,10 @@ namespace Compiler.Binding
             if (body is BoundInvalidStatement)
                 return new BoundInvalidStatement();
 
-            var condition = BindExpression(dws.Condition);
+            var condition = CheckTypeAndConversion(TypeSymbol.Bool, dws.Condition);
 
-            if (condition.ResultType != TypeSymbol.Bool)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, dws.Condition.Span, TypeSymbol.Bool, condition.ResultType);
+            if (condition is BoundInvalidExpression)
                 return new BoundInvalidStatement();
-            }
 
             return new BoundDoWhileStatement(body, condition);
         }
@@ -129,18 +126,12 @@ namespace Compiler.Binding
             if (variableDecl is BoundInvalidStatement)
                 return new BoundInvalidStatement();
 
-            var condition = BindExpression(fs.Condition);
+            var condition = CheckTypeAndConversion(TypeSymbol.Bool, fs.Condition);
 
             if (condition is BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
-            if (condition.ResultType != TypeSymbol.Bool)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, fs.Condition.Span, TypeSymbol.Bool, condition.ResultType);
-                return new BoundInvalidStatement();
-            }
-
-            var increment = BindExpression(fs.Increment);
+            var increment = Fett(fs.Increment);
 
             if (increment is BoundInvalidExpression)
                 return new BoundInvalidStatement();
@@ -155,16 +146,10 @@ namespace Compiler.Binding
 
         private BoundStatement BindWhileStatement(WhileStatementSyntax ws)
         {
-            var condition = BindExpression(ws.Condition);
+            var condition = CheckTypeAndConversion(TypeSymbol.Bool, ws.Condition);
 
             if (condition is BoundInvalidExpression)
                 return new BoundInvalidStatement();
-
-            if (condition.ResultType != TypeSymbol.Bool)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, ws.Condition.Span, TypeSymbol.Bool, condition.ResultType);
-                return new BoundInvalidStatement();
-            }
 
             var body = BindStatement(ws.Body);
 
@@ -176,16 +161,10 @@ namespace Compiler.Binding
 
         private BoundStatement BindIfStatement(IfStatementSyntax ifs)
         {
-            var condition = BindExpression(ifs.Condition);
+            var condition = CheckTypeAndConversion(TypeSymbol.Bool, ifs.Condition);
 
             if (condition is BoundInvalidExpression)
                 return new BoundInvalidStatement();
-
-            if (condition.ResultType != TypeSymbol.Bool)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, ifs.Condition.Span, TypeSymbol.Bool, condition.ResultType);
-                return new BoundInvalidStatement();
-            }
 
             var stmt = BindStatement(ifs.Body);
 
@@ -202,21 +181,25 @@ namespace Compiler.Binding
 
         private BoundStatement BindVariableDeclerationStatement(VariableDeclerationStatement vs)
         {
-            var expr = BindExpression(vs.Expression);
+            TypeSymbol type;
+            BoundExpression expr;
+
+            if (vs.TypeToken.Kind == SyntaxTokenKind.VarKeyword)
+            {
+                expr = Fett(vs.Expression);
+                type = expr.ResultType;
+            }
+            else
+            {
+                var declaredType = BindFacts.GetTypeSymbol(vs.TypeToken.Kind);
+                expr = CheckTypeAndConversion(declaredType, vs.Expression);
+                type = declaredType;
+            }
 
             if (expr is BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
-            TypeSymbol type;
 
-            if (vs.TypeToken.Kind == SyntaxTokenKind.VarKeyword) type = expr.ResultType;
-            else type = BindFacts.GetTypeSymbol(vs.TypeToken.Kind);
-
-            if (expr.ResultType != type)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, vs.Expression.Span, type, expr.ResultType);
-                return new BoundInvalidStatement();
-            }
 
             var variable = new VariableSymbol((string)vs.Identifier.Value, type);
             if (!scope.TryDeclareVariable(variable))
@@ -249,14 +232,14 @@ namespace Compiler.Binding
 
         private BoundStatement BindExpressionStatement(ExpressionStatement es)
         {
-            var expr = BindExpression(es.Expression, true);
+            var expr = Fett(es.Expression, true);
             if (expr is BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
             return new BoundExpressionStatement(expr);
         }
 
-        private BoundExpression BindExpression(ExpressionSyntax syntax, bool canBeVoid = false)
+        private BoundExpression Fett(ExpressionSyntax syntax, bool canBeVoid = false)
         {
             var res = BindExpressionInternal(syntax);
             if (!canBeVoid && res.ResultType == TypeSymbol.Void)
@@ -265,6 +248,29 @@ namespace Compiler.Binding
                 return new BoundInvalidExpression();
             }
             return res;
+        }
+
+        private BoundExpression CheckTypeAndConversion(TypeSymbol type, ExpressionSyntax expression)
+        {
+            var expr = Fett(expression);
+
+            if (expr is BoundInvalidExpression)
+                return new BoundInvalidExpression();
+
+            var conversionType = BindFacts.ClassifyConversion(expr.ResultType, type);
+
+            if (conversionType == ConversionType.Identety)
+                return expr;
+            else if (conversionType == ConversionType.Implicit)
+                return new BoundConversionExpression(type, expr);
+            else if (conversionType == ConversionType.Explicit)
+            {
+                diagnostics.ReportTypeError(ErrorMessage.MissingExplicitConversion, expression.Span, type, expr.ResultType);
+                return new BoundInvalidExpression();
+            }
+
+            diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, expression.Span, type, expr.ResultType);
+            return new BoundInvalidExpression();
         }
 
         private BoundExpression BindExpressionInternal(ExpressionSyntax syntax)
@@ -292,6 +298,9 @@ namespace Compiler.Binding
 
         private BoundExpression BindCallExpession(CallExpressionSyntax cs)
         {
+            if (cs.Arguments.Arguments.Length == 1 && TypeSymbol.Lookup((string)cs.Identifier.Value) is TypeSymbol type)
+                return BindExplicitConversion(type, cs.Arguments[0]);
+
             if (!scope.TryLookUpFunction((string)cs.Identifier.Value, out var symbol))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, cs.Identifier.Span, (string)cs.Identifier.Value);
@@ -305,30 +314,40 @@ namespace Compiler.Binding
             }
 
 
-            var argBuilder = ImmutableArray.CreateBuilder<BoundExpression>();
-
-            foreach (var arg in cs.Arguments)
-            {
-                var boundArg = BindExpression(arg);
-                if (boundArg is BoundInvalidExpression)
-                    return new BoundInvalidExpression();
-                argBuilder.Add(boundArg);
-            }
-
-            var boundArguments = argBuilder.ToImmutable();
+            var argBuilder = ImmutableArray.CreateBuilder<BoundExpression>(symbol.Parameters.Length);
 
             for (int i = 0; i < symbol.Parameters.Length; i++)
             {
-                var arg = boundArguments[i];
+                var arg = cs.Arguments[i];
                 var param = symbol.Parameters[i];
 
-                if (arg.ResultType != param.Type)
-                {
-                    diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, cs.Arguments[i].Span, arg.ResultType, param.Type);
+                var boundArg = CheckTypeAndConversion(param.Type, arg);
+
+                if (boundArg is BoundInvalidExpression)
                     return new BoundInvalidExpression();
-                }
+
+                argBuilder.Add(boundArg);
             }
-            return new BoundCallExpression(symbol, boundArguments);
+
+            return new BoundCallExpression(symbol, argBuilder.MoveToImmutable());
+        }
+
+        private BoundExpression BindExplicitConversion(TypeSymbol type, ExpressionSyntax expressionSyntax)
+        {
+            var expr = Fett(expressionSyntax);
+
+            if (expr is BoundInvalidExpression)
+                return new BoundInvalidExpression();
+
+            var conversion = BindFacts.ClassifyConversion(expr.ResultType, type);
+
+            if (conversion == ConversionType.None)
+            {
+                diagnostics.ReportTypeError(ErrorMessage.CannotConvert, expressionSyntax.Span, expr.ResultType, type);
+                return new BoundInvalidExpression();
+            }
+
+            return new BoundConversionExpression(type, expr);
         }
 
         private BoundExpression BindPostIncDecExpression(PostIncDecExpression ide)
@@ -365,7 +384,7 @@ namespace Compiler.Binding
             }
 
             var left = new BoundVariableExpression(variable);
-            var right = BindExpression(ae.Expression);
+            var right = Fett(ae.Expression);
 
             if (right is BoundInvalidExpression)
                 return new BoundInvalidExpression();
@@ -384,21 +403,17 @@ namespace Compiler.Binding
 
         private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax ee)
         {
-            var expr = BindExpression(ee.Expression);
-
-            if (expr is BoundInvalidExpression)
-                return new BoundInvalidExpression();
-
-            if (!scope.TryLookUpVariable((string)ee.Identifier.Value, out VariableSymbol variable))
+            if (!scope.TryLookUpVariable((string)ee.Identifier.Value, out var variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, ee.Identifier.Span, (string)ee.Identifier.Value);
                 return new BoundInvalidExpression();
             }
-            else if (variable.Type != expr.ResultType)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, ee.EqualToken.Span, variable.Type, expr.ResultType);
+
+            var expr = CheckTypeAndConversion(variable.Type, ee.Expression);
+
+            if (expr is BoundInvalidExpression)
                 return new BoundInvalidExpression();
-            }
+
             else return new BoundAssignementExpression(variable, expr);
 
         }
@@ -416,8 +431,8 @@ namespace Compiler.Binding
 
         private BoundExpression BindBinaryExpression(BinaryExpressionSyntax be)
         {
-            var left = BindExpression(be.Left);
-            var right = BindExpression(be.Right);
+            var left = Fett(be.Left);
+            var right = Fett(be.Right);
 
             if (left is BoundInvalidExpression || right is BoundInvalidExpression)
                 return new BoundInvalidExpression();
@@ -437,7 +452,7 @@ namespace Compiler.Binding
 
         private BoundExpression BindUnaryExpression(UnaryExpressionSyntax ue)
         {
-            var right = BindExpression(ue.Expression);
+            var right = Fett(ue.Expression);
             if (right is BoundInvalidExpression)
                 return new BoundInvalidExpression();
 
