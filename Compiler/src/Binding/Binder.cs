@@ -478,7 +478,7 @@ namespace Compiler.Binding
             return new BoundLiteralExpression(value, type);
         }
 
-        public static BoundBinaryOperator? BindBinaryOperator(SyntaxTokenKind op)
+        private BoundBinaryOperator? BindBinaryOperator(SyntaxTokenKind op)
         {
             switch (op)
             {
@@ -512,7 +512,7 @@ namespace Compiler.Binding
             }
         }
 
-        public static BoundUnaryOperator? BindUnaryOperator(SyntaxTokenKind op)
+        private BoundUnaryOperator? BindUnaryOperator(SyntaxTokenKind op)
         {
             switch (op)
             {

@@ -173,7 +173,7 @@ namespace Compiler.Syntax
             if (expression is InvalidExpressionSyntax)
                 return new InvalidStatementSyntax(expression.Span);
 
-            if (SyntaxFacts.IsValidExpression(expression))
+            if (SyntaxFacts.IsValidExpression(expression, isScript))
                 return new ExpressionStatement(expression);
             else
             {
@@ -184,8 +184,17 @@ namespace Compiler.Syntax
 
         private StatementSyntax ParseBlockStatement()
         {
-            var lcurly = MatchToken(SyntaxTokenKind.LCurly);
+            StatementSyntax returnError(TextSpan span)
+            {
+                if (current.Kind == SyntaxTokenKind.RCurly)
+                    pos++;
+                return new InvalidStatementSyntax(span);
+            }
+
             var builder = ImmutableArray.CreateBuilder<StatementSyntax>();
+            var lcurly = MatchToken(SyntaxTokenKind.LCurly);
+            if (!lcurly.IsValid)
+                returnError(lcurly.Span);
 
             while (current.Kind != SyntaxTokenKind.RCurly)
             {
@@ -193,11 +202,22 @@ namespace Compiler.Syntax
                 {
                     var span = TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start);
                     diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedCurlyBrackets, span);
-                    return new InvalidStatementSyntax(span);
+                    return returnError(span);
                 }
-                builder.Add(ParseStatement());
+
+                var stmt = ParseStatement();
+
+                if (!stmt.IsValid)
+                    return returnError(stmt.Span);
+
+                builder.Add(stmt);
             }
+
             var rcurly = MatchToken(SyntaxTokenKind.RCurly);
+
+            if (!rcurly.IsValid)
+                return returnError(rcurly.Span);
+
             return new BlockStatment(lcurly, builder.ToImmutable(), rcurly);
         }
 
