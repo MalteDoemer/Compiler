@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using Mono.Options;
-using Compiler;
 using System.Linq;
 using Compiler.Text;
 using Compiler.Diagnostics;
@@ -10,7 +9,7 @@ namespace Compiler
 {
     class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             bool showHelp = false;
             string path = null;
@@ -29,7 +28,7 @@ namespace Compiler
             }
             catch (OptionException e)
             {
-                
+
                 ColorWriteLine($"\ngsharp: {e.Message}", ConsoleColor.Red);
                 Console.WriteLine("Try 'gsharp --help' for more information");
                 Environment.Exit(-1);
@@ -113,9 +112,6 @@ namespace Compiler
             Console.ResetColor();
         }
 
-        private static void NewLine()
-        {
-            Console.WriteLine();
-        }
+        private static void NewLine() => Console.WriteLine();
     }
 }

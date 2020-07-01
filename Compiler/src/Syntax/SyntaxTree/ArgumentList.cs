@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Text;
 
 
-
 namespace Compiler.Syntax
 {
     internal sealed class ArgumentList : IEnumerable<ExpressionSyntax>
@@ -46,12 +45,12 @@ namespace Compiler.Syntax
 
         public override string ToString()
         {
-            var builder = new StringBuilder();
+            var builder = new StringBuilder(15);
 
             for (int i = 0; i < Arguments.Length - 1; i++)
             {
                 builder.Append(Arguments[i]);
-                builder.Append(", ");
+                StringBuilder stringBuilder = builder.Append(", ");
             }
 
             if (!Arguments.IsEmpty)
