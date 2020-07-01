@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using Compiler.Diagnostics;
 using Compiler.Symbols;
 using Compiler.Syntax;
-using static Compiler.Binding.BindFacts;
 
 namespace Compiler.Binding
 {
@@ -365,7 +363,7 @@ namespace Compiler.Binding
 
             var op = BindBinaryOperator(ide.Op.Kind);
 
-            var resultType = ResolveBinaryType(op, left.ResultType, right.ResultType);
+            var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
             if (op == null || resultType == null)
             {
@@ -392,7 +390,7 @@ namespace Compiler.Binding
                 return new BoundInvalidExpression();
 
             var op = BindBinaryOperator(ae.Op.Kind);
-            var resultType = ResolveBinaryType(op, left.ResultType, right.ResultType);
+            var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
             if (op == null || resultType == null)
             {
@@ -440,7 +438,7 @@ namespace Compiler.Binding
                 return new BoundInvalidExpression();
 
             var boundOperator = BindBinaryOperator(be.Op.Kind);
-            var resultType = ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
+            var resultType = BindFacts.ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
 
             if (boundOperator == null || resultType == null)
             {
@@ -460,7 +458,7 @@ namespace Compiler.Binding
 
             var boundOperator = BindUnaryOperator(ue.Op.Kind);
 
-            var resultType = ResolveUnaryType(boundOperator, right.ResultType);
+            var resultType = BindFacts.ResolveUnaryType(boundOperator, right.ResultType);
 
             if (boundOperator == null || resultType == null)
             {
@@ -477,6 +475,52 @@ namespace Compiler.Binding
             var type = BindFacts.GetTypeSymbol(le.Literal.Kind);
 
             return new BoundLiteralExpression(value, type);
+        }
+
+        public static BoundBinaryOperator? BindBinaryOperator(SyntaxTokenKind op)
+        {
+            switch (op)
+            {
+                case SyntaxTokenKind.Plus: return BoundBinaryOperator.Addition;
+                case SyntaxTokenKind.Minus: return BoundBinaryOperator.Subtraction;
+                case SyntaxTokenKind.Star: return BoundBinaryOperator.Multiplication;
+                case SyntaxTokenKind.Slash: return BoundBinaryOperator.Division;
+                case SyntaxTokenKind.StarStar: return BoundBinaryOperator.Power;
+                case SyntaxTokenKind.SlashSlah: return BoundBinaryOperator.Root;
+                case SyntaxTokenKind.Percentage: return BoundBinaryOperator.Modulo;
+                case SyntaxTokenKind.Ampersand: return BoundBinaryOperator.BitwiseAnd;
+                case SyntaxTokenKind.Pipe: return BoundBinaryOperator.BitwiseOr;
+                case SyntaxTokenKind.Hat: return BoundBinaryOperator.BitwiseXor;
+                case SyntaxTokenKind.EqualEqual: return BoundBinaryOperator.EqualEqual;
+                case SyntaxTokenKind.NotEqual: return BoundBinaryOperator.NotEqual;
+                case SyntaxTokenKind.LessThan: return BoundBinaryOperator.LessThan;
+                case SyntaxTokenKind.LessEqual: return BoundBinaryOperator.LessEqual;
+                case SyntaxTokenKind.GreaterThan: return BoundBinaryOperator.GreaterThan;
+                case SyntaxTokenKind.GreaterEqual: return BoundBinaryOperator.GreaterEqual;
+                case SyntaxTokenKind.AmpersandAmpersand: return BoundBinaryOperator.LogicalAnd;
+                case SyntaxTokenKind.PipePipe: return BoundBinaryOperator.LogicalOr;
+                case SyntaxTokenKind.PlusEqual: return BoundBinaryOperator.Addition;
+                case SyntaxTokenKind.MinusEqual: return BoundBinaryOperator.Subtraction;
+                case SyntaxTokenKind.StarEqual: return BoundBinaryOperator.Multiplication;
+                case SyntaxTokenKind.SlashEqual: return BoundBinaryOperator.Division;
+                case SyntaxTokenKind.AmpersandEqual: return BoundBinaryOperator.BitwiseAnd;
+                case SyntaxTokenKind.PipeEqual: return BoundBinaryOperator.BitwiseOr;
+                case SyntaxTokenKind.PlusPlus: return BoundBinaryOperator.Addition;
+                case SyntaxTokenKind.MinusMinus: return BoundBinaryOperator.Subtraction;
+                default: return null;
+            }
+        }
+
+        public static BoundUnaryOperator? BindUnaryOperator(SyntaxTokenKind op)
+        {
+            switch (op)
+            {
+                case SyntaxTokenKind.Plus: return BoundUnaryOperator.Identety;
+                case SyntaxTokenKind.Minus: return BoundUnaryOperator.Negation;
+                case SyntaxTokenKind.Bang: return BoundUnaryOperator.LogicalNot;
+                case SyntaxTokenKind.Tilde: return BoundUnaryOperator.BitwiseNot;
+                default: return null;
+            }
         }
     }
 }

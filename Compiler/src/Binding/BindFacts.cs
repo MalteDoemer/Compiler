@@ -112,52 +112,6 @@ namespace Compiler.Binding
             return null;
         }
 
-        public static BoundBinaryOperator? BindBinaryOperator(SyntaxTokenKind op)
-        {
-            switch (op)
-            {
-                case SyntaxTokenKind.Plus: return BoundBinaryOperator.Addition;
-                case SyntaxTokenKind.Minus: return BoundBinaryOperator.Subtraction;
-                case SyntaxTokenKind.Star: return BoundBinaryOperator.Multiplication;
-                case SyntaxTokenKind.Slash: return BoundBinaryOperator.Division;
-                case SyntaxTokenKind.StarStar: return BoundBinaryOperator.Power;
-                case SyntaxTokenKind.SlashSlah: return BoundBinaryOperator.Root;
-                case SyntaxTokenKind.Percentage: return BoundBinaryOperator.Modulo;
-                case SyntaxTokenKind.Ampersand: return BoundBinaryOperator.BitwiseAnd;
-                case SyntaxTokenKind.Pipe: return BoundBinaryOperator.BitwiseOr;
-                case SyntaxTokenKind.Hat: return BoundBinaryOperator.BitwiseXor;
-                case SyntaxTokenKind.EqualEqual: return BoundBinaryOperator.EqualEqual;
-                case SyntaxTokenKind.NotEqual: return BoundBinaryOperator.NotEqual;
-                case SyntaxTokenKind.LessThan: return BoundBinaryOperator.LessThan;
-                case SyntaxTokenKind.LessEqual: return BoundBinaryOperator.LessEqual;
-                case SyntaxTokenKind.GreaterThan: return BoundBinaryOperator.GreaterThan;
-                case SyntaxTokenKind.GreaterEqual: return BoundBinaryOperator.GreaterEqual;
-                case SyntaxTokenKind.AmpersandAmpersand: return BoundBinaryOperator.LogicalAnd;
-                case SyntaxTokenKind.PipePipe: return BoundBinaryOperator.LogicalOr;
-                case SyntaxTokenKind.PlusEqual: return BoundBinaryOperator.Addition;
-                case SyntaxTokenKind.MinusEqual: return BoundBinaryOperator.Subtraction;
-                case SyntaxTokenKind.StarEqual: return BoundBinaryOperator.Multiplication;
-                case SyntaxTokenKind.SlashEqual: return BoundBinaryOperator.Division;
-                case SyntaxTokenKind.AmpersandEqual: return BoundBinaryOperator.BitwiseAnd;
-                case SyntaxTokenKind.PipeEqual: return BoundBinaryOperator.BitwiseOr;
-                case SyntaxTokenKind.PlusPlus: return BoundBinaryOperator.Addition;
-                case SyntaxTokenKind.MinusMinus: return BoundBinaryOperator.Subtraction;
-                default: return null;
-            }
-        }
-
-        public static BoundUnaryOperator? BindUnaryOperator(SyntaxTokenKind op)
-        {
-            switch (op)
-            {
-                case SyntaxTokenKind.Plus: return BoundUnaryOperator.Identety;
-                case SyntaxTokenKind.Minus: return BoundUnaryOperator.Negation;
-                case SyntaxTokenKind.Bang: return BoundUnaryOperator.LogicalNot;
-                case SyntaxTokenKind.Tilde: return BoundUnaryOperator.BitwiseNot;
-                default: return null;
-            }
-        }
-
         public static TypeSymbol GetTypeSymbol(SyntaxTokenKind kind)
         {
             switch (kind)
@@ -177,43 +131,6 @@ namespace Compiler.Binding
             }
         }
 
-        private static TypeSymbol GetTypeSymbolFromDotnetType(Type t)
-        {
-            if (t == typeof(long))
-                return TypeSymbol.Int;
-            else if (t == typeof(double))
-                return TypeSymbol.Float;
-            else if (t == typeof(bool))
-                return TypeSymbol.Bool;
-            else if (t == typeof(string))
-                return TypeSymbol.String;
-            else return null;
-        }
-
-        private static string GetBinaryMethodName(BoundBinaryOperator op)
-        {
-            switch (op)
-            {
-                case BoundBinaryOperator.Addition: return "op_Addition";
-                case BoundBinaryOperator.Subtraction: return "op_Subtraction";
-                case BoundBinaryOperator.Multiplication: return "op_Multiply";
-                case BoundBinaryOperator.Division: return "op_Division";
-                case BoundBinaryOperator.Modulo: return "op_Modulus";
-                case BoundBinaryOperator.EqualEqual: return "op_Equality";
-                case BoundBinaryOperator.NotEqual: return "op_Inequality";
-                case BoundBinaryOperator.LessThan: return "op_LessThan";
-                case BoundBinaryOperator.GreaterThan: return "op_GreaterThan";
-                case BoundBinaryOperator.LessEqual: return "op_LessThanOrEqual";
-                case BoundBinaryOperator.GreaterEqual: return "op_GreaterThanOrEqual";
-                case BoundBinaryOperator.LogicalAnd: return "op_LogicalAnd";
-                case BoundBinaryOperator.LogicalOr: return "op_LogicalOr";
-                case BoundBinaryOperator.BitwiseAnd: return "op_BitwiseAnd";
-                case BoundBinaryOperator.BitwiseOr: return "op_BitwiseOr";
-                case BoundBinaryOperator.BitwiseXor: return "op_ExclusiveOr";
-                default: return "";
-            }
-        }
-    
         internal static ConversionType ClassifyConversion(TypeSymbol from, TypeSymbol to)
         {
             if (from == to) return ConversionType.Identety;
