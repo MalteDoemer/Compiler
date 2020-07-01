@@ -217,12 +217,13 @@ namespace Compiler.Binding
 
             foreach (var stmt in bs.Statements)
             {
-                if (!stmt.IsValid)
+                var bound = BindStatement(stmt);
+                if (bound is BoundInvalidStatement)
                 {
                     scope = scope.Parent;
                     return new BoundInvalidStatement();
                 }
-                builder.Add(BindStatement(stmt));
+                builder.Add(bound);
             }
 
             scope = scope.Parent;
