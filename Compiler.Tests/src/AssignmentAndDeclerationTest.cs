@@ -19,9 +19,9 @@ namespace Compiler.Test
             var line2 = text;
             var line3 = variable;
 
-            var comp1 = Compilation.Compile(line1);
-            var comp2 = comp1.ContinueWith(line2);
-            var comp3 = comp2.ContinueWith(line3);
+            var comp1 = Compilation.CompileScript(line1, null);
+            var comp2 = Compilation.CompileScript(line2, comp1);
+            var comp3 = Compilation.CompileScript(line3, comp2);
 
             Assert.Empty(comp1.Diagnostics);
             Assert.Empty(comp2.Diagnostics);

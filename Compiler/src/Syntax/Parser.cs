@@ -12,14 +12,16 @@ namespace Compiler.Syntax
         private readonly DiagnosticBag diagnostics;
         private readonly SourceText source;
         private readonly ImmutableArray<SyntaxToken> tokens;
+        private readonly bool isScript;
 
         private SyntaxToken current { get => pos < tokens.Length ? tokens[pos] : tokens[tokens.Length - 1]; }
         private int pos;
 
-        public Parser(SourceText source, ImmutableArray<SyntaxToken> tokens)
+        public Parser(SourceText source, ImmutableArray<SyntaxToken> tokens, bool isScript)
         {
             this.source = source;
             this.tokens = tokens;
+            this.isScript = isScript;
             diagnostics = new DiagnosticBag();
         }
 

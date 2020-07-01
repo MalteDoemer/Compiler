@@ -14,10 +14,13 @@ namespace Compiler.Binding
     {
         private readonly DiagnosticBag diagnostics;
         private readonly Compilation previous;
+        private readonly bool isScript;
         private BoundScope scope;
 
-        public Binder(Compilation previous)
+        public Binder(Compilation previous, bool isScript)
         {
+            this.previous = previous;
+            this.isScript = isScript;
             diagnostics = new DiagnosticBag();
             var parentScope = CreateBoundScopes(previous);
 
@@ -25,7 +28,6 @@ namespace Compiler.Binding
                 scope = CreateRootScope();
             else
                 scope = new BoundScope(parentScope);
-            this.previous = previous;
         }
 
         private BoundScope CreateRootScope()

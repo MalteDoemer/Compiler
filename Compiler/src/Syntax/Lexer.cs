@@ -9,14 +9,15 @@ namespace Compiler.Syntax
     {
         private readonly DiagnosticBag diagnostics;
         private readonly SourceText text;
-
+        private readonly bool isScript;
         private int pos;
         private char current { get => pos < text.Length ? text[pos] : '\0'; }
         private char ahead { get => pos + 1 < text.Length ? text[pos + 1] : '\0'; }
 
-        public Lexer(SourceText text)
+        public Lexer(SourceText text, bool isScript)
         {
             this.text = text;
+            this.isScript = isScript;
             diagnostics = new DiagnosticBag();
         }
 

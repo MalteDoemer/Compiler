@@ -44,7 +44,7 @@ namespace Compiler
         private static void Evaluate(string inp)
         {
             var src = new SourceText(inp);
-            compilation = compilation == null ? Compilation.Compile(src) : compilation.ContinueWith(src);
+            compilation = Compilation.CompileScript(src, compilation);
             compilation.Evaluate();
 
             if (compilation.Diagnostics.Length > 0)

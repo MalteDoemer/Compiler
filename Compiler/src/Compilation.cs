@@ -7,22 +7,30 @@ using System.Collections.Generic;
 using Compiler.Diagnostics;
 using System.IO;
 using Compiler.Symbols;
+using Compiler.Lowering;
 
 namespace Compiler
 {
 
     public sealed class Compilation
     {
-        private Compilation(Compilation previous, SourceText text, Dictionary<string, object> env)
+        private Dictionary<string, object> variables;
+        private bool isScript;
+
+        private Compilation(Compilation previous, SourceText text, Dictionary<string, object> env, bool isScript)
         {
             Previous = previous;
             Text = text;
-            Variables = env;
-            var lexer = new Lexer(text);
+            variables = env;
+            this.isScript = isScript;
+
+            var lexer = new Lexer(text, isScript);
             var tokens = lexer.Tokenize().ToImmutableArray();
-            var parser = new Parser(text, tokens);
+
+            var parser = new Parser(text, tokens, isScript);
             var unit = parser.ParseCompilationUnit();
-            var binder = new Binder(previous);
+
+            var binder = new Binder(previous, isScript);
             Root = binder.BindCompilationUnit(unit);
 
             var builder = ImmutableArray.CreateBuilder<Diagnostic>();
@@ -34,28 +42,26 @@ namespace Compiler
         }
 
         internal BoundCompilationUnit Root { get; }
-        public Compilation Previous { get; }
         public SourceText Text { get; }
-        public Dictionary<string, object> Variables { get; }
         public ImmutableArray<Diagnostic> Diagnostics { get; }
+        public Compilation Previous { get; }
 
         public void Evaluate()
         {
-            if (Diagnostics.Length > 0 || Root == null) return;
+            if (Root == null) return;
 
-            
             var statement = GetStatement();
-            var evaluator = new Evaluator(statement, Variables);
+            var evaluator = new Evaluator(statement, variables);
             evaluator.Evaluate();
         }
 
         public object EvaluateExpression()
         {
-           if (Diagnostics.Length > 0 || Root == null) return null;
+           if (Root == null) return null;
 
 
             var statement = GetStatement();
-            var evaluator = new Evaluator(statement, Variables);
+            var evaluator = new Evaluator(statement, variables);
             evaluator.Evaluate();
             return evaluator.lastValue;
         }
@@ -63,26 +69,28 @@ namespace Compiler
         private BoundBlockStatement GetStatement()
         {
             var stmt = Root.Statement;
-            return Lowering.Lowerer.Lower(stmt);
+            return Lowerer.Lower(stmt);
         }
 
+        public static Compilation Compile(SourceText text) => new Compilation(null, text, new Dictionary<string, object>(), false);
 
-
-        public Compilation ContinueWith(SourceText text) => new Compilation(this, text, Variables);
-
-        public static Compilation Compile(SourceText text) => new Compilation(null, text, new Dictionary<string, object>());
+        public static Compilation CompileScript(SourceText text, Compilation previous = null) 
+        {
+            var env = previous == null ? new Dictionary<string, object>() : previous.variables;
+            return new Compilation(previous, text, env, true);
+        }
 
         public static ImmutableArray<SyntaxToken> Tokenize(SourceText text)
         {
-            var lexer = new Lexer(text);
+            var lexer = new Lexer(text, true);
             return lexer.Tokenize().ToImmutableArray();
         }
 
         public static string SyntaxTreeToString(SourceText text)
         {
-            var lexer = new Lexer(text);
+            var lexer = new Lexer(text, true);
             var tokens = lexer.Tokenize().ToImmutableArray();
-            var parser = new Parser(text, tokens);
+            var parser = new Parser(text, tokens, true);
             var root = parser.ParseCompilationUnit();
             return root.ToString();
         }

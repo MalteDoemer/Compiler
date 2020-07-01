@@ -89,7 +89,7 @@ namespace Compiler.Test
         [InlineData("\"test\" != \"abc\"", true)]
         public static void Evaluate_Result(string text, object expceted)
         {
-            var compiltaion = Compilation.Compile(text);
+            var compiltaion = Compilation.CompileScript(text);
             var res = compiltaion.EvaluateExpression();
 
             Assert.Empty(compiltaion.Diagnostics);
