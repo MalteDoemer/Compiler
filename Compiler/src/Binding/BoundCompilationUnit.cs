@@ -8,14 +8,14 @@ namespace Compiler
 
     internal sealed class BoundCompilationUnit : BoundNode
     {
-        public BoundCompilationUnit(BoundStatement statement, ImmutableArray<VariableSymbol> declaredVariables, ImmutableArray<FunctionSymbol> declaredFunctions)
+        public BoundCompilationUnit(BoundBlockStatement globalStatements,  ImmutableArray<VariableSymbol> declaredVariables, ImmutableArray<FunctionSymbol> declaredFunctions)
         {
+            GlobalStatements = globalStatements;
             DeclaredVariables = declaredVariables;
             DeclaredFunctions = declaredFunctions;
-            Statement = statement;
         }
 
-        public BoundStatement Statement { get; }
+        public BoundBlockStatement GlobalStatements { get; }
         public ImmutableArray<VariableSymbol> DeclaredVariables { get; }
         public ImmutableArray<FunctionSymbol> DeclaredFunctions { get; }
     }

@@ -14,7 +14,7 @@ namespace Compiler.Syntax
         private readonly ImmutableArray<SyntaxToken> tokens;
         private readonly bool isScript;
 
-        private SyntaxToken current { get => pos < tokens.Length ? tokens[pos] : tokens[tokens.Length - 1]; }
+        private SyntaxToken current { get => Peak(0); }
         private int pos;
 
         public Parser(SourceText source, ImmutableArray<SyntaxToken> tokens, bool isScript)
@@ -46,12 +46,107 @@ namespace Compiler.Syntax
             return res;
         }
 
+        private SyntaxToken Peak(int offset)
+        {
+            if (pos + offset < tokens.Length)
+                return tokens[pos + offset];
+            else return tokens[tokens.Length];
+        }
+
         public CompilationUnitSyntax ParseCompilationUnit()
         {
+            var members = ParseMembers();
+            return new CompilationUnitSyntax(TextSpan.FromBounds(0, source.Length), members);
+        }
+
+        private ImmutableArray<MemberSyntax> ParseMembers()
+        {
+            var builder = ImmutableArray.CreateBuilder<MemberSyntax>();
+
+            while (current.Kind != SyntaxTokenKind.End)
+            {
+                var member = ParseMember();
+                builder.Add(member);
+            }
+            return builder.ToImmutable();
+        }
+
+        private MemberSyntax ParseMember()
+        {
+            if (Peak(0).Kind.IsTypeKeyword() && Peak(1).Kind == SyntaxTokenKind.Identifier && Peak(2).Kind == SyntaxTokenKind.LParen)
+                return ParseFunctionDeclaration();
+            else return ParseGlobalStatement();
+        }
+
+        private MemberSyntax ParseGlobalStatement()
+        {
             var stmt = ParseStatement();
-            var unit = new CompilationUnitSyntax(TextSpan.FromLength(0, source.Length), stmt);
-            if (stmt.IsValid && current.Kind != SyntaxTokenKind.End) diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, SyntaxTokenKind.End);
-            return unit;
+
+            if (SyntaxFacts.IsGlobalStatement(stmt, isScript))
+                return new GlobalStatementSynatx(stmt);
+
+            else return new InvalidMemberSyntax(stmt.Span);
+
+        }
+
+        private MemberSyntax ParseFunctionDeclaration()
+        {
+            var returnType = Advance();
+
+            if (!returnType.IsValid)
+                return new InvalidMemberSyntax(returnType.Span);
+
+            var identifier = MatchToken(SyntaxTokenKind.Identifier);
+
+            if (!identifier.IsValid)
+                return new InvalidMemberSyntax(identifier.Span);
+
+            var lparen = MatchToken(SyntaxTokenKind.LParen);
+
+            if (!lparen.IsValid)
+                return new InvalidMemberSyntax(lparen.Span);
+
+
+            var paramBuilder = ImmutableArray.CreateBuilder<ParameterSyntax>();
+            var commaBuilder = ImmutableArray.CreateBuilder<SyntaxToken>();
+
+            while (current.Kind != SyntaxTokenKind.RParen)
+            {
+                if (current.Kind == SyntaxTokenKind.End)
+                {
+                    var span = TextSpan.FromBounds(lparen.Span.Start, current.Span.End);
+                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, span);
+                    return new InvalidMemberSyntax(TextSpan.Invalid);
+                }
+
+                if (!current.Kind.IsTypeKeyword())
+                    return new InvalidMemberSyntax(current.Span);
+
+                var typeToken = Advance();
+                var name = MatchToken(SyntaxTokenKind.Identifier);
+
+                if (!name.IsValid)
+                    return new InvalidMemberSyntax(name.Span);
+
+                paramBuilder.Add(new ParameterSyntax(typeToken, name));
+
+                if (current.Kind != SyntaxTokenKind.RParen)
+                    commaBuilder.Add(MatchToken(SyntaxTokenKind.Comma));
+            }
+
+            var parameters = new SeperatedSyntaxList<ParameterSyntax>(paramBuilder.ToImmutable(), commaBuilder.ToImmutable());
+
+            var rparen = MatchToken(SyntaxTokenKind.RParen);
+
+            if (!rparen.IsValid)
+                return new InvalidMemberSyntax(rparen.Span);
+
+            var body = ParseBlockStatement();
+
+            if (!body.IsValid)
+                return new InvalidMemberSyntax(body.Span);
+
+            return new FunctionDeclarationSyntax(returnType, identifier, lparen, parameters, rparen, (BlockStatment)body);
         }
 
         private StatementSyntax ParseStatement()
@@ -173,7 +268,7 @@ namespace Compiler.Syntax
             if (expression is InvalidExpressionSyntax)
                 return new InvalidStatementSyntax(expression.Span);
 
-            if (SyntaxFacts.IsValidExpression(expression, isScript))
+            if (SyntaxFacts.IsExpressionStatement(expression, isScript))
                 return new ExpressionStatement(expression);
             else
             {
@@ -339,7 +434,7 @@ namespace Compiler.Syntax
                 if (current.Kind != SyntaxTokenKind.RParen)
                     commaBuilder.Add(MatchToken(SyntaxTokenKind.Comma));
             }
-            
+
             var rparen = MatchToken(SyntaxTokenKind.RParen);
 
             return new CallExpressionSyntax(identifier, lparen, new SeperatedSyntaxList<ExpressionSyntax>(argBuilder.ToImmutable(), commaBuilder.ToImmutable()), rparen);

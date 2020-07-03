@@ -28,7 +28,9 @@ namespace Compiler.Diagnostics
            "Expression cannot be void.",
            "The types '{0}' and '{1}' need a explicit conversion.",
            "Cannot convert '{0}' to '{1}'.",
-           "Expression isn't a statement",
+           "Expression isn't a statement.",
+           "Duplicated parameter '{0}'.",
+           "Function '{0}' is already declared",
         };
 
         private readonly List<Diagnostic> builder;

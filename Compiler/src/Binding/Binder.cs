@@ -40,14 +40,43 @@ namespace Compiler.Binding
 
         public BoundCompilationUnit BindCompilationUnit(CompilationUnitSyntax unit)
         {
-            var stmt = BindStatement(unit.Statement);
+            foreach (var func in unit.Members.OfType<FunctionDeclarationSyntax>())
+                DeclareFunction(func);
 
-            if (stmt is BoundInvalidStatement inv)
-                return null;
+            var stmtBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
+
+            foreach (var globalStmt in unit.Members.OfType<GlobalStatementSynatx>())
+            {
+                var stmt = BindStatement(globalStmt.Statement);
+                stmtBuilder.Add(stmt);
+            }
+
+            var globalStatements = new BoundBlockStatement(stmtBuilder.ToImmutable());
+
 
             var variables = scope.GetDeclaredVariables();
             var functions = scope.GetDeclaredFunctions();
-            return new BoundCompilationUnit(stmt, variables, functions);
+            return new BoundCompilationUnit(globalStatements, variables, functions);
+        }
+
+        private void DeclareFunction(FunctionDeclarationSyntax func)
+        {
+            var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
+
+            var seenParameters = new HashSet<string>();
+
+            foreach (var parameterSyntax in func.Parameters)
+            {
+                var type = BindFacts.GetTypeSymbol(parameterSyntax.TypeKeyword.Kind);
+                var name = (string)parameterSyntax.Identifier.Value;
+                if (!seenParameters.Add(name)) diagnostics.ReportIdentifierError(ErrorMessage.DuplicatedParameters, parameterSyntax.Span, name);
+                else parameters.Add(new ParameterSymbol(name, type));
+            }
+
+            var returnType = BindFacts.GetTypeSymbol(func.TypeKeyword.Kind);
+            var symbol = new FunctionSymbol((string)func.Identifier.Value, parameters.ToImmutable(), returnType);
+            if (!scope.TryDeclareFunction(symbol))
+                diagnostics.ReportIdentifierError(ErrorMessage.FunctionAlreadyDeclared, func.Identifier.Span, func.Identifier.Value);
         }
 
         private BoundScope CreateBoundScopes(Compilation previous)

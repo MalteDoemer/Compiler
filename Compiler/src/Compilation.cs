@@ -45,7 +45,7 @@ namespace Compiler
 
         public void Evaluate()
         {
-            if (Root == null) return;
+            if (Diagnostics.Length > 0) return;
 
             var statement = GetStatement();
             var evaluator = new Evaluator(statement, variables);
@@ -54,7 +54,7 @@ namespace Compiler
 
         public object EvaluateExpression()
         {
-           if (Root == null) return null;
+           if (Diagnostics.Length > 0) return null;
 
 
             var statement = GetStatement();
@@ -65,7 +65,7 @@ namespace Compiler
 
         private BoundBlockStatement GetStatement()
         {
-            var stmt = Root.Statement;
+            var stmt = Root.GlobalStatements;
             return Lowerer.Lower(stmt);
         }
 

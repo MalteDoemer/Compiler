@@ -19,7 +19,7 @@ namespace Compiler.Syntax
             }
         }
 
-        internal static bool IsLiteralExpression(SyntaxTokenKind kind)
+        internal static bool IsLiteralExpression(this SyntaxTokenKind kind)
         {
             switch (kind)
             {
@@ -99,21 +99,31 @@ namespace Compiler.Syntax
             }
         }
 
-        internal static bool IsValidExpression(ExpressionSyntax expression, bool IsScripting = true)
+        internal static bool IsExpressionStatement(ExpressionSyntax expression, bool isScripting = true)
         {
-            if (IsScripting) return true;
-            else
+            if (isScripting) return true;
+            switch (expression)
             {
-                switch (expression)
-                {
-                    case CallExpressionSyntax _:
-                    case AssignmentExpressionSyntax __:
-                    case AdditionalAssignmentExpression ___:
-                    case PostIncDecExpression ____:
-                        return true;
-                    default: return false;
-                }
+                case CallExpressionSyntax _:
+                case AssignmentExpressionSyntax __:
+                case AdditionalAssignmentExpression ___:
+                case PostIncDecExpression ____:
+                    return true;
+                default: return false;
             }
+        }
+
+        internal static bool IsGlobalStatement(StatementSyntax stmt, bool isScripting = true)
+        {
+            if (isScripting) return true;
+
+            switch (stmt)
+            {
+                case VariableDeclarationStatement _:
+                    return true;
+                default: return false;   
+            }
+
         }
 
         public static SyntaxTokenKind? IsKeyWord(string text)
@@ -138,7 +148,7 @@ namespace Compiler.Syntax
             }
         }
 
-        public static string GetStringRepresentation(SyntaxTokenKind kind)
+        public static string GetStringRepresentation(this SyntaxTokenKind kind)
         {
             switch (kind)
             {

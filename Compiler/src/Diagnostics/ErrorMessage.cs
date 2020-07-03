@@ -18,5 +18,7 @@ namespace Compiler.Diagnostics
         MissingExplicitConversion,
         CannotConvert,
         InvalidStatement,
+        DuplicatedParameters,
+        FunctionAlreadyDeclared,
     }
 }

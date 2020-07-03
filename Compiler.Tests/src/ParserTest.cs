@@ -30,13 +30,13 @@ namespace Compiler.Test
             if (precedence1 > precedence2)
             {
                 // (a + (b * c))
-                var expected = $"(a {text1} (b {text2} c))";
+                var expected = $"(a {text1} (b {text2} c))\n";
                 Assert.Equal(expected, res);
             }
             else
             {
                 // ((a * b) + c)
-                var expected = $"((a {text1} b) {text2} c)";
+                var expected = $"((a {text1} b) {text2} c)\n";
                 Assert.Equal(expected, res);
             }
 
@@ -53,7 +53,7 @@ namespace Compiler.Test
 
             var text = $"a {text1} {text2}b";
             var res = Compilation.SyntaxTreeToString(text);
-            var expected = $"(a {text1} ({text2}b))";
+            var expected = $"(a {text1} ({text2}b))\n";
             Assert.Equal(expected, res);
         }
 

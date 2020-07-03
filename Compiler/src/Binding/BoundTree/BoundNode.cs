@@ -21,6 +21,4 @@ namespace Compiler.Binding
         public TypeSymbol Type { get; }
         public BoundExpression Expression { get; }
     }
-
-    
 }

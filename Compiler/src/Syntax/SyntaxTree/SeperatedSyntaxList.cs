@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Text;
-
+using System.Linq;
+using Compiler.Text;
 
 namespace Compiler.Syntax
 {
@@ -31,7 +31,20 @@ namespace Compiler.Syntax
             }
         }
 
-        public int Length => nodes.Length;        
+        public TextSpan Span
+        {
+            get
+            {
+                if (nodes.IsEmpty)
+                    return TextSpan.Invalid;
+                if (nodes.Length == 1)
+                    return nodes[0].Span;
+
+                return nodes.First().Span + nodes.Last().Span;
+            }
+        }
+
+        public int Length => nodes.Length;
 
         public T this[int index] { get => nodes[index]; }
 
