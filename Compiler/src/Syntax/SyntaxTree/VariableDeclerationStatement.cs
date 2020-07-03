@@ -3,9 +3,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class VariableDeclerationStatement : StatementSyntax
+    internal sealed class VariableDeclarationStatement : StatementSyntax
     {
-        public VariableDeclerationStatement(SyntaxToken typeToken, SyntaxToken identifier,SyntaxToken equalToken, ExpressionSyntax expression)
+        public VariableDeclarationStatement(SyntaxToken typeToken, SyntaxToken identifier,SyntaxToken equalToken, ExpressionSyntax expression)
         {
             TypeToken = typeToken;
             Identifier = identifier;

@@ -65,7 +65,7 @@ namespace Compiler.Lowering
 
         protected override BoundStatement RewriteForStatement(BoundForStatement node)
         {
-            var decl = node.VariableDecleration;
+            var decl = node.VariableDeclaration;
             var inc = new BoundExpressionStatement(node.Increment);
             var body = node.Body;
             var condition = node.Condition;

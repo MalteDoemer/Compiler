@@ -4,15 +4,15 @@ namespace Compiler.Binding
 {
     internal sealed class BoundForStatement : BoundStatement
     {
-        public BoundForStatement(BoundStatement variableDecleration, BoundExpression condition, BoundExpression increment, BoundStatement body)
+        public BoundForStatement(BoundStatement variableDeclaration, BoundExpression condition, BoundExpression increment, BoundStatement body)
         {
-            VariableDecleration = variableDecleration;
+            VariableDeclaration = variableDeclaration;
             Condition = condition;
             Increment = increment;
             Body = body;
         }
 
-        public BoundStatement VariableDecleration { get; }
+        public BoundStatement VariableDeclaration { get; }
         public BoundExpression Condition { get; }
         public BoundExpression Increment { get; }
         public BoundStatement Body { get; }

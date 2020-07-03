@@ -21,8 +21,8 @@ namespace Compiler.Binding
                 return RewriteWhileStatement(ws);
             else if (statement is BoundDoWhileStatement dws)
                 return RewriteDoWhileStatement(dws);
-            else if (statement is BoundVariableDecleration vs)
-                return RewriteVariableDecleration(vs);
+            else if (statement is BoundVariableDeclaration vs)
+                return RewriteVariableDeclaration(vs);
             else if (statement is BoundGotoStatement gs)
                 return RewriteGotoStatement(gs);
             else if (statement is BoundConditionalGotoStatement gcs)
@@ -42,13 +42,13 @@ namespace Compiler.Binding
             return new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfFalse);
         }
 
-        protected virtual BoundStatement RewriteVariableDecleration(BoundVariableDecleration node)
+        protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclaration node)
         {
             var expression = RewriteExpression(node.Expression);
             if (expression == node.Expression)
                 return node;
 
-            return new BoundVariableDecleration(node.Variable, expression);
+            return new BoundVariableDeclaration(node.Variable, expression);
         }
 
         protected virtual BoundStatement RewriteWhileStatement(BoundWhileStatement node)
@@ -81,12 +81,12 @@ namespace Compiler.Binding
 
         protected virtual BoundStatement RewriteForStatement(BoundForStatement node)
         {
-            var variableDecl = RewriteStatement(node.VariableDecleration);
+            var variableDecl = RewriteStatement(node.VariableDeclaration);
             var condition = RewriteExpression(node.Condition);
             var increment = RewriteExpression(node.Increment);
             var body = RewriteStatement(node.Body);
 
-            if (variableDecl == node.VariableDecleration && condition == node.Condition && increment == node.Increment && body == node.Body)
+            if (variableDecl == node.VariableDeclaration && condition == node.Condition && increment == node.Increment && body == node.Body)
                 return node;
 
             return new BoundForStatement(variableDecl, condition, increment, body);

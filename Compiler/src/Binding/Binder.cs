@@ -87,8 +87,8 @@ namespace Compiler.Binding
                 return BindExpressionStatement(es);
             else if (statement is BlockStatment bs)
                 return BindBlockStatement(bs);
-            else if (statement is VariableDeclerationStatement vs)
-                return BindVariableDeclerationStatement(vs);
+            else if (statement is VariableDeclarationStatement vs)
+                return BindVariableDeclarationStatement(vs);
             else if (statement is IfStatementSyntax ifs)
                 return BindIfStatement(ifs);
             else if (statement is WhileStatementSyntax ws)
@@ -121,7 +121,7 @@ namespace Compiler.Binding
 
         private BoundStatement BindForStatement(ForStatementSyntax fs)
         {
-            var variableDecl = BindStatement(fs.VariableDecleration);
+            var variableDecl = BindStatement(fs.VariableDeclaration);
 
             if (variableDecl is BoundInvalidStatement)
                 return new BoundInvalidStatement();
@@ -179,7 +179,7 @@ namespace Compiler.Binding
             return new BoundIfStatement(condition, stmt, elseStmt);
         }
 
-        private BoundStatement BindVariableDeclerationStatement(VariableDeclerationStatement vs)
+        private BoundStatement BindVariableDeclarationStatement(VariableDeclarationStatement vs)
         {
             TypeSymbol type;
             BoundExpression expr;
@@ -207,7 +207,7 @@ namespace Compiler.Binding
                 diagnostics.ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, vs.Identifier.Span, variable.Name);
                 return new BoundInvalidStatement();
             }
-            return new BoundVariableDecleration(variable, expr);
+            return new BoundVariableDeclaration(variable, expr);
         }
 
         private BoundStatement BindBlockStatement(BlockStatment bs)

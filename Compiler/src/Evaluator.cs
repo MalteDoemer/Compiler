@@ -41,8 +41,8 @@ namespace Compiler
                         lastValue = EvaluateExpression(es.Expression);
                         index++;
                         break;
-                    case BoundVariableDecleration vs:
-                        EvaluateVariableDecleration(vs);
+                    case BoundVariableDeclaration vs:
+                        EvaluateVariableDeclaration(vs);
                         index++;
                         break;
                     case BoundConditionalGotoStatement cgs:
@@ -213,7 +213,7 @@ namespace Compiler
             else throw new Exception($"Unexpected Conversion Type <{expr.Type}>");
         }
 
-        private void EvaluateVariableDecleration(BoundVariableDecleration vs)
+        private void EvaluateVariableDeclaration(BoundVariableDeclaration vs)
         {
             var val = EvaluateExpression(vs.Expression);
             lastValue = val;

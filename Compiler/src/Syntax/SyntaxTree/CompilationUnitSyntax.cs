@@ -20,4 +20,28 @@ namespace Compiler.Syntax
             return Statement.ToString();
         }
     }
+
+    internal abstract class MemberSyntax : SyntaxNode
+    {
+    }
+
+    internal sealed class GlobalStatementSynatx : MemberSyntax
+    {
+        public GlobalStatementSynatx(StatementSyntax statement)
+        {
+            Statement = statement;
+        }
+
+        public override TextSpan Span => Statement.Span;
+        public override bool IsValid => Statement.IsValid;
+        public StatementSyntax Statement { get; }
+
+        public override string ToString() => Statement.ToString();
+    }
+
+    internal sealed class FunctionDeclaration
+    {
+        
+    }
+
 }

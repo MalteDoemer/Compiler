@@ -67,7 +67,7 @@ namespace Compiler.Syntax
             else if (current.Kind == SyntaxTokenKind.DoKeyword)
                 return ParseDoWhileStatement();
             else if (current.Kind.IsTypeKeyword())
-                return ParseVariableDecleration();
+                return ParseVariableDeclaration();
             else return ParseExpressionStatement();
         }
 
@@ -99,10 +99,10 @@ namespace Compiler.Syntax
             if (!forToken.IsValid)
                 return new InvalidStatementSyntax(forToken.Span);
 
-            var variableDecleration = ParseVariableDecleration();
+            var variableDeclaration = ParseVariableDeclaration();
 
-            if (!variableDecleration.IsValid)
-                return new InvalidStatementSyntax(variableDecleration.Span);
+            if (!variableDeclaration.IsValid)
+                return new InvalidStatementSyntax(variableDeclaration.Span);
 
             var comma1 = MatchToken(SyntaxTokenKind.Comma);
 
@@ -129,7 +129,7 @@ namespace Compiler.Syntax
             if (!body.IsValid)
                 return new InvalidStatementSyntax(body.Span);
 
-            return new ForStatementSyntax(forToken, variableDecleration, condition, increment, body);
+            return new ForStatementSyntax(forToken, variableDeclaration, condition, increment, body);
         }
 
         private StatementSyntax ParseIfStatement()
@@ -221,7 +221,7 @@ namespace Compiler.Syntax
             return new BlockStatment(lcurly, builder.ToImmutable(), rcurly);
         }
 
-        private StatementSyntax ParseVariableDecleration()
+        private StatementSyntax ParseVariableDeclaration()
         {
             var typeToken = Advance();
             if (!typeToken.IsValid)
@@ -239,7 +239,7 @@ namespace Compiler.Syntax
             if (!expr.IsValid)
                 return new InvalidStatementSyntax(expr.Span);
 
-            return new VariableDeclerationStatement(typeToken, identifier, equalToken, expr);
+            return new VariableDeclarationStatement(typeToken, identifier, equalToken, expr);
         }
 
         private ExpressionSyntax ParseExpression(int lvl = SyntaxFacts.MaxPrecedence)

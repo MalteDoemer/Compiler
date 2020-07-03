@@ -3,9 +3,9 @@ using Compiler.Text;
 
 namespace Compiler.Binding
 {
-    internal sealed class BoundVariableDecleration : BoundStatement
+    internal sealed class BoundVariableDeclaration : BoundStatement
     {
-        public BoundVariableDecleration(VariableSymbol variable, BoundExpression expr)
+        public BoundVariableDeclaration(VariableSymbol variable, BoundExpression expr)
         {
             Variable = variable;
             Expression = expr;
