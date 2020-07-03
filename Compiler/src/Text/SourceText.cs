@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 
 namespace Compiler.Text
@@ -53,8 +54,15 @@ namespace Compiler.Text
         }
 
         public override string ToString() => Text;
-        public string ToString(TextSpan span) => Text.Substring(span.Start, span.Length);
-        public string ToString(int pos, int len) => Text.Substring(pos, len);
+        public string ToString(TextSpan span) => ToString(span.Start, span.Length);
+        public string ToString(int pos, int len)
+        {
+            if (pos < 0)
+                throw new ArgumentOutOfRangeException("pos", $"Negative position: {pos}");
+            else if (pos + len > Text.Length)
+                throw new ArgumentOutOfRangeException("pos, len", $"Index out of bounds pos: {pos}, len: {len}");
+            return Text.Substring(pos, len);
+        }
 
         private static ImmutableArray<SourceLine> ParseLines(SourceText src, string text)
         {

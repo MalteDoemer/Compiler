@@ -8,6 +8,11 @@ namespace Compiler.Syntax
         Float,
         String,
         Identifier,
+        Comment,
+        Space,
+
+        SingleQuote,
+        DoubleQuote,
 
         True,
         False,

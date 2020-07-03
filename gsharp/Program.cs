@@ -11,15 +11,14 @@ namespace Compiler
     {
         public static void Main(string[] args)
         {
-            bool showHelp = false;
-            string path = null;
-
-            var optionSet = new OptionSet(){
+            var optionSet = (OptionSet)null;
+            optionSet = new OptionSet(){
                 "Usage: gsharp [OPTIONS] [PATH]",
                 "",
                 "Options:",
-                {"h|help", "Display help.", _ => showHelp = true},
-                {"r|run=", "Interpret the specified file", p => path = p }
+                {"h|help", "Display help.", _ => optionSet.WriteOptionDescriptions(Console.Out) },
+                {"run", "Interpret the specified file", p => InterpretFile(p) },
+                {"repl", "Run the REPL version of gsharp", _ => StartRepl() },
             };
 
             try
@@ -28,23 +27,26 @@ namespace Compiler
             }
             catch (OptionException e)
             {
-
                 ColorWriteLine($"\ngsharp: {e.Message}", ConsoleColor.Red);
                 Console.WriteLine("Try 'gsharp --help' for more information");
                 Environment.Exit(-1);
             }
+        }
 
-            if (showHelp)
+        private static void StartRepl()
+        {
+            var repl = new GSharpRepl();
+
+            try
             {
-                optionSet.WriteOptionDescriptions(Console.Out);
-                return;
+                repl.Run();
+            }
+            catch (Exception e)
+            { 
+                ColorWrite(e, ConsoleColor.Red);
+                Console.ReadLine();
             }
 
-            if (path != null && showHelp == false)
-            {
-                InterpretFile(path);
-                return;
-            }
         }
 
         private static void InterpretFile(string path)
@@ -64,7 +66,7 @@ namespace Compiler
             }
         }
 
-        private static void ReportDiagnostics(Compilation compilation)
+        public static void ReportDiagnostics(Compilation compilation)
         {
             foreach (var d in compilation.Diagnostics)
                 ReportError(compilation.Text, d);

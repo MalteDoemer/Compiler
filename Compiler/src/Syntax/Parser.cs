@@ -322,6 +322,7 @@ namespace Compiler.Syntax
         {
             var argBuilder = ImmutableArray.CreateBuilder<ExpressionSyntax>();
             var commaBuilder = ImmutableArray.CreateBuilder<SyntaxToken>();
+
             var lparen = MatchToken(SyntaxTokenKind.LParen);
 
             while (current.Kind != SyntaxTokenKind.RParen)
@@ -338,6 +339,7 @@ namespace Compiler.Syntax
                 if (current.Kind != SyntaxTokenKind.RParen)
                     commaBuilder.Add(MatchToken(SyntaxTokenKind.Comma));
             }
+            
             var rparen = MatchToken(SyntaxTokenKind.RParen);
 
             return new CallExpressionSyntax(identifier, lparen, new SeperatedSyntaxList<ExpressionSyntax>(argBuilder.ToImmutable(), commaBuilder.ToImmutable()), rparen);

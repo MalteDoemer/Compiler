@@ -1,12 +1,9 @@
-using System.Threading;
 using System.Collections.Immutable;
 using Compiler.Syntax;
 using Compiler.Text;
 using Compiler.Binding;
 using System.Collections.Generic;
 using Compiler.Diagnostics;
-using System.IO;
-using Compiler.Symbols;
 using Compiler.Lowering;
 
 namespace Compiler

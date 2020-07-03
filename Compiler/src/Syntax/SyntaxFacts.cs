@@ -61,7 +61,9 @@ namespace Compiler.Syntax
                 case '>': return SyntaxTokenKind.GreaterThan;
                 case '!': return SyntaxTokenKind.Bang;
                 case '(': return SyntaxTokenKind.LParen;
-                case ')': return SyntaxTokenKind.RParen;
+                case ')': 
+                    Console.WriteLine("Hello");
+                    return SyntaxTokenKind.RParen;
                 case '{': return SyntaxTokenKind.LCurly;
                 case '}': return SyntaxTokenKind.RCurly;
                 case '=': return SyntaxTokenKind.Equal;

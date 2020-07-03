@@ -12,7 +12,7 @@ namespace Compiler
         private static Compilation compilation = null;
 
         
-        public static void Main(string[] args)
+        public static void NotMain(string[] args)
         {
             try
             {

@@ -38,8 +38,12 @@ namespace Compiler.Syntax
 
         private SyntaxToken LexSpace()
         {
+            var start = pos;
             while (char.IsWhiteSpace(current)) pos++;
-            return NextToken();
+
+            var space = text.ToString(start, pos - start);
+
+            return new SyntaxToken(SyntaxTokenKind.Space, start, pos - start, space);
         }
 
         private SyntaxToken LexNumber()
@@ -87,12 +91,9 @@ namespace Compiler.Syntax
             else return new SyntaxToken(SyntaxTokenKind.Identifier, start, pos - start, tokenText);
         }
 
-        private SyntaxToken LexString()
+        private SyntaxToken LexStringContent(SyntaxToken quote)
         {
-            int quotePos = pos;
-            var quote = Advance();
             int start = pos;
-
             var done = false;
 
             while (!done)
@@ -102,26 +103,27 @@ namespace Compiler.Syntax
                     case '\0':
                     case '\r':
                     case '\n':
-                        diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(quotePos, pos));
+                        diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(quote.Span.Start, pos));
                         var t1 = text.ToString(start, pos - start);
-                        return new SyntaxToken(SyntaxTokenKind.String, quotePos, t1.Length, t1, false);
+                        return new SyntaxToken(SyntaxTokenKind.String, start, t1.Length, t1, false);
                     default:
-                        if (current == quote)
-                            done = true;
-                        else 
-                            pos++;
+                        if (current == (char)quote.Value) done = true;
+                        else pos++;
                         break;
                 }
             }
-            pos++;
-            var t = text.ToString(start, pos - start - 1);
-            return new SyntaxToken(SyntaxTokenKind.String, quotePos, text.Length + 2, t);
+            var t = text.ToString(start, pos - start);
+            return new SyntaxToken(SyntaxTokenKind.String, start, t.Length, t);
         }
 
         private SyntaxToken LexSingleChar()
         {
             var kind = SyntaxFacts.IsSingleCharacter(current);
-            if (kind != null) return new SyntaxToken((SyntaxTokenKind)kind, pos, 1, Advance());
+            if (kind != null)
+            {
+                
+                return new SyntaxToken((SyntaxTokenKind)kind, pos, 1, Advance());
+            }
             return null;
         }
 
@@ -135,35 +137,63 @@ namespace Compiler.Syntax
 
         private SyntaxToken LexComment()
         {
+            var start = pos;
+
             while (!(current == '\0' || current == '\n' || current == '\r')) pos++;
-            return NextToken();
+
+            var comment = text.ToString(start, pos - start);
+
+            return new SyntaxToken(SyntaxTokenKind.Comment, start, pos - start, comment);
         }
 
-        private SyntaxToken NextToken()
+        private IEnumerable<SyntaxToken> NextToken()
         {
             var doubleChar = LexDoubleChar();
-            if (doubleChar != null) return doubleChar;
+            if (doubleChar != null) yield return doubleChar;
 
             var singleChar = LexSingleChar();
-            if (singleChar != null) return singleChar;
+            if (singleChar != null) yield return singleChar;
 
-            if (current == '\0') return new SyntaxToken(SyntaxTokenKind.End, pos, 0, "End");
-            else if (current == '"' || current == '\'') return LexString();
-            else if (char.IsNumber(current)) return LexNumber();
-            else if (char.IsWhiteSpace(current)) return LexSpace();
-            else if (current == '#') return LexComment();
-            else if (char.IsLetter(current) || current == '_') return LexIdentifierOrKeyword();
-            else return new SyntaxToken(SyntaxTokenKind.Invalid, pos, 1, Advance());
+            if (current == '\0') yield return new SyntaxToken(SyntaxTokenKind.End, pos, 0, "End");
+            else if (current == '"' || current == '\'')
+            {
+                var quoteKind = current == '"' ? SyntaxTokenKind.DoubleQuote : SyntaxTokenKind.SingleQuote;
+                var startQuote = new SyntaxToken(quoteKind, pos, 1, Advance());
+                yield return startQuote;
+
+                var str = LexStringContent(startQuote);
+                yield return str;
+
+                if (str.IsValid)
+                    yield return new SyntaxToken(quoteKind, pos, 1, Advance());
+            }
+            else if (char.IsNumber(current)) yield return LexNumber();
+            else if (char.IsWhiteSpace(current)) yield return LexSpace();
+            else if (current == '#') yield return LexComment();
+            else if (char.IsLetter(current) || current == '_') yield return LexIdentifierOrKeyword();
+            else yield return new SyntaxToken(SyntaxTokenKind.Invalid, pos, 1, Advance());
         }
 
-        public IEnumerable<SyntaxToken> Tokenize()
+        public IEnumerable<SyntaxToken> Tokenize(bool verbose = false)
         {
-            SyntaxToken token;
-            do
+            bool end = false;
+
+            while (!end)
             {
-                token = NextToken();
-                yield return token;
-            } while (token.Kind != SyntaxTokenKind.End);
+                foreach (var token in NextToken())
+                {
+                    if (token.Kind == SyntaxTokenKind.End)
+                        end = true;
+
+                    var shouldYield = verbose ? true : (token.Kind != SyntaxTokenKind.Space &&
+                                                        token.Kind != SyntaxTokenKind.Comment &&
+                                                        token.Kind != SyntaxTokenKind.SingleQuote &&
+                                                        token.Kind != SyntaxTokenKind.DoubleQuote);
+
+                    if (shouldYield)
+                        yield return token;
+                }
+            }
         }
     }
 }
