@@ -154,9 +154,20 @@ namespace Compiler
                 Console.WriteLine(message);
                 return null;
             }
+            else if (expr.Symbol == BuiltInFunctions.Len)
+            {
+                var str = (string)EvaluateExpression(expr.Arguments[0]);
+                return str.Length;
+            }
             else if (expr.Symbol == BuiltInFunctions.Clear)
             {
                 Console.Clear();
+                return null;
+            }
+            else if (expr.Symbol == BuiltInFunctions.Exit)
+            {
+                var exitCode = EvaluateExpression(expr.Arguments[0]);
+                Environment.Exit((int)exitCode);
                 return null;
             }
             else if (expr.Symbol == BuiltInFunctions.Random)
