@@ -14,6 +14,7 @@ namespace Compiler.Syntax
         private readonly ImmutableArray<SyntaxToken> tokens;
         private readonly bool isScript;
 
+        private SyntaxToken ahead { get => Peak(1); }
         private SyntaxToken current { get => Peak(0); }
         private int pos;
 
@@ -63,7 +64,7 @@ namespace Compiler.Syntax
         {
             var builder = ImmutableArray.CreateBuilder<MemberSyntax>();
 
-            while (current.Kind != SyntaxTokenKind.End)
+            while (current.Kind != SyntaxTokenKind.EndOfFile)
             {
                 var member = ParseMember();
                 builder.Add(member);
@@ -112,7 +113,7 @@ namespace Compiler.Syntax
 
             while (current.Kind != SyntaxTokenKind.RParen)
             {
-                if (current.Kind == SyntaxTokenKind.End)
+                if (current.Kind == SyntaxTokenKind.EndOfFile)
                 {
                     var span = TextSpan.FromBounds(lparen.Span.Start, current.Span.End);
                     diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, span);
@@ -293,7 +294,7 @@ namespace Compiler.Syntax
 
             while (current.Kind != SyntaxTokenKind.RCurly)
             {
-                if (current.Kind == SyntaxTokenKind.End)
+                if (current.Kind == SyntaxTokenKind.EndOfFile)
                 {
                     var span = TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start);
                     diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedCurlyBrackets, span);
@@ -422,7 +423,7 @@ namespace Compiler.Syntax
 
             while (current.Kind != SyntaxTokenKind.RParen)
             {
-                if (current.Kind == SyntaxTokenKind.End)
+                if (current.Kind == SyntaxTokenKind.EndOfFile)
                 {
                     var span = TextSpan.FromBounds(lparen.Span.Start, current.Span.End);
                     diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, span);
@@ -449,6 +450,19 @@ namespace Compiler.Syntax
             return new ElseStatementSyntax(elseKeyword, statement);
         }
 
+        private TypeClauseSyntax ParseOptionalTypeClause()
+        {
+            if (current.Kind == SyntaxTokenKind.Colon && ahead.Kind.IsTypeKeyword())
+                return ParseTypeClause();
+            else return null;
+        }
 
+        private TypeClauseSyntax ParseTypeClause()
+        {
+            var colonToken = MatchToken(SyntaxTokenKind.Colon);
+            var typeToken = Advance();
+
+            return new TypeClauseSyntax(colonToken, typeToken);
+        }
     }
 }

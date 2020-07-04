@@ -26,8 +26,8 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.Float:
                 case SyntaxTokenKind.Int:
                 case SyntaxTokenKind.String:
-                case SyntaxTokenKind.True:
-                case SyntaxTokenKind.False:
+                case SyntaxTokenKind.TrueKeyword:
+                case SyntaxTokenKind.FalseKeyword:
                     return true;
                 default: return false;
             }
@@ -42,7 +42,6 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.BoolKeyword:
                 case SyntaxTokenKind.StringKeyword:
                 case SyntaxTokenKind.AnyKeyword:
-                case SyntaxTokenKind.VarKeyword:
                 case SyntaxTokenKind.VoidKeyword:
                     return true;
                 default: return false;
@@ -71,6 +70,7 @@ namespace Compiler.Syntax
                 case '|': return SyntaxTokenKind.Pipe;
                 case '^': return SyntaxTokenKind.Hat;
                 case ',': return SyntaxTokenKind.Comma;
+                case ':': return SyntaxTokenKind.Colon;
                 default: return null;
             }
         }
@@ -130,8 +130,8 @@ namespace Compiler.Syntax
         {
             switch (text)
             {
-                case "true": return SyntaxTokenKind.True;
-                case "false": return SyntaxTokenKind.False;
+                case "true": return SyntaxTokenKind.TrueKeyword;
+                case "false": return SyntaxTokenKind.FalseKeyword;
                 case "int": return SyntaxTokenKind.IntKeyword;
                 case "float": return SyntaxTokenKind.FloatKeyword;
                 case "bool": return SyntaxTokenKind.BoolKeyword;
@@ -170,6 +170,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.Ampersand: return "&";
                 case SyntaxTokenKind.Hat: return "^";
                 case SyntaxTokenKind.Comma: return ",";
+                case SyntaxTokenKind.Colon: return ":";
 
                 case SyntaxTokenKind.StarStar: return "**";
                 case SyntaxTokenKind.SlashSlah: return "//";
@@ -189,8 +190,8 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.AmpersandEqual: return "&=";
                 case SyntaxTokenKind.PipeEqual: return "|=";
 
-                case SyntaxTokenKind.True: return "true";
-                case SyntaxTokenKind.False: return "false";
+                case SyntaxTokenKind.TrueKeyword: return "true";
+                case SyntaxTokenKind.FalseKeyword: return "false";
                 case SyntaxTokenKind.VarKeyword: return "var";
                 case SyntaxTokenKind.AnyKeyword: return "any";
                 case SyntaxTokenKind.IntKeyword: return "int";
