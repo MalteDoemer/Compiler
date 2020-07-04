@@ -6,16 +6,17 @@ namespace Compiler.Syntax
 {
     internal sealed class DoWhileStatementSyntax : StatementSyntax
     {
-        public DoWhileStatementSyntax(SyntaxToken doToken, StatementSyntax body, SyntaxToken whileToken, ExpressionSyntax condition)
+        public DoWhileStatementSyntax(SyntaxToken doToken, StatementSyntax body, SyntaxToken whileToken, ExpressionSyntax condition, bool isValid = true)
         {
             DoToken = doToken;
             Body = body;
             WhileToken = whileToken;
             Condition = condition;
+            IsValid = isValid;
         }
 
         public override TextSpan Span => DoToken.Span + Condition.Span;
-        public override bool IsValid => DoToken.IsValid && Body.IsValid && WhileToken.IsValid && Condition.IsValid;
+        public override bool IsValid { get; }
 
         public SyntaxToken DoToken { get; }
         public StatementSyntax Body { get; }

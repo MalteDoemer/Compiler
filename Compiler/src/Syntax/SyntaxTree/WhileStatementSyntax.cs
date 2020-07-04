@@ -4,16 +4,16 @@ namespace Compiler.Syntax
 {
     internal sealed class WhileStatementSyntax : StatementSyntax
     {
-        public WhileStatementSyntax(SyntaxToken whileToken, ExpressionSyntax condition, StatementSyntax body)
+        public WhileStatementSyntax(SyntaxToken whileToken, ExpressionSyntax condition, StatementSyntax body, bool isValid = true)
         {
             WhileToken = whileToken;
             Condition = condition;
             Body = body;
+            IsValid = isValid;
         }
 
         public override TextSpan Span => WhileToken.Span + Body.Span;
-        public override bool IsValid => WhileToken.IsValid && Condition.IsValid && Body.IsValid;
-
+        public override bool IsValid { get; }
         public SyntaxToken WhileToken { get; }
         public ExpressionSyntax Condition { get; }
         public StatementSyntax Body { get; }

@@ -4,22 +4,18 @@ namespace Compiler.Syntax
 {
     internal sealed class UnaryExpressionSyntax : ExpressionSyntax
     {
-        public UnaryExpressionSyntax(SyntaxToken op, ExpressionSyntax expression)
+        public UnaryExpressionSyntax(SyntaxToken op, ExpressionSyntax expression, bool isValid = true)
         {
             Op = op;
             Expression = expression;
+            IsValid = isValid;
         }
 
+        public override TextSpan Span => Op.Span + Expression.Span;
+        public override bool IsValid { get; }
         public SyntaxToken Op { get; }
         public ExpressionSyntax Expression { get; }
 
-        public override TextSpan Span => Op.Span + Expression.Span;
-
-        public override bool IsValid => Op.IsValid && Expression.IsValid;
-
-        public override string ToString()
-        {
-            return $"({Op.Value}{Expression})";
-        }
+        public override string ToString() => $"({Op.Value}{Expression})";
     }
 }

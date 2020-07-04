@@ -4,33 +4,29 @@ namespace Compiler.Syntax
 {
     internal sealed class FunctionDeclarationSyntax : MemberSyntax
     {
-        public FunctionDeclarationSyntax(SyntaxToken typeKeyword, SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ParameterSyntax> parameters, SyntaxToken rightParenthesis, BlockStatment body)
+        public FunctionDeclarationSyntax(SyntaxToken functionKeyword, SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ParameterSyntax> parameters, SyntaxToken rightParenthesis, TypeClauseSyntax returnType, BlockStatment body, bool isValid = true)
         {
-            TypeKeyword = typeKeyword;
+            FunctionKeyword = functionKeyword;
             Identifier = identifier;
             LeftParenthesis = leftParenthesis;
             Parameters = parameters;
             RightParenthesis = rightParenthesis;
+            ReturnType = returnType;
             Body = body;
+            IsValid = isValid;
         }
 
-        public override TextSpan Span => TypeKeyword.Span + Body.Span;
-
-        public override bool IsValid => TypeKeyword.IsValid &&
-                                        Identifier.IsValid &&
-                                        LeftParenthesis.IsValid &&
-                                        Parameters.IsValid &&
-                                        RightParenthesis.IsValid &&
-                                        Body.IsValid;
-
-        public SyntaxToken TypeKeyword { get; }
+        public override TextSpan Span => FunctionKeyword.Span + Body.Span;
+        public override bool IsValid { get; }
+        public SyntaxToken FunctionKeyword { get; }
         public SyntaxToken Identifier { get; }
         public SyntaxToken LeftParenthesis { get; }
+        public TypeClauseSyntax ReturnType { get; }
         public SeperatedSyntaxList<ParameterSyntax> Parameters { get; }
         public SyntaxToken RightParenthesis { get; }
         public BlockStatment Body { get; }
 
-        public override string ToString() => $"{TypeKeyword.Value} {Identifier.Value}({Parameters})\n{Body}";
+        public override string ToString() => $"{FunctionKeyword.Value} {Identifier.Value}({Parameters}){ReturnType}\n{Body}";
     }
 
 }

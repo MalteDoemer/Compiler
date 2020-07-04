@@ -62,5 +62,7 @@ namespace Compiler.Syntax
         VoidKeyword,
         DoKeyword,
         AnyKeyword,
+        Colon,
+        FunctionDefinitionKeyword,
     }
 }

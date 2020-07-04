@@ -4,20 +4,17 @@ namespace Compiler.Syntax
 {
     internal sealed class LiteralExpressionSyntax : ExpressionSyntax
     {
-        public LiteralExpressionSyntax(SyntaxToken literal)
+        public LiteralExpressionSyntax(SyntaxToken literal, bool isValid = true)
         {
             Literal = literal;
+            IsValid = isValid;
         }
 
-        public SyntaxToken Literal { get; }
 
         public override TextSpan Span => Literal.Span;
+        public override bool IsValid { get; } 
+        public SyntaxToken Literal { get; }
 
-        public override bool IsValid => Literal.IsValid;
-
-        public override string ToString()
-        {
-            return Literal.Value.ToString();
-        }
+        public override string ToString() => Literal.Value.ToString();
     }
 }

@@ -5,26 +5,24 @@ namespace Compiler.Syntax
 {
     internal sealed class VariableDeclarationStatement : StatementSyntax
     {
-        public VariableDeclarationStatement(SyntaxToken typeToken, SyntaxToken identifier,SyntaxToken equalToken, ExpressionSyntax expression)
+        public VariableDeclarationStatement(SyntaxToken varKeyword, SyntaxToken identifier, TypeClauseSyntax typeClause , SyntaxToken equalToken, ExpressionSyntax expression, bool isValid = true)
         {
-            TypeToken = typeToken;
+            VarKeyword = varKeyword;
             Identifier = identifier;
+            TypeClause = typeClause;
             EqualToken = equalToken;
             Expression = expression;
+            IsValid = isValid;
         }
 
-        public override TextSpan Span => TypeToken.Span + Expression.Span;
-
-        public SyntaxToken TypeToken { get; }
+        public override TextSpan Span => VarKeyword.Span + Expression.Span;
+        public override bool IsValid { get; }
+        public SyntaxToken VarKeyword { get; }
         public SyntaxToken Identifier { get; }
+        public TypeClauseSyntax TypeClause { get; }
         public SyntaxToken EqualToken { get; }
         public ExpressionSyntax Expression { get; }
 
-        public override bool IsValid => TypeToken.IsValid && Identifier.IsValid && EqualToken.IsValid && Expression.IsValid;
-
-        public override string ToString()
-        {
-            return $"{TypeToken.Value} {Identifier.Value} = {Expression}";
-        }
+        public override string ToString() => $"{VarKeyword.Value} {Identifier.Value}{TypeClause} = {Expression}";
     }
 }

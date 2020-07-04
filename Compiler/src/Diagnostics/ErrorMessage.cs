@@ -20,5 +20,6 @@ namespace Compiler.Diagnostics
         InvalidStatement,
         DuplicatedParameters,
         FunctionAlreadyDeclared,
+        InvalidGlobalStatement,
     }
 }

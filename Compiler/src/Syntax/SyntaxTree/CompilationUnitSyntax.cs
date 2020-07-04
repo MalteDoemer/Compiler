@@ -7,16 +7,16 @@ namespace Compiler.Syntax
 {
     internal sealed class CompilationUnitSyntax : SyntaxNode
     {
-        public CompilationUnitSyntax(TextSpan span, ImmutableArray<MemberSyntax> members)
+        public CompilationUnitSyntax(TextSpan span, ImmutableArray<MemberSyntax> members, bool isValid = true)
         {
             Span = span;
             Members = members;
+            IsValid = isValid;
         }
 
         public override TextSpan Span { get; }
         public ImmutableArray<MemberSyntax> Members { get; }
-
-        public override bool IsValid => Members.Where(m => !m.IsValid).Count() == 0;
+        public override bool IsValid { get; }
 
         public override string ToString()
         {

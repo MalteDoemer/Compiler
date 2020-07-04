@@ -5,21 +5,22 @@ namespace Compiler.Syntax
     internal sealed class IfStatementSyntax : StatementSyntax
     {
 
-        public IfStatementSyntax(SyntaxToken ifToken, ExpressionSyntax condition, StatementSyntax body, ElseStatementSyntax elseStatement = null)
+        public IfStatementSyntax(SyntaxToken ifToken, ExpressionSyntax condition, StatementSyntax body, ElseStatementSyntax elseStatement, bool isValid = true)
         {
             IfToken = ifToken;
             Condition = condition;
             Body = body;
             ElseStatement = elseStatement;
+            IsValid = isValid;
         }
 
         public override TextSpan Span => IfToken.Span + (ElseStatement == null ? Body.Span : ElseStatement.Span);
+        public override bool IsValid { get; }
         public SyntaxToken IfToken { get; }
         public ExpressionSyntax Condition { get; }
         public StatementSyntax Body { get; }
         public ElseStatementSyntax ElseStatement { get; }
 
-        public override bool IsValid => IfToken.IsValid && Condition.IsValid && Body.IsValid && (ElseStatement == null ? true : ElseStatement.IsValid);
         public override string ToString() => $"{IfToken.Value} ({Condition} {Body} {(ElseStatement == null ? "" : ElseStatement.ToString())})";
     }
 }

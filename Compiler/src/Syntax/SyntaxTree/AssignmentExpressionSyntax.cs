@@ -4,23 +4,19 @@ namespace Compiler.Syntax
 {
     internal sealed class AssignmentExpressionSyntax : ExpressionSyntax
     {
-        public AssignmentExpressionSyntax(SyntaxToken identifier, SyntaxToken equalToken,  ExpressionSyntax expression)
+        public AssignmentExpressionSyntax(SyntaxToken identifier, SyntaxToken equalToken,  ExpressionSyntax expression, bool isValid = true)
         {
             Identifier = identifier;
             EqualToken = equalToken;
             Expression = expression;
+            IsValid = isValid;
         }
-
+        public override TextSpan Span => Identifier.Span + Expression.Span;
+        public override bool IsValid { get; }
         public SyntaxToken Identifier { get; }
         public SyntaxToken EqualToken { get; }
         public ExpressionSyntax Expression { get; }
-        public override TextSpan Span => Identifier.Span + Expression.Span;
 
-        public override bool IsValid => Identifier.IsValid && EqualToken.IsValid && Expression.IsValid;
-
-        public override string ToString()
-        {
-            return $"{Identifier.Value} = {Expression}";
-        }
+        public override string ToString() => $"{Identifier.Value} = {Expression}";
     }
 }

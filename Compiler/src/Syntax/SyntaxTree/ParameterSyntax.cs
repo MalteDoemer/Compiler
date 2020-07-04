@@ -4,19 +4,19 @@ namespace Compiler.Syntax
 {
     internal sealed class ParameterSyntax : SyntaxNode
     {
-        public ParameterSyntax(SyntaxToken typeKeyword, SyntaxToken identifier)
+        public ParameterSyntax(SyntaxToken identifier, TypeClauseSyntax typeClause, bool isValid = true)
         {
-            TypeKeyword = typeKeyword;
             Identifier = identifier;
+            TypeClause = typeClause;
+            IsValid = isValid;
         }
 
-        public override TextSpan Span => TypeKeyword.Span + Identifier.Span;
-        public override bool IsValid => TypeKeyword.IsValid && Identifier.IsValid;
-
-        public SyntaxToken TypeKeyword { get; }
+        public override TextSpan Span => Identifier.Span + TypeClause.Span;
+        public override bool IsValid { get; }
         public SyntaxToken Identifier { get; }
+        public TypeClauseSyntax TypeClause { get; }
 
-        public override string ToString() => $"{TypeKeyword.Value} {Identifier.Value}";
+        public override string ToString() => $"{Identifier.Value}{TypeClause}";
     }
 
 }

@@ -42,7 +42,6 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.BoolKeyword:
                 case SyntaxTokenKind.StringKeyword:
                 case SyntaxTokenKind.AnyKeyword:
-                case SyntaxTokenKind.VarKeyword:
                 case SyntaxTokenKind.VoidKeyword:
                     return true;
                 default: return false;
@@ -71,6 +70,7 @@ namespace Compiler.Syntax
                 case '|': return SyntaxTokenKind.Pipe;
                 case '^': return SyntaxTokenKind.Hat;
                 case ',': return SyntaxTokenKind.Comma;
+                case ':': return SyntaxTokenKind.Colon;
                 default: return null;
             }
         }
@@ -99,6 +99,29 @@ namespace Compiler.Syntax
             }
         }
 
+        public static SyntaxTokenKind? IsKeyWord(string text)
+        {
+            switch (text)
+            {
+                case "true": return SyntaxTokenKind.True;
+                case "false": return SyntaxTokenKind.False;
+                case "int": return SyntaxTokenKind.IntKeyword;
+                case "float": return SyntaxTokenKind.FloatKeyword;
+                case "bool": return SyntaxTokenKind.BoolKeyword;
+                case "string": return SyntaxTokenKind.StringKeyword;
+                case "void": return SyntaxTokenKind.VoidKeyword;
+                case "any": return SyntaxTokenKind.AnyKeyword;
+                case "var": return SyntaxTokenKind.VarKeyword;
+                case "if": return SyntaxTokenKind.IfKeyword;
+                case "else": return SyntaxTokenKind.ElseKeyword;
+                case "while": return SyntaxTokenKind.WhileKeyword;
+                case "do": return SyntaxTokenKind.DoKeyword;
+                case "for": return SyntaxTokenKind.ForKeyword;
+                case "function": return SyntaxTokenKind.FunctionDefinitionKeyword;
+                default: return null;
+            }
+        }
+
         internal static bool IsExpressionStatement(ExpressionSyntax expression, bool isScripting = true)
         {
             if (isScripting) return true;
@@ -121,31 +144,9 @@ namespace Compiler.Syntax
             {
                 case VariableDeclarationStatement _:
                     return true;
-                default: return false;   
+                default: return false;
             }
 
-        }
-
-        public static SyntaxTokenKind? IsKeyWord(string text)
-        {
-            switch (text)
-            {
-                case "true": return SyntaxTokenKind.True;
-                case "false": return SyntaxTokenKind.False;
-                case "int": return SyntaxTokenKind.IntKeyword;
-                case "float": return SyntaxTokenKind.FloatKeyword;
-                case "bool": return SyntaxTokenKind.BoolKeyword;
-                case "string": return SyntaxTokenKind.StringKeyword;
-                case "void": return SyntaxTokenKind.VoidKeyword;
-                case "any": return SyntaxTokenKind.AnyKeyword;
-                case "var": return SyntaxTokenKind.VarKeyword;
-                case "if": return SyntaxTokenKind.IfKeyword;
-                case "else": return SyntaxTokenKind.ElseKeyword;
-                case "while": return SyntaxTokenKind.WhileKeyword;
-                case "do": return SyntaxTokenKind.DoKeyword;
-                case "for": return SyntaxTokenKind.ForKeyword;
-                default: return null;
-            }
         }
 
         public static string GetStringRepresentation(this SyntaxTokenKind kind)
@@ -170,6 +171,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.Ampersand: return "&";
                 case SyntaxTokenKind.Hat: return "^";
                 case SyntaxTokenKind.Comma: return ",";
+                case SyntaxTokenKind.Colon: return ":";
 
                 case SyntaxTokenKind.StarStar: return "**";
                 case SyntaxTokenKind.SlashSlah: return "//";

@@ -14,6 +14,8 @@ namespace Compiler.Syntax
         private readonly ImmutableArray<SyntaxToken> tokens;
         private readonly bool isScript;
 
+
+        private bool isTreeValid = true;
         private SyntaxToken current { get => Peak(0); }
         private int pos;
 
@@ -32,9 +34,13 @@ namespace Compiler.Syntax
             if (kind == current.Kind) return Advance();
             else
             {
-                diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
+                if (isTreeValid)
+                    diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
+
                 var res = new SyntaxToken(kind, current.Span.Start, current.Span.Length, current.Value, false);
                 pos++;
+
+                isTreeValid = false;
                 return res;
             }
         }
@@ -50,13 +56,13 @@ namespace Compiler.Syntax
         {
             if (pos + offset < tokens.Length)
                 return tokens[pos + offset];
-            else return tokens[tokens.Length];
+            else return tokens[tokens.Length - 1];
         }
 
         public CompilationUnitSyntax ParseCompilationUnit()
         {
             var members = ParseMembers();
-            return new CompilationUnitSyntax(TextSpan.FromBounds(0, source.Length), members);
+            return new CompilationUnitSyntax(TextSpan.FromBounds(0, source.Length), members, isTreeValid);
         }
 
         private ImmutableArray<MemberSyntax> ParseMembers()
@@ -73,271 +79,178 @@ namespace Compiler.Syntax
 
         private MemberSyntax ParseMember()
         {
-            if (Peak(0).Kind.IsTypeKeyword() && Peak(1).Kind == SyntaxTokenKind.Identifier && Peak(2).Kind == SyntaxTokenKind.LParen)
+            if (current.Kind == SyntaxTokenKind.FunctionDefinitionKeyword)
                 return ParseFunctionDeclaration();
             else return ParseGlobalStatement();
         }
 
-        private MemberSyntax ParseGlobalStatement()
+        private GlobalStatementSynatx ParseGlobalStatement()
         {
             var stmt = ParseStatement();
-
-            if (SyntaxFacts.IsGlobalStatement(stmt, isScript))
-                return new GlobalStatementSynatx(stmt);
-
-            else return new InvalidMemberSyntax(stmt.Span);
-
-        }
-
-        private MemberSyntax ParseFunctionDeclaration()
-        {
-            var returnType = Advance();
-
-            if (!returnType.IsValid)
-                return new InvalidMemberSyntax(returnType.Span);
-
-            var identifier = MatchToken(SyntaxTokenKind.Identifier);
-
-            if (!identifier.IsValid)
-                return new InvalidMemberSyntax(identifier.Span);
-
-            var lparen = MatchToken(SyntaxTokenKind.LParen);
-
-            if (!lparen.IsValid)
-                return new InvalidMemberSyntax(lparen.Span);
-
-
-            var paramBuilder = ImmutableArray.CreateBuilder<ParameterSyntax>();
-            var commaBuilder = ImmutableArray.CreateBuilder<SyntaxToken>();
-
-            while (current.Kind != SyntaxTokenKind.RParen)
+            if (!SyntaxFacts.IsGlobalStatement(stmt, isScript))
             {
-                if (current.Kind == SyntaxTokenKind.End)
-                {
-                    var span = TextSpan.FromBounds(lparen.Span.Start, current.Span.End);
-                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, span);
-                    return new InvalidMemberSyntax(TextSpan.Invalid);
-                }
-
-                if (!current.Kind.IsTypeKeyword())
-                    return new InvalidMemberSyntax(current.Span);
-
-                var typeToken = Advance();
-                var name = MatchToken(SyntaxTokenKind.Identifier);
-
-                if (!name.IsValid)
-                    return new InvalidMemberSyntax(name.Span);
-
-                paramBuilder.Add(new ParameterSyntax(typeToken, name));
-
-                if (current.Kind != SyntaxTokenKind.RParen)
-                    commaBuilder.Add(MatchToken(SyntaxTokenKind.Comma));
+                if (isTreeValid)
+                    diagnostics.ReportSyntaxError(ErrorMessage.InvalidGlobalStatement, stmt.Span);
+                isTreeValid = false;
             }
 
-            var parameters = new SeperatedSyntaxList<ParameterSyntax>(paramBuilder.ToImmutable(), commaBuilder.ToImmutable());
+            return new GlobalStatementSynatx(stmt, isTreeValid);
+        }
 
+        private FunctionDeclarationSyntax ParseFunctionDeclaration()
+        {
+            var functionKeyword = Advance();
+            var identifier = MatchToken(SyntaxTokenKind.Identifier);
+            var lparen = MatchToken(SyntaxTokenKind.LParen);
+            var parameters = ParseSeperatedSyntaxList<ParameterSyntax>(ParseParameter, SyntaxTokenKind.Comma);
             var rparen = MatchToken(SyntaxTokenKind.RParen);
-
-            if (!rparen.IsValid)
-                return new InvalidMemberSyntax(rparen.Span);
-
+            var returnType = ParseOptionalTypeClause();
             var body = ParseBlockStatement();
+            return new FunctionDeclarationSyntax(functionKeyword, identifier, lparen, parameters, rparen, returnType, body, isTreeValid);
+        }
 
-            if (!body.IsValid)
-                return new InvalidMemberSyntax(body.Span);
-
-            return new FunctionDeclarationSyntax(returnType, identifier, lparen, parameters, rparen, (BlockStatment)body);
+        private ParameterSyntax ParseParameter()
+        {
+            var identifier = MatchToken(SyntaxTokenKind.Identifier);
+            var type = ParseOptionalTypeClause();
+            return new ParameterSyntax(identifier, type, isTreeValid);
         }
 
         private StatementSyntax ParseStatement()
         {
-            if (current.Kind == SyntaxTokenKind.LCurly)
-                return ParseBlockStatement();
-            else if (current.Kind == SyntaxTokenKind.IfKeyword)
-                return ParseIfStatement();
-            else if (current.Kind == SyntaxTokenKind.WhileKeyword)
-                return ParseWhileStatement();
-            else if (current.Kind == SyntaxTokenKind.ForKeyword)
-                return ParseForStatement();
-            else if (current.Kind == SyntaxTokenKind.DoKeyword)
-                return ParseDoWhileStatement();
-            else if (current.Kind.IsTypeKeyword())
-                return ParseVariableDeclaration();
-            else return ParseExpressionStatement();
+            switch (current.Kind)
+            {
+                case SyntaxTokenKind.LCurly:
+                    return ParseBlockStatement();
+                case SyntaxTokenKind.IfKeyword:
+                    return ParseIfStatement();
+                case SyntaxTokenKind.WhileKeyword:
+                    return ParseWhileStatement();
+                case SyntaxTokenKind.ForKeyword:
+                    return ParseForStatement();
+                case SyntaxTokenKind.DoKeyword:
+                    return ParseDoWhileStatement();
+                case SyntaxTokenKind.VarKeyword:
+                    return ParseVariableDeclaration();
+                default:
+                    return ParseExpressionStatement();
+            }
         }
 
-        private StatementSyntax ParseDoWhileStatement()
+        private DoWhileStatementSyntax ParseDoWhileStatement()
         {
             var doToken = MatchToken(SyntaxTokenKind.DoKeyword);
-
-            if (!doToken.IsValid)
-                return new InvalidStatementSyntax(doToken.Span);
-
-            var stmt = ParseStatement();
-
-            if (!stmt.IsValid)
-                return new InvalidStatementSyntax(stmt.Span);
-
+            var body = ParseStatement();
             var whileToken = MatchToken(SyntaxTokenKind.WhileKeyword);
-
-            if (!whileToken.IsValid)
-                return new InvalidStatementSyntax(whileToken.Span);
-
             var condition = ParseExpression();
-
-            return new DoWhileStatementSyntax(doToken, stmt, whileToken, condition);
+            return new DoWhileStatementSyntax(doToken, body, whileToken, condition, isTreeValid);
         }
 
-        private StatementSyntax ParseForStatement()
+        private ForStatementSyntax ParseForStatement()
         {
             var forToken = MatchToken(SyntaxTokenKind.ForKeyword);
-            if (!forToken.IsValid)
-                return new InvalidStatementSyntax(forToken.Span);
-
             var variableDeclaration = ParseVariableDeclaration();
-
-            if (!variableDeclaration.IsValid)
-                return new InvalidStatementSyntax(variableDeclaration.Span);
-
             var comma1 = MatchToken(SyntaxTokenKind.Comma);
-
-            if (!comma1.IsValid)
-                return new InvalidStatementSyntax(comma1.Span);
-
             var condition = ParseExpression();
-
-            if (!condition.IsValid)
-                return new InvalidStatementSyntax(condition.Span);
-
             var comma2 = MatchToken(SyntaxTokenKind.Comma);
-
-            if (!comma2.IsValid)
-                return new InvalidStatementSyntax(comma2.Span);
-
             var increment = ParseExpression();
-
-            if (!increment.IsValid)
-                return new InvalidStatementSyntax(increment.Span); ;
-
             var body = ParseStatement();
-
-            if (!body.IsValid)
-                return new InvalidStatementSyntax(body.Span);
-
-            return new ForStatementSyntax(forToken, variableDeclaration, condition, increment, body);
+            return new ForStatementSyntax(forToken, variableDeclaration, condition, increment, body, isTreeValid);
         }
 
-        private StatementSyntax ParseIfStatement()
+        private IfStatementSyntax ParseIfStatement()
         {
             var ifToken = MatchToken(SyntaxTokenKind.IfKeyword);
-            if (!ifToken.IsValid)
-                return new InvalidStatementSyntax(ifToken.Span);
-
-            var expr = ParseExpression();
-            if (!expr.IsValid)
-                return new InvalidStatementSyntax(expr.Span);
-
-            var statement = ParseStatement();
-            if (!statement.IsValid)
-                return new InvalidStatementSyntax(expr.Span);
-
+            var condition = ParseExpression();
+            var body = ParseStatement();
             var elseClause = ParseElseClause();
-            return new IfStatementSyntax(ifToken, expr, statement, elseClause);
+            return new IfStatementSyntax(ifToken, condition, body, elseClause, isTreeValid);
         }
 
-        private StatementSyntax ParseWhileStatement()
+        private WhileStatementSyntax ParseWhileStatement()
         {
             var whileToken = MatchToken(SyntaxTokenKind.WhileKeyword);
-            if (!whileToken.IsValid)
-                return new InvalidStatementSyntax(whileToken.Span);
-
             var condition = ParseExpression();
-            if (!condition.IsValid)
-                return new InvalidStatementSyntax(condition.Span);
-
             var body = ParseStatement();
-            if (!body.IsValid)
-                return new InvalidStatementSyntax(body.Span);
-
-            return new WhileStatementSyntax(whileToken, condition, body);
+            return new WhileStatementSyntax(whileToken, condition, body, isTreeValid);
         }
 
-        private StatementSyntax ParseExpressionStatement()
+        private ExpressionStatement ParseExpressionStatement()
         {
             var expression = ParseExpression();
-            if (expression is InvalidExpressionSyntax)
-                return new InvalidStatementSyntax(expression.Span);
-
-            if (SyntaxFacts.IsExpressionStatement(expression, isScript))
-                return new ExpressionStatement(expression);
-            else
+            if (!SyntaxFacts.IsExpressionStatement(expression, isScript))
             {
-                diagnostics.ReportSyntaxError(ErrorMessage.InvalidStatement, expression.Span);
-                return new InvalidStatementSyntax(expression.Span);
+                if (isTreeValid)
+                    diagnostics.ReportSyntaxError(ErrorMessage.InvalidStatement, expression.Span);
+                isTreeValid = false;
             }
+            return new ExpressionStatement(expression, isTreeValid);
         }
 
-        private StatementSyntax ParseBlockStatement()
+        private BlockStatment ParseBlockStatement()
         {
-            StatementSyntax returnError(TextSpan span)
-            {
-                if (current.Kind == SyntaxTokenKind.RCurly)
-                    pos++;
-                return new InvalidStatementSyntax(span);
-            }
+            var lcurly = MatchToken(SyntaxTokenKind.LCurly);
 
             var builder = ImmutableArray.CreateBuilder<StatementSyntax>();
-            var lcurly = MatchToken(SyntaxTokenKind.LCurly);
-            if (!lcurly.IsValid)
-                returnError(lcurly.Span);
-
             while (current.Kind != SyntaxTokenKind.RCurly)
             {
                 if (current.Kind == SyntaxTokenKind.End)
                 {
-                    var span = TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start);
-                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedCurlyBrackets, span);
-                    return returnError(span);
+                    if (isTreeValid)
+                    {
+                        var span = TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start);
+                        diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedCurlyBrackets, span);
+                    }
+                    isTreeValid = false;
+                    break;
                 }
 
                 var stmt = ParseStatement();
-
-                if (!stmt.IsValid)
-                    return returnError(stmt.Span);
-
                 builder.Add(stmt);
             }
 
             var rcurly = MatchToken(SyntaxTokenKind.RCurly);
-
-            if (!rcurly.IsValid)
-                return returnError(rcurly.Span);
-
-            return new BlockStatment(lcurly, builder.ToImmutable(), rcurly);
+            return new BlockStatment(lcurly, builder.ToImmutable(), rcurly, isTreeValid);
         }
 
-        private StatementSyntax ParseVariableDeclaration()
+        private VariableDeclarationStatement ParseVariableDeclaration()
         {
-            var typeToken = Advance();
-            if (!typeToken.IsValid)
-                return new InvalidStatementSyntax(typeToken.Span);
-
+            var varKeyword = MatchToken(SyntaxTokenKind.VarKeyword);
             var identifier = MatchToken(SyntaxTokenKind.Identifier);
-            if (!identifier.IsValid)
-                return new InvalidStatementSyntax(identifier.Span);
-
+            var type = ParseOptionalTypeClause();
             var equalToken = MatchToken(SyntaxTokenKind.Equal);
-            if (!equalToken.IsValid)
-                return new InvalidStatementSyntax(equalToken.Span);
-
             var expr = ParseExpression();
-            if (!expr.IsValid)
-                return new InvalidStatementSyntax(expr.Span);
-
-            return new VariableDeclarationStatement(typeToken, identifier, equalToken, expr);
+            return new VariableDeclarationStatement(varKeyword, identifier, type, equalToken, expr, isTreeValid);
         }
 
-        private ExpressionSyntax ParseExpression(int lvl = SyntaxFacts.MaxPrecedence)
+        private TypeClauseSyntax ParseOptionalTypeClause()
+        {
+            if (current.Kind == SyntaxTokenKind.Colon && Peak(1).Kind.IsTypeKeyword())
+                return ParseTypeClause();
+
+            var colon = new SyntaxToken(SyntaxTokenKind.Colon, current.Span.Start, 0, ':');
+            var typeToken = new SyntaxToken(SyntaxTokenKind.AnyKeyword, current.Span.Start, 0, SyntaxTokenKind.AnyKeyword.GetStringRepresentation());
+            return new TypeClauseSyntax(colon, typeToken, isTreeValid);
+        }
+
+        private TypeClauseSyntax ParseTypeClause()
+        {
+            var colon = MatchToken(SyntaxTokenKind.Colon);
+            SyntaxToken typeToken;
+            if (!current.Kind.IsTypeKeyword())
+            {
+                if (isTreeValid)
+                    diagnostics.ReportSyntaxError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
+                isTreeValid = false;
+                typeToken = new SyntaxToken(SyntaxTokenKind.AnyKeyword, current.Span.Start, current.Span.Length, SyntaxTokenKind.AnyKeyword.GetStringRepresentation(), false);
+            }
+            typeToken = Advance();
+            return new TypeClauseSyntax(colon, typeToken, isTreeValid);
+        }
+
+        private ExpressionSyntax ParseExpression() => ParseExpression(SyntaxFacts.MaxPrecedence);
+
+        private ExpressionSyntax ParseExpression(int lvl)
         {
             if (lvl == 0) return ParsePrimaryExpression();
 
@@ -347,7 +260,7 @@ namespace Compiler.Syntax
             {
                 var op = Advance();
                 var right = ParseExpression(lvl - 1);
-                left = new BinaryExpressionSyntax(op, left, right);
+                left = new BinaryExpressionSyntax(op, left, right, isTreeValid);
             }
 
             return left;
@@ -356,19 +269,22 @@ namespace Compiler.Syntax
         private ExpressionSyntax ParsePrimaryExpression()
         {
             if (SyntaxFacts.IsLiteralExpression(current.Kind))
-                return new LiteralExpressionSyntax(Advance());
+                return new LiteralExpressionSyntax(Advance(), isTreeValid);
             else if (current.Kind == SyntaxTokenKind.Identifier)
                 return ParseIdentifier();
             else if (current.Kind.IsUnaryOperator())
-                return new UnaryExpressionSyntax(Advance(), ParsePrimaryExpression());
+                return new UnaryExpressionSyntax(Advance(), ParsePrimaryExpression(), isTreeValid);
             else if (current.Kind == SyntaxTokenKind.LParen)
                 return ParseParenthesizedExpression();
             else if (SyntaxFacts.IsTypeKeyword(current.Kind))
                 return ParseFunctionCall(Advance());
             else
             {
-                diagnostics.ReportSyntaxError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
-                return new InvalidExpressionSyntax(Advance().Span);
+                if (isTreeValid)
+                    diagnostics.ReportSyntaxError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
+
+                isTreeValid = false;
+                return new LiteralExpressionSyntax(Advance(), false);
             }
         }
 
@@ -377,9 +293,9 @@ namespace Compiler.Syntax
             var start = current.Span.Start;
             MatchToken(SyntaxTokenKind.LParen);
             var expr = ParseExpression();
-            if (current.Kind != SyntaxTokenKind.RParen)
+            if (current.Kind != SyntaxTokenKind.RParen && isTreeValid)
                 diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, current.Span.End));
-            else MatchToken(SyntaxTokenKind.RParen);
+            MatchToken(SyntaxTokenKind.RParen);
             return expr;
         }
 
@@ -392,7 +308,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.Equal:
                     var equalToken = Advance();
                     var expr1 = ParseExpression();
-                    return new AssignmentExpressionSyntax(identifier, equalToken, expr1);
+                    return new AssignmentExpressionSyntax(identifier, equalToken, expr1, isTreeValid);
                 case SyntaxTokenKind.PlusEqual:
                 case SyntaxTokenKind.MinusEqual:
                 case SyntaxTokenKind.StarEqual:
@@ -401,43 +317,30 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.PipeEqual:
                     var op1 = Advance();
                     var expr2 = ParseExpression();
-                    return new AdditionalAssignmentExpression(identifier, op1, expr2);
+                    return new AdditionalAssignmentExpression(identifier, op1, expr2, isTreeValid);
                 case SyntaxTokenKind.PlusPlus:
                 case SyntaxTokenKind.MinusMinus:
                     var op2 = Advance();
-                    return new PostIncDecExpression(identifier, op2);
+                    return new PostIncDecExpression(identifier, op2, isTreeValid);
                 case SyntaxTokenKind.LParen:
                     return ParseFunctionCall(identifier);
                 default:
-                    return new VariableExpressionSyntax(identifier);
+                    return new VariableExpressionSyntax(identifier, isTreeValid);
             }
         }
 
-        private ExpressionSyntax ParseFunctionCall(SyntaxToken identifier)
+        private CallExpressionSyntax ParseFunctionCall(SyntaxToken identifier)
         {
-            var argBuilder = ImmutableArray.CreateBuilder<ExpressionSyntax>();
-            var commaBuilder = ImmutableArray.CreateBuilder<SyntaxToken>();
-
             var lparen = MatchToken(SyntaxTokenKind.LParen);
 
-            while (current.Kind != SyntaxTokenKind.RParen)
-            {
-                if (current.Kind == SyntaxTokenKind.End)
-                {
-                    var span = TextSpan.FromBounds(lparen.Span.Start, current.Span.End);
-                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, span);
-                    return new InvalidExpressionSyntax(span);
-                }
+            SeperatedSyntaxList<ExpressionSyntax> arguments;
 
-                argBuilder.Add(ParseExpression());
-
-                if (current.Kind != SyntaxTokenKind.RParen)
-                    commaBuilder.Add(MatchToken(SyntaxTokenKind.Comma));
-            }
-
+            if (current.Kind != SyntaxTokenKind.RParen)
+                arguments = ParseSeperatedSyntaxList<ExpressionSyntax>(ParseExpression, SyntaxTokenKind.Comma);
+            else
+                arguments = SeperatedSyntaxList<ExpressionSyntax>.Empty;
             var rparen = MatchToken(SyntaxTokenKind.RParen);
-
-            return new CallExpressionSyntax(identifier, lparen, new SeperatedSyntaxList<ExpressionSyntax>(argBuilder.ToImmutable(), commaBuilder.ToImmutable()), rparen);
+            return new CallExpressionSyntax(identifier, lparen, arguments, rparen, isTreeValid);
         }
 
         private ElseStatementSyntax ParseElseClause()
@@ -446,9 +349,35 @@ namespace Compiler.Syntax
                 return null;
             var elseKeyword = Advance();
             var statement = ParseStatement();
-            return new ElseStatementSyntax(elseKeyword, statement);
+            return new ElseStatementSyntax(elseKeyword, statement, isTreeValid);
         }
 
+        private delegate T ParseDelegate<T>();
 
+        private SeperatedSyntaxList<T> ParseSeperatedSyntaxList<T>(ParseDelegate<T> function, SyntaxTokenKind seperator) where T : SyntaxNode
+        {
+            var nodes = ImmutableArray.CreateBuilder<T>();
+            var seperators = ImmutableArray.CreateBuilder<SyntaxToken>();
+
+            while (true)
+            {
+                if (current.Kind == SyntaxTokenKind.End)
+                {
+                    if (isTreeValid)
+                        diagnostics.ReportSyntaxError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
+
+                    isTreeValid = false;
+                    break;
+                }
+
+                nodes.Add(function());
+
+                if (current.Kind != seperator)
+                    break;
+
+                seperators.Add(MatchToken(seperator));
+            }
+            return new SeperatedSyntaxList<T>(nodes.ToImmutable(), seperators.ToImmutable(), isTreeValid);
+        }
     }
 }

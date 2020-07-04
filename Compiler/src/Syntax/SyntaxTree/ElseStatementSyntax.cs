@@ -4,22 +4,18 @@ namespace Compiler.Syntax
 {
     internal sealed class ElseStatementSyntax : StatementSyntax
     {
-        public ElseStatementSyntax(SyntaxToken elseToken, StatementSyntax thenStatement)
+        public ElseStatementSyntax(SyntaxToken elseToken, StatementSyntax thenStatement, bool isValid = true)
         {
             ElseToken = elseToken;
             Body = thenStatement;
+            IsValid = isValid;
         }
 
         public override TextSpan Span => ElseToken.Span + Body.Span;
-
+        public override bool IsValid { get; }
         public SyntaxToken ElseToken { get; }
         public StatementSyntax Body { get; }
 
-        public override bool IsValid => ElseToken.IsValid && Body.IsValid;
-
-        public override string ToString()
-        {
-            return $"{ElseToken.Value} {Body}";
-        }
+        public override string ToString() => $"{ElseToken.Value} {Body}";
     }
 }

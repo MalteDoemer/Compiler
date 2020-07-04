@@ -8,11 +8,12 @@ namespace Compiler.Syntax
 {
     internal sealed class BlockStatment : StatementSyntax
     {
-        public BlockStatment(SyntaxToken openCurly, ImmutableArray<StatementSyntax> statements, SyntaxToken closeCurly)
+        public BlockStatment(SyntaxToken openCurly, ImmutableArray<StatementSyntax> statements, SyntaxToken closeCurly,bool isValid = true)
         {
             OpenCurly = openCurly;
             Statements = statements;
             CloseCurly = closeCurly;
+            IsValid = isValid;
         }
 
         public SyntaxToken OpenCurly { get; }
@@ -20,16 +21,7 @@ namespace Compiler.Syntax
         public SyntaxToken CloseCurly { get; }
         public override TextSpan Span => OpenCurly.Span + CloseCurly.Span;
 
-        public override bool IsValid
-        {
-            get
-            {
-                bool res = OpenCurly.IsValid && CloseCurly.IsValid;
-                foreach (var s in Statements)
-                    res = res && s.IsValid;
-                return res;
-            }
-        }
+        public override bool IsValid { get; }
 
         public override string ToString()
         {

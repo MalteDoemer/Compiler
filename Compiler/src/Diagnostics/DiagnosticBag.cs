@@ -31,6 +31,7 @@ namespace Compiler.Diagnostics
            "Expression isn't a statement.",
            "Duplicated parameter '{0}'.",
            "Function '{0}' is already declared",
+           "Statement isn't a global statement.",
         };
 
         private readonly List<Diagnostic> builder;
