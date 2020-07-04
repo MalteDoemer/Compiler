@@ -38,8 +38,8 @@ namespace Compiler.Text
                     case SyntaxTokenKind.ForKeyword:
                         builder.Add(new ColorizedToken(token, ConsoleColor.Magenta));
                         break;
-                    case SyntaxTokenKind.TrueKeyword:
-                    case SyntaxTokenKind.FalseKeyword:
+                    case SyntaxTokenKind.True:
+                    case SyntaxTokenKind.False:
                     case SyntaxTokenKind.VarKeyword:
                     case SyntaxTokenKind.VoidKeyword:
                     case SyntaxTokenKind.AnyKeyword:

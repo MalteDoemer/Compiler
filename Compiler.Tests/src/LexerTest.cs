@@ -16,7 +16,7 @@ namespace Compiler.Test
             var tokens = Compilation.Tokenize(text);
             Assert.Equal(2, tokens.Length);
             Assert.Equal(kind, tokens[0].Kind);
-            Assert.Equal(SyntaxTokenKind.EndOfFile, tokens[1].Kind);
+            Assert.Equal(SyntaxTokenKind.End, tokens[1].Kind);
         }
 
         [Theory]
@@ -28,7 +28,7 @@ namespace Compiler.Test
             Assert.Equal(3, tokens.Length);
             Assert.Equal(kind1, tokens[0].Kind);
             Assert.Equal(kind2, tokens[1].Kind);
-            Assert.Equal(SyntaxTokenKind.EndOfFile, tokens[2].Kind);
+            Assert.Equal(SyntaxTokenKind.End, tokens[2].Kind);
         }
 
 

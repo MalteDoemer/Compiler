@@ -119,8 +119,8 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.Int: return TypeSymbol.Int;
                 case SyntaxTokenKind.Float: return TypeSymbol.Float;
                 case SyntaxTokenKind.String: return TypeSymbol.String;
-                case SyntaxTokenKind.FalseKeyword: return TypeSymbol.Bool;
-                case SyntaxTokenKind.TrueKeyword: return TypeSymbol.Bool;
+                case SyntaxTokenKind.False: return TypeSymbol.Bool;
+                case SyntaxTokenKind.True: return TypeSymbol.Bool;
                 case SyntaxTokenKind.IntKeyword: return TypeSymbol.Int;
                 case SyntaxTokenKind.FloatKeyword: return TypeSymbol.Float;
                 case SyntaxTokenKind.StringKeyword: return TypeSymbol.String;

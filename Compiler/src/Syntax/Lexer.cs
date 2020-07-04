@@ -158,7 +158,7 @@ namespace Compiler.Syntax
             var singleChar = LexSingleChar();
             if (singleChar != null) return singleChar;
 
-            if (current == '\0') return new SyntaxToken(SyntaxTokenKind.EndOfFile, pos, 0, "End");
+            if (current == '\0') return new SyntaxToken(SyntaxTokenKind.End, pos, 0, "End");
             else if (current == '"' || current == '\'') return LexString();
             else if (char.IsNumber(current)) return LexNumber();
             else if (char.IsWhiteSpace(current)) return LexSpace();
@@ -180,7 +180,7 @@ namespace Compiler.Syntax
                                                     token.Kind != SyntaxTokenKind.DoubleQuote);
                 if (shouldYield)
                     yield return token;
-            } while (token.Kind != SyntaxTokenKind.EndOfFile);
+            } while (token.Kind != SyntaxTokenKind.End);
         }
     }
 }

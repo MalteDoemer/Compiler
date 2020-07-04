@@ -57,7 +57,7 @@ namespace Compiler
                 if (d.Message == DiagnosticBag.ErrorFormats[(int)ErrorMessage.NeverClosedCurlyBrackets] ||
                     d.Message == DiagnosticBag.ErrorFormats[(int)ErrorMessage.NeverClosedParenthesis] ||
                     d.Message == DiagnosticBag.ErrorFormats[(int)ErrorMessage.NeverClosedStringLiteral] ||
-                    d.Message == string.Format(DiagnosticBag.ErrorFormats[(int)ErrorMessage.UnExpectedToken], SyntaxTokenKind.EndOfFile))
+                    d.Message == string.Format(DiagnosticBag.ErrorFormats[(int)ErrorMessage.UnExpectedToken], SyntaxTokenKind.End))
                     return true;
                 else
                     return false;
