@@ -23,15 +23,12 @@ namespace Compiler.Binding
 {
     internal sealed class BoundVariableExpression : BoundExpression
     {
-        public BoundVariableExpression(VariableSymbol variable, bool isValid)
+        public BoundVariableExpression(VariableSymbol variable)
         {
             Variable = variable;
-            IsValid = isValid;
         }
 
         public VariableSymbol Variable { get; }
         public override TypeSymbol ResultType => Variable.Type;
-
-        public override bool IsValid { get; }
     }
 }

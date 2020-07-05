@@ -5,10 +5,9 @@ namespace Compiler.Binding
 {
     internal sealed class BoundBinaryExpression : BoundExpression
     {
-        public BoundBinaryExpression(BoundBinaryOperator op, BoundExpression left, BoundExpression right, TypeSymbol resultType, bool isValid)
+        public BoundBinaryExpression(BoundBinaryOperator op, BoundExpression left, BoundExpression right, TypeSymbol resultType)
         {
             ResultType = resultType;
-            IsValid = isValid;
             Op = op;
             Left = left;
             Right = right;
@@ -20,6 +19,5 @@ namespace Compiler.Binding
         public BoundExpression Right { get; }
 
         public override TypeSymbol ResultType { get; }
-        public override bool IsValid { get; }
     }
 }

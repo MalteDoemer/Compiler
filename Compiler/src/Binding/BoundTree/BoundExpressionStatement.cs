@@ -4,14 +4,11 @@ namespace Compiler.Binding
 {
     internal sealed class BoundExpressionStatement : BoundStatement
     {
-        public BoundExpressionStatement(BoundExpression expression, bool isValid)
+        public BoundExpressionStatement(BoundExpression expression)
         {
             Expression = expression;
-            IsValid = isValid;
         }
 
         public BoundExpression Expression { get; }
-
-        public override bool IsValid { get; }
     }
 }

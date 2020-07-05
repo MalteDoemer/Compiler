@@ -7,7 +7,7 @@ namespace Compiler.Binding
     {
         public virtual BoundStatement RewriteStatement(BoundStatement statement)
         {
-            if (!statement.IsValid)
+            if (statement is BoundInvalidStatement)
                 return statement;
             else if (statement is BoundExpressionStatement es)
                 return RewriteExpressionStatement(es);
@@ -39,7 +39,7 @@ namespace Compiler.Binding
             if (condition == node.Condition)
                 return node;
 
-            return new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfFalse, true);
+            return new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfFalse);
         }
 
         protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclaration node)
@@ -48,7 +48,7 @@ namespace Compiler.Binding
             if (expression == node.Expression)
                 return node;
 
-            return new BoundVariableDeclaration(node.Variable, expression,true);
+            return new BoundVariableDeclaration(node.Variable, expression);
         }
 
         protected virtual BoundStatement RewriteWhileStatement(BoundWhileStatement node)
@@ -57,7 +57,7 @@ namespace Compiler.Binding
             var body = RewriteStatement(node.Body);
             if (condition == node.Condition && body == node.Body)
                 return node;
-            return new BoundWhileStatement(condition, body,true);
+            return new BoundWhileStatement(condition, body);
         }
 
         protected virtual BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
@@ -66,7 +66,7 @@ namespace Compiler.Binding
             var body = RewriteStatement(node.Body);
             if (condition == node.Condition && body == node.Body)
                 return node;
-            return new BoundWhileStatement(condition, body, true);
+            return new BoundWhileStatement(condition, body);
         }
 
         protected virtual BoundStatement RewriteIfStatement(BoundIfStatement node)
@@ -76,7 +76,7 @@ namespace Compiler.Binding
             var elseStatement = node.ElseStatement == null ? null : RewriteStatement(node.ElseStatement);
             if (condition == node.Condition && body == node.Body && elseStatement == node.ElseStatement)
                 return node;
-            return new BoundIfStatement(condition, body, elseStatement, true);
+            return new BoundIfStatement(condition, body, elseStatement);
         }
 
         protected virtual BoundStatement RewriteForStatement(BoundForStatement node)
@@ -89,7 +89,7 @@ namespace Compiler.Binding
             if (variableDecl == node.VariableDeclaration && condition == node.Condition && increment == node.Increment && body == node.Body)
                 return node;
 
-            return new BoundForStatement(variableDecl, condition, increment, body, true);
+            return new BoundForStatement(variableDecl, condition, increment, body);
         }
 
         protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
@@ -118,7 +118,7 @@ namespace Compiler.Binding
             if (builder == null)
                 return node;
 
-            return new BoundBlockStatement(builder.MoveToImmutable(), true);
+            return new BoundBlockStatement(builder.MoveToImmutable());
         }
 
         protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
@@ -126,12 +126,12 @@ namespace Compiler.Binding
             var expr = RewriteExpression(node.Expression);
             if (expr == node.Expression)
                 return node;
-            return new BoundExpressionStatement(expr, true);
+            return new BoundExpressionStatement(expr);
         }
 
         public virtual BoundExpression RewriteExpression(BoundExpression expression)
         {
-            if (!expression.IsValid)
+            if (expression is BoundInvalidExpression)
                 return expression;
             else if (expression is BoundLiteralExpression le)
                 return RewriteLiteralExpression(le);
@@ -156,7 +156,7 @@ namespace Compiler.Binding
             var expr = RewriteExpression(node.Expression);
             if (expr == node.Expression)
                 return node;
-            return new BoundConversionExpression(node.Type, expr, true);
+            return new BoundConversionExpression(node.Type, expr);
         }
 
         protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)
@@ -185,7 +185,7 @@ namespace Compiler.Binding
             if (builder == null)
                 return node;
 
-            return new BoundCallExpression(node.Symbol, builder.MoveToImmutable(),true);
+            return new BoundCallExpression(node.Symbol, builder.MoveToImmutable());
         }
 
         protected virtual BoundExpression RewriteAssignmentExpression(BoundAssignementExpression node)
@@ -193,7 +193,7 @@ namespace Compiler.Binding
             var expr = RewriteExpression(node.Expression);
             if (expr == node.Expression)
                 return node;
-            return new BoundAssignementExpression(node.Variable, expr, true);
+            return new BoundAssignementExpression(node.Variable, expr);
         }
 
         protected virtual BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)
@@ -204,7 +204,7 @@ namespace Compiler.Binding
             if (left == node.Left && right == node.Right)
                 return node;
 
-            return new BoundBinaryExpression(node.Op, left, right, node.ResultType, true);
+            return new BoundBinaryExpression(node.Op, left, right, node.ResultType);
         }
 
         protected virtual BoundExpression RewriteUnaryExpression(BoundUnaryExpression node)
@@ -212,7 +212,7 @@ namespace Compiler.Binding
             var right = RewriteExpression(node.Right);
             if (right == node.Right)
                 return node;
-            return new BoundUnaryExpression(node.Op, right, node.ResultType, true);
+            return new BoundUnaryExpression(node.Op, right, node.ResultType);
         }
 
         protected virtual BoundStatement RewriteLabelStatement(BoundLabelStatement node) => node;

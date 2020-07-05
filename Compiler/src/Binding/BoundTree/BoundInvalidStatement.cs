@@ -2,8 +2,8 @@ using Compiler.Text;
 
 namespace Compiler.Binding
 {
-    // internal class BoundInvalidStatement : BoundStatement
-    // {
+    internal class BoundInvalidStatement : BoundStatement
+    {
         
-    // }
+    }
 }
