@@ -11,15 +11,18 @@ namespace Compiler
 
     public sealed class Compilation
     {
-        private Dictionary<string, object> variables;
+        private readonly BoundProgram program;
+        private readonly Compilation previous;
+
+        private Dictionary<string, object> globals;
         private bool isScript;
 
-        private Compilation(Compilation previous, SourceText text, Dictionary<string, object> env, bool isScript)
+        private Compilation(Compilation previous, SourceText text, Dictionary<string, object> globals, bool isScript)
         {
-            Previous = previous;
-            Text = text;
-            variables = env;
+            this.globals = globals;
             this.isScript = isScript;
+            this.Text = text;
+            this.previous = previous;
 
             var lexer = new Lexer(text, isScript);
             var tokens = lexer.Tokenize().ToImmutableArray();
@@ -27,21 +30,19 @@ namespace Compiler
             var parser = new Parser(text, tokens, isScript);
             var unit = parser.ParseCompilationUnit();
 
-            var binder = new Binder(previous, isScript);
-            Root = binder.BindCompilationUnit(unit);
+            var previousProgram = previous == null ? null : previous.program;
+            program = Binder.BindProgram(previousProgram, isScript, unit);
 
             var builder = ImmutableArray.CreateBuilder<Diagnostic>();
             builder.AddRange(lexer.GetDiagnostics());
             builder.AddRange(parser.GetDiagnostics());
-            builder.AddRange(binder.GetDiagnostics());
+            builder.AddRange(program.Diagnostics);
 
             Diagnostics = builder.ToImmutable();
         }
 
-        internal BoundCompilationUnit Root { get; }
         public SourceText Text { get; }
         public ImmutableArray<Diagnostic> Diagnostics { get; }
-        public Compilation Previous { get; }
 
         public void Evaluate()
         {
@@ -63,17 +64,12 @@ namespace Compiler
             return evaluator.lastValue;
         }
 
-        private BoundBlockStatement GetStatement()
-        {
-            var stmt = Root.GlobalStatements;
-            return Lowerer.Lower(stmt);
-        }
-
+       
         public static Compilation Compile(SourceText text) => new Compilation(null, text, new Dictionary<string, object>(), false);
 
         public static Compilation CompileScript(SourceText text, Compilation previous = null) 
         {
-            var env = previous == null ? new Dictionary<string, object>() : previous.variables;
+            var env = previous == null ? new Dictionary<string, object>() : previous.globals;
             return new Compilation(previous, text, env, true);
         }
 
