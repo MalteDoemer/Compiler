@@ -1,9 +1,14 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using Compiler.Text;
 
 namespace Compiler.Diagnostics
 {
+    public interface IDiagnostable
+    {
+        IEnumerable<Diagnostic> GetDiagnostics();
+    }
+
     public class Diagnostic
     {
         public TextSpan Span { get; }

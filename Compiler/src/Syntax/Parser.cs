@@ -7,7 +7,7 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal class Parser
+    internal class Parser : IDiagnostable
     {
         private readonly DiagnosticBag diagnostics;
         private readonly SourceText source;

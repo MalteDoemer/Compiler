@@ -8,7 +8,7 @@ using Compiler.Syntax;
 namespace Compiler.Binding
 {
 
-    internal sealed class Binder
+    internal sealed class Binder : IDiagnostable
     {
         private readonly DiagnosticBag diagnostics;
         private readonly Compilation previous;

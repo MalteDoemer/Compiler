@@ -5,7 +5,7 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal class Lexer
+    internal class Lexer : IDiagnostable
     {
         private readonly DiagnosticBag diagnostics;
         private readonly SourceText text;
