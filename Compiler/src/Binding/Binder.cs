@@ -2,90 +2,118 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Compiler.Diagnostics;
+using Compiler.Lowering;
 using Compiler.Symbols;
 using Compiler.Syntax;
 
 namespace Compiler.Binding
 {
 
+    internal class BoundProgram
+    {
+        public BoundProgram(BoundProgram previous, BoundBlockStatement globalStatements, ImmutableArray<VariableSymbol> globalVariables, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, ImmutableArray<Diagnostic> diagnostics)
+        {
+            Previous = previous;
+            GlobalStatements = globalStatements;
+            GlobalVariables = globalVariables;
+            Functions = functions;
+            Diagnostics = diagnostics;
+        }
+
+        public BoundProgram Previous { get; }
+        public BoundBlockStatement GlobalStatements { get; }
+        public ImmutableArray<VariableSymbol> GlobalVariables { get; }
+        public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> Functions { get; }
+        public ImmutableArray<Diagnostic> Diagnostics { get; }
+    }
+
+    // internal class BoundGlobalScope
+    // {
+    //     public BoundGlobalScope(BoundBlockStatement globalStatements, ImmutableArray<VariableSymbol> globalVariables, ImmutableArray<FunctionSymbol> functions)
+    //     {
+    //         GlobalStatements = globalStatements;
+    //         GlobalVariables = globalVariables;
+    //         Functions = functions;
+    //     }
+
+    //     public BoundBlockStatement GlobalStatements { get; }
+    //     public ImmutableArray<VariableSymbol> GlobalVariables { get; }
+    //     public ImmutableArray<FunctionSymbol> Functions { get; }
+    // }
+
+
+
     internal sealed class Binder : IDiagnostable
     {
         private readonly DiagnosticBag diagnostics;
-        private readonly Compilation previous;
         private readonly bool isScript;
+
         private BoundScope scope;
 
-        public Binder(Compilation previous, bool isScript)
+        private Binder(BoundScope parentScope, bool isScript)
         {
-            this.previous = previous;
             this.isScript = isScript;
-            diagnostics = new DiagnosticBag();
-            var parentScope = CreateBoundScopes(previous);
+            this.scope = new BoundScope(parentScope);
+            this.diagnostics = new DiagnosticBag();
+        }
 
-            if (parentScope == null)
-                scope = CreateRootScope();
+        public static BoundProgram BindProgram(BoundProgram previous, bool isScript, CompilationUnitSyntax unit)
+        {
+            BoundScope parentScope;
+
+            if (previous == null)
+                parentScope = CreateRootScope();
             else
-                scope = new BoundScope(parentScope);
-        }
+                parentScope = CreateBoundScopes(previous);
 
-        private BoundScope CreateRootScope()
-        {
-            var scope = new BoundScope(null);
-            foreach (var b in BuiltInFunctions.GetAll())
-                scope.TryDeclareFunction(b);
-            return scope;
-        }
+            var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
+            var functionSyntax = unit.Members.OfType<FunctionDeclarationSyntax>();
+            var statementSyntax = unit.Members.OfType<GlobalStatementSynatx>();
+            var globalBinder = new Binder(parentScope, isScript);
 
-        public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
+            foreach (var func in functionSyntax)
+                globalBinder.DeclareFunction(func);
 
-        public BoundCompilationUnit BindCompilationUnit(CompilationUnitSyntax unit)
-        {
-            foreach (var func in unit.Members.OfType<FunctionDeclarationSyntax>())
-                DeclareFunction(func);
-
-            var stmtBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
-
-            foreach (var globalStmt in unit.Members.OfType<GlobalStatementSynatx>())
+            var globalStatementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
+            foreach (var stmt in statementSyntax)
             {
-                var stmt = BindStatement(globalStmt.Statement);
-                stmtBuilder.Add(stmt);
+                var boundStmt = globalBinder.BindStatement(stmt.Statement);
+                if (boundStmt is BoundInvalidStatement)
+                    continue;
+                globalStatementBuilder.Add(boundStmt);
             }
 
-            var globalStatements = new BoundBlockStatement(stmtBuilder.ToImmutable());
+            diagnostics.AddRange(globalBinder.GetDiagnostics());
 
+            var globalBlockStatement = Lowerer.Lower(new BoundBlockStatement(globalStatementBuilder.ToImmutable()));
+            var declaredVariables = globalBinder.scope.GetDeclaredVariables();
+            var declaredFunctions = globalBinder.scope.GetDeclaredFunctions();
+            var currentScope = globalBinder.scope;
+            var functions = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
 
-            var variables = scope.GetDeclaredVariables();
-            var functions = scope.GetDeclaredFunctions();
-            return new BoundCompilationUnit(globalStatements, variables, functions);
-        }
-
-        private void DeclareFunction(FunctionDeclarationSyntax func)
-        {
-            var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
-
-            var seenParameters = new HashSet<string>();
-
-            foreach (var parameterSyntax in func.Parameters)
+            foreach (var symbol in declaredFunctions)
             {
-                var type = BindFacts.GetTypeSymbol(parameterSyntax.TypeClause.TypeToken.Kind);
-                var name = (string)parameterSyntax.Identifier.Value;
-                if (!seenParameters.Add(name)) diagnostics.ReportIdentifierError(ErrorMessage.DuplicatedParameters, parameterSyntax.Span, name);
-                else parameters.Add(new ParameterSymbol(name, type));
+                var binder = new Binder(currentScope, isScript);
+                var body = binder.BindBlockStatement(symbol.Body);
+
+                if (body is BoundInvalidStatement)
+                    continue;
+
+                var loweredBody = Lowerer.Lower(body);
+                functions.Add(symbol, loweredBody);
+                diagnostics.AddRange(binder.GetDiagnostics());
             }
 
-            var returnType = BindFacts.GetTypeSymbol(func.ReturnType.TypeToken.Kind);
-            var symbol = new FunctionSymbol((string)func.Identifier.Value, parameters.ToImmutable(), returnType);
-            if (!scope.TryDeclareFunction(symbol))
-                diagnostics.ReportIdentifierError(ErrorMessage.FunctionAlreadyDeclared, func.Identifier.Span, func.Identifier.Value);
+            return new BoundProgram(previous, globalBlockStatement, declaredVariables, functions.ToImmutable(), diagnostics.ToImmutable());
         }
 
-        private BoundScope CreateBoundScopes(Compilation previous)
+        private static BoundScope CreateBoundScopes(BoundProgram previous)
         {
-            var stack = new Stack<Compilation>();
+            var stack = new Stack<BoundProgram>();
 
             while (previous != null)
             {
-                if (previous.Root != null)
+                if (previous != null)
                     stack.Push(previous);
                 previous = previous.Previous;
             }
@@ -96,10 +124,10 @@ namespace Compiler.Binding
             {
                 var global = stack.Pop();
                 var scope = new BoundScope(current);
-                foreach (var variable in global.Root.DeclaredVariables)
+                foreach (var variable in global.GlobalVariables)
                     scope.TryDeclareVariable(variable);
 
-                foreach (var function in global.Root.DeclaredFunctions)
+                foreach (var function in global.Functions.Keys)
                     scope.TryDeclareFunction(function);
 
                 current = scope;
@@ -108,13 +136,43 @@ namespace Compiler.Binding
             return current;
         }
 
+        private static BoundScope CreateRootScope()
+        {
+            var scope = new BoundScope(null);
+            foreach (var b in BuiltInFunctions.GetAll())
+                scope.TryDeclareFunction(b);
+            return scope;
+        }
+
+        private void DeclareFunction(FunctionDeclarationSyntax func)
+        {
+            var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
+            var seenParameters = new HashSet<string>();
+
+            foreach (var parameterSyntax in func.Parameters)
+            {
+                var type = BindFacts.GetTypeSymbol(parameterSyntax.TypeClause.TypeToken.Kind);
+                var name = parameterSyntax.Identifier.Value.ToString();
+                if (!seenParameters.Add(name))
+                    diagnostics.ReportIdentifierError(ErrorMessage.DuplicatedParameters, parameterSyntax.Span, name);
+                else parameters.Add(new ParameterSymbol(name, type));
+            }
+
+            var returnType = BindFacts.GetTypeSymbol(func.ReturnType.TypeToken.Kind);
+            var symbol = new FunctionSymbol(func.Identifier.Value.ToString(), parameters.ToImmutable(), returnType, func.Body);
+            if (!scope.TryDeclareFunction(symbol))
+                diagnostics.ReportIdentifierError(ErrorMessage.FunctionAlreadyDeclared, func.Identifier.Span, func.Identifier.Value);
+        }
+
+        public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
+
         private BoundStatement BindStatement(StatementSyntax syntax)
         {
             if (!syntax.IsValid)
                 return new BoundInvalidStatement();
             else if (syntax is ExpressionStatement es)
                 return BindExpressionStatement(es);
-            else if (syntax is BlockStatment bs)
+            else if (syntax is BlockStatmentSyntax bs)
                 return BindBlockStatement(bs);
             else if (syntax is VariableDeclarationStatement vs)
                 return BindVariableDeclarationStatement(vs);
@@ -225,7 +283,7 @@ namespace Compiler.Binding
             return new BoundVariableDeclaration(variable, expr);
         }
 
-        private BoundStatement BindBlockStatement(BlockStatment syntax)
+        private BoundStatement BindBlockStatement(BlockStatmentSyntax syntax)
         {
             var builder = ImmutableArray.CreateBuilder<BoundStatement>();
             scope = new BoundScope(scope);

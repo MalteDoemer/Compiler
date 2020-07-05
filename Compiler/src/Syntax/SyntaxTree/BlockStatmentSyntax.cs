@@ -6,9 +6,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class BlockStatment : StatementSyntax
+    internal sealed class BlockStatmentSyntax : StatementSyntax
     {
-        public BlockStatment(SyntaxToken openCurly, ImmutableArray<StatementSyntax> statements, SyntaxToken closeCurly,bool isValid = true)
+        public BlockStatmentSyntax(SyntaxToken openCurly, ImmutableArray<StatementSyntax> statements, SyntaxToken closeCurly,bool isValid = true)
         {
             OpenCurly = openCurly;
             Statements = statements;

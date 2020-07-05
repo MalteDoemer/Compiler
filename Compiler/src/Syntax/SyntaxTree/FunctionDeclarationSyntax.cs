@@ -4,7 +4,7 @@ namespace Compiler.Syntax
 {
     internal sealed class FunctionDeclarationSyntax : MemberSyntax
     {
-        public FunctionDeclarationSyntax(SyntaxToken functionKeyword, SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ParameterSyntax> parameters, SyntaxToken rightParenthesis, TypeClauseSyntax returnType, BlockStatment body, bool isValid = true)
+        public FunctionDeclarationSyntax(SyntaxToken functionKeyword, SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ParameterSyntax> parameters, SyntaxToken rightParenthesis, TypeClauseSyntax returnType, BlockStatmentSyntax body, bool isValid = true)
         {
             FunctionKeyword = functionKeyword;
             Identifier = identifier;
@@ -24,7 +24,7 @@ namespace Compiler.Syntax
         public TypeClauseSyntax ReturnType { get; }
         public SeperatedSyntaxList<ParameterSyntax> Parameters { get; }
         public SyntaxToken RightParenthesis { get; }
-        public BlockStatment Body { get; }
+        public BlockStatmentSyntax Body { get; }
 
         public override string ToString() => $"{FunctionKeyword.Value} {Identifier.Value}({Parameters}){ReturnType}\n{Body}";
     }

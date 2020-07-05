@@ -127,7 +127,7 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.BoolKeyword: return TypeSymbol.Bool;
                 case SyntaxTokenKind.VoidKeyword: return TypeSymbol.Void;
                 case SyntaxTokenKind.AnyKeyword: return TypeSymbol.Any;
-                default: return null;
+                default: return TypeSymbol.ErrorType;
             }
         }
 
