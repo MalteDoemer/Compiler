@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Mono.Options;
 using System.Linq;
 using Compiler.Text;
 using Compiler.Diagnostics;
@@ -11,26 +10,9 @@ namespace Compiler
     {
         public static void Main(string[] args)
         {
-            var optionSet = (OptionSet)null;
-            optionSet = new OptionSet(){
-                "Usage: gsharp [OPTIONS] [PATH]",
-                "",
-                "Options:",
-                {"h|help", "Display help.", _ => optionSet.WriteOptionDescriptions(Console.Out) },
-                {"run", "Interpret the specified file", p => InterpretFile(p) },
-                {"repl", "Run the REPL version of gsharp", _ => StartRepl() },
-            };
-
-            try
-            {
-                optionSet.Parse(args);
-            }
-            catch (OptionException e)
-            {
-                ColorWriteLine($"\ngsharp: {e.Message}", ConsoleColor.Red);
-                Console.WriteLine("Try 'gsharp --help' for more information");
-                Environment.Exit(-1);
-            }
+            if (args.Length == 1 && File.Exists(args[0]))
+                InterpretFile(args[0]);
+            else StartRepl();
         }
 
         private static void StartRepl()
