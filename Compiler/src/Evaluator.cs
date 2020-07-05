@@ -80,8 +80,6 @@ namespace Compiler
                     return EvaluateFunctionCall(boundCall);
                 case BoundConversionExpression boundConversion:
                     return EvaluateConversion(boundConversion);
-                case BoundInvalidExpression _:
-                    return null;
                 default:
                     throw new Exception("Unknown Expression");
             }

@@ -18,5 +18,7 @@ namespace Compiler
         public BoundBlockStatement GlobalStatements { get; }
         public ImmutableArray<VariableSymbol> DeclaredVariables { get; }
         public ImmutableArray<FunctionSymbol> DeclaredFunctions { get; }
+
+        public override bool IsValid => GlobalStatements.IsValid;
     }
 }
