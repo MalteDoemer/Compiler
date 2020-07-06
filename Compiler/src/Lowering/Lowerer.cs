@@ -104,8 +104,8 @@ namespace Compiler.Lowering
 
             var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                     gotoCheck,
-                    continueLabelStmt,
                     node.Body,
+                    continueLabelStmt,
                     checkLabelStmt,
                     gotoContinue,
                     breakLabelStmt

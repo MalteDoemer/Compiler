@@ -1,10 +1,11 @@
 using System.Collections.Immutable;
+using System.IO;
 using Compiler.Diagnostics;
 using Compiler.Symbols;
 
 namespace Compiler.Binding
 {
-    internal class BoundProgram
+    internal class BoundProgram : BoundNode
     {
         public BoundProgram(BoundProgram previous, BoundBlockStatement globalStatements, ImmutableArray<VariableSymbol> globalVariables, FunctionSymbol mainFunction, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, ImmutableArray<Diagnostic> diagnostics)
         {
@@ -31,5 +32,17 @@ namespace Compiler.Binding
             else
                 return Previous.GetFunctionBody(symbol);
         }
+    }
+
+
+    internal static class BoundTreePrinter
+    {
+        public static void WriteTo(this BoundNode node, TextWriter writer)
+        {
+
+        }
+
+        
+
     }
 }
