@@ -10,9 +10,9 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
 
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.LiteralExpressionSyntax;
         public override TextSpan Span => Literal.Span;
-        public override bool IsValid { get; } 
+        public override bool IsValid { get; }
         public SyntaxToken Literal { get; }
 
         public override string ToString() => Literal.Value.ToString();

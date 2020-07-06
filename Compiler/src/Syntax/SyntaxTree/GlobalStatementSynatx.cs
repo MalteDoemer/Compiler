@@ -9,7 +9,7 @@ namespace Compiler.Syntax
             Statement = statement;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.GlobalStatementSynatx;
         public override TextSpan Span => Statement.Span;
         public override bool IsValid { get; }
         public StatementSyntax Statement { get; }

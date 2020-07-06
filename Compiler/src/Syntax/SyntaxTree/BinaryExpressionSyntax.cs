@@ -11,7 +11,7 @@ namespace Compiler.Syntax
             Right = right;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.BinaryExpressionSyntax;
         public override TextSpan Span => Left.Span + Right.Span;
         public override bool IsValid { get; }
         public SyntaxToken Op { get; }

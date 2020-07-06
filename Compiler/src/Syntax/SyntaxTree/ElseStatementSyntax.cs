@@ -10,7 +10,7 @@ namespace Compiler.Syntax
             Body = thenStatement;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.ElseStatementSyntax;
         public override TextSpan Span => ElseToken.Span + Body.Span;
         public override bool IsValid { get; }
         public SyntaxToken ElseToken { get; }

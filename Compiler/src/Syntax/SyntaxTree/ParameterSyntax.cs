@@ -10,7 +10,7 @@ namespace Compiler.Syntax
             TypeClause = typeClause;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.ParameterSyntax;
         public override TextSpan Span => Identifier.Span + TypeClause.Span;
         public override bool IsValid { get; }
         public SyntaxToken Identifier { get; }

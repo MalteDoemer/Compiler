@@ -12,7 +12,7 @@ namespace Compiler.Syntax
             Op = op;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.PostIncDecExpressionSyntax;
         public override TextSpan Span => Identifier.Span + Op.Span;
         public override bool IsValid { get; }
 

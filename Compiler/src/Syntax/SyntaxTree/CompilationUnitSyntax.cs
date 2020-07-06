@@ -13,10 +13,10 @@ namespace Compiler.Syntax
             Members = members;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.CompilationUnitSyntax;
         public override TextSpan Span { get; }
-        public ImmutableArray<MemberSyntax> Members { get; }
         public override bool IsValid { get; }
+        public ImmutableArray<MemberSyntax> Members { get; }
 
         public override string ToString()
         {

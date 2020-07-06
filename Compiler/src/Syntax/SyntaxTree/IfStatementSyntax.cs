@@ -13,7 +13,7 @@ namespace Compiler.Syntax
             ElseStatement = elseStatement;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.IfStatementSyntax;
         public override TextSpan Span => IfToken.Span + (ElseStatement == null ? Body.Span : ElseStatement.Span);
         public override bool IsValid { get; }
         public SyntaxToken IfToken { get; }

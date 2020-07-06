@@ -11,7 +11,7 @@ namespace Compiler.Syntax
             Body = body;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.WhileStatementSyntax;
         public override TextSpan Span => WhileToken.Span + Body.Span;
         public override bool IsValid { get; }
         public SyntaxToken WhileToken { get; }

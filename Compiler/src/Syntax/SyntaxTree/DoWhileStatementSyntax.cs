@@ -14,7 +14,7 @@ namespace Compiler.Syntax
             Condition = condition;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.DoWhileStatementSyntax;
         public override TextSpan Span => DoToken.Span + Condition.Span;
         public override bool IsValid { get; }
 

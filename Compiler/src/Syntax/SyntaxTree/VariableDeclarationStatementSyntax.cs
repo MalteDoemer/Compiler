@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     internal sealed class VariableDeclarationStatementSyntax : StatementSyntax
     {
-        public VariableDeclarationStatementSyntax(SyntaxToken varKeyword, SyntaxToken identifier, TypeClauseSyntax typeClause , SyntaxToken equalToken, ExpressionSyntax expression, bool isValid = true)
+        public VariableDeclarationStatementSyntax(SyntaxToken varKeyword, SyntaxToken identifier, TypeClauseSyntax typeClause, SyntaxToken equalToken, ExpressionSyntax expression, bool isValid = true)
         {
             VarKeyword = varKeyword;
             Identifier = identifier;
@@ -14,7 +14,7 @@ namespace Compiler.Syntax
             Expression = expression;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.VariableDeclarationStatementSyntax;
         public override TextSpan Span => VarKeyword.Span + Expression.Span;
         public override bool IsValid { get; }
         public SyntaxToken VarKeyword { get; }

@@ -11,7 +11,7 @@ namespace Compiler.Syntax
             ContinueToken = continueToken;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.ContinueStatementSyntax;
         public override TextSpan Span => ContinueToken.Span;
         public override bool IsValid { get; }
         public SyntaxToken ContinueToken { get; }

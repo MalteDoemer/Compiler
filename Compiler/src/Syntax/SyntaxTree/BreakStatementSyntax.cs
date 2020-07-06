@@ -11,10 +11,11 @@ namespace Compiler.Syntax
             BreakToken = breakToken;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.BreakStatementSyntax;
         public override TextSpan Span => BreakToken.Span;
         public override bool IsValid { get; }
         public SyntaxToken BreakToken { get; }
+        
         public override string ToString() => BreakToken.ToString();
     }
 }

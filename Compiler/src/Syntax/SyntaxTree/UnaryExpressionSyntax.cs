@@ -10,7 +10,7 @@ namespace Compiler.Syntax
             Expression = expression;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.UnaryExpressionSyntax;
         public override TextSpan Span => Op.Span + Expression.Span;
         public override bool IsValid { get; }
         public SyntaxToken Op { get; }

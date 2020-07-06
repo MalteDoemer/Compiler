@@ -9,12 +9,10 @@ namespace Compiler.Syntax
             Expression = expression;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.ExpressionStatementSyntax;
         public override TextSpan Span => Expression.Span;
-
-        public ExpressionSyntax Expression { get; }
-
         public override bool IsValid { get; }
+        public ExpressionSyntax Expression { get; }
 
         public override string ToString() => Expression.ToString();
     }

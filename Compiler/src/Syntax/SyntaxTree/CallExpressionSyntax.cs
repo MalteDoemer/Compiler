@@ -14,7 +14,7 @@ namespace Compiler.Syntax
             RightParenthesis = rightParenthesis;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.CallExpressionSyntax;
         public override TextSpan Span => Identifier.Span + RightParenthesis.Span;
         public override bool IsValid { get; }
 

@@ -11,6 +11,7 @@ namespace Compiler.Syntax
             Expression = expression;
             IsValid = isValid;
         }
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.AssignmentExpressionSyntax;
         public override TextSpan Span => Identifier.Span + Expression.Span;
         public override bool IsValid { get; }
         public SyntaxToken Identifier { get; }

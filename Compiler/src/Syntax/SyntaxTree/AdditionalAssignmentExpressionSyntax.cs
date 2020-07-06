@@ -20,6 +20,8 @@ namespace Compiler.Syntax
         public SyntaxToken Op { get; }
         public ExpressionSyntax Expression { get; }
 
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.AdditionalAssignmentExpressionSyntax;
+
         public override string ToString() => $"({Identifier} {Op.Value} {Expression})";
     }
 }

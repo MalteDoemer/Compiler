@@ -11,7 +11,7 @@ namespace Compiler.Syntax
             IsExplicit = isExplicit;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.TypeClauseSyntax;
         public override TextSpan Span => TypeToken.Span;
         public override bool IsValid { get; }
         public bool IsExplicit { get; }

@@ -15,7 +15,7 @@ namespace Compiler.Syntax
             Body = body;
             IsValid = isValid;
         }
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.FunctionDeclarationSyntax;
         public override TextSpan Span => FunctionKeyword.Span + Body.Span;
         public override bool IsValid { get; }
         public SyntaxToken FunctionKeyword { get; }

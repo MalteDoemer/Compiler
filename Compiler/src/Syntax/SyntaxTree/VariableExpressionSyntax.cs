@@ -10,8 +10,8 @@ namespace Compiler.Syntax
             Name = name;
             IsValid = isValid;
         }
-
-        public override bool IsValid { get; } 
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.VariableExpressionSyntax;
+        public override bool IsValid { get; }
         public override TextSpan Span => Name.Span;
         public SyntaxToken Name { get; }
 

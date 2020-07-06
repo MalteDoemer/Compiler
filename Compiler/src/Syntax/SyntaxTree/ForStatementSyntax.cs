@@ -16,7 +16,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
 
-
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.ForStatementSyntax;
         public override TextSpan Span => ForToken.Span + Body.Span;
         public override bool IsValid { get; }
         public SyntaxToken ForToken { get; }
