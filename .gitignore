@@ -1,4 +1,5 @@
 run.cmd
+build.cmd
 /.vscode
 /Compiler/obj
 /Compiler/bin
