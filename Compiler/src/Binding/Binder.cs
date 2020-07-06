@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Compiler.Diagnostics;
 using Compiler.Lowering;
 using Compiler.Symbols;
@@ -8,68 +9,36 @@ using Compiler.Syntax;
 
 namespace Compiler.Binding
 {
-
-    internal class BoundProgram
-    {
-        public BoundProgram(BoundProgram previous, BoundBlockStatement globalStatements, ImmutableArray<VariableSymbol> globalVariables, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, ImmutableArray<Diagnostic> diagnostics)
-        {
-            Previous = previous;
-            GlobalStatements = globalStatements;
-            GlobalVariables = globalVariables;
-            Functions = functions;
-            Diagnostics = diagnostics;
-        }
-
-        public BoundProgram Previous { get; }
-        public BoundBlockStatement GlobalStatements { get; }
-        public ImmutableArray<VariableSymbol> GlobalVariables { get; }
-        public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> Functions { get; }
-        public ImmutableArray<Diagnostic> Diagnostics { get; }
-    }
-
-    // internal class BoundGlobalScope
-    // {
-    //     public BoundGlobalScope(BoundBlockStatement globalStatements, ImmutableArray<VariableSymbol> globalVariables, ImmutableArray<FunctionSymbol> functions)
-    //     {
-    //         GlobalStatements = globalStatements;
-    //         GlobalVariables = globalVariables;
-    //         Functions = functions;
-    //     }
-
-    //     public BoundBlockStatement GlobalStatements { get; }
-    //     public ImmutableArray<VariableSymbol> GlobalVariables { get; }
-    //     public ImmutableArray<FunctionSymbol> Functions { get; }
-    // }
-
-
-
     internal sealed class Binder : IDiagnostable
     {
         private readonly DiagnosticBag diagnostics;
+        private readonly FunctionSymbol function;
         private readonly bool isScript;
+
 
         private BoundScope scope;
 
-        private Binder(BoundScope parentScope, bool isScript)
+        public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
+
+        private Binder(BoundScope parentScope, bool isScript, FunctionSymbol function)
         {
             this.isScript = isScript;
+            this.function = function;
             this.scope = new BoundScope(parentScope);
             this.diagnostics = new DiagnosticBag();
+
+            if (function != null)   
+                foreach (var param in function.Parameters)
+                    scope.TryDeclareVariable(param);
         }
 
         public static BoundProgram BindProgram(BoundProgram previous, bool isScript, CompilationUnitSyntax unit)
         {
-            BoundScope parentScope;
-
-            if (previous == null)
-                parentScope = CreateRootScope();
-            else
-                parentScope = CreateBoundScopes(previous);
-
+            var parentScope = CreateBoundScopes(previous);
             var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
             var functionSyntax = unit.Members.OfType<FunctionDeclarationSyntax>();
             var statementSyntax = unit.Members.OfType<GlobalStatementSynatx>();
-            var globalBinder = new Binder(parentScope, isScript);
+            var globalBinder = new Binder(parentScope, isScript, function: null);
 
             foreach (var func in functionSyntax)
                 globalBinder.DeclareFunction(func);
@@ -88,21 +57,24 @@ namespace Compiler.Binding
             var globalBlockStatement = Lowerer.Lower(new BoundBlockStatement(globalStatementBuilder.ToImmutable()));
             var declaredVariables = globalBinder.scope.GetDeclaredVariables();
             var declaredFunctions = globalBinder.scope.GetDeclaredFunctions();
+
             var currentScope = globalBinder.scope;
             var functions = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
 
             foreach (var symbol in declaredFunctions)
             {
-                var binder = new Binder(currentScope, isScript);
+                var binder = new Binder(currentScope, isScript, symbol);
                 var body = binder.BindBlockStatement(symbol.Body);
 
-                if (body is BoundInvalidStatement)
-                    continue;
+                if (!(body is BoundInvalidStatement))
+                {
+                    var loweredBody = Lowerer.Lower(body);
+                    functions.Add(symbol, loweredBody);
+                }
 
-                var loweredBody = Lowerer.Lower(body);
-                functions.Add(symbol, loweredBody);
                 diagnostics.AddRange(binder.GetDiagnostics());
             }
+
 
             return new BoundProgram(previous, globalBlockStatement, declaredVariables, functions.ToImmutable(), diagnostics.ToImmutable());
         }
@@ -111,14 +83,14 @@ namespace Compiler.Binding
         {
             var stack = new Stack<BoundProgram>();
 
+
             while (previous != null)
             {
-                if (previous != null)
-                    stack.Push(previous);
+                stack.Push(previous);
                 previous = previous.Previous;
             }
 
-            BoundScope current = null;
+            BoundScope current = CreateRootScope();
 
             while (stack.Count > 0)
             {
@@ -160,11 +132,11 @@ namespace Compiler.Binding
 
             var returnType = BindFacts.GetTypeSymbol(func.ReturnType.TypeToken.Kind);
             var symbol = new FunctionSymbol(func.Identifier.Value.ToString(), parameters.ToImmutable(), returnType, func.Body);
+
             if (!scope.TryDeclareFunction(symbol))
                 diagnostics.ReportIdentifierError(ErrorMessage.FunctionAlreadyDeclared, func.Identifier.Span, func.Identifier.Value);
         }
 
-        public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
         private BoundStatement BindStatement(StatementSyntax syntax)
         {
@@ -274,7 +246,13 @@ namespace Compiler.Binding
             if (expr is BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
-            var variable = new VariableSymbol((string)syntax.Identifier.Value, type);
+            VariableSymbol variable;
+
+            if (function == null)
+                variable = new GlobalVariableSymbol(syntax.Identifier.Value.ToString(), type, syntax.VarKeyword.Kind == SyntaxTokenKind.ConstKeyword ? VariableModifier.Constant : VariableModifier.None);
+            else
+                variable = new LocalVariableSymbol(syntax.Identifier.Value.ToString(), type);
+
             if (!scope.TryDeclareVariable(variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, syntax.Identifier.Span, variable.Name);
@@ -372,12 +350,12 @@ namespace Compiler.Binding
 
         private BoundExpression BindCallExpession(CallExpressionSyntax syntax)
         {
-            if (syntax.Arguments.Length == 1 && TypeSymbol.Lookup((string)syntax.Identifier.Value) is TypeSymbol type)
+            if (syntax.Arguments.Length == 1 && TypeSymbol.Lookup(syntax.Identifier.Value.ToString()) is TypeSymbol type)
                 return BindExplicitConversion(type, syntax.Arguments[0]);
 
-            if (!scope.TryLookUpFunction((string)syntax.Identifier.Value, out var symbol))
+            if (!scope.TryLookUpFunction(syntax.Identifier.Value.ToString(), out var symbol))
             {
-                diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, (string)syntax.Identifier.Value);
+                diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, syntax.Identifier.Value.ToString());
                 return new BoundInvalidExpression();
             }
 
@@ -432,6 +410,12 @@ namespace Compiler.Binding
                 return new BoundInvalidExpression();
             }
 
+            if (variable is GlobalVariableSymbol globalVariable && globalVariable.Modifier == VariableModifier.Constant)
+            {
+                diagnostics.ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
+                return new BoundInvalidExpression();
+            }
+
             var left = new BoundVariableExpression(variable);
             var right = new BoundLiteralExpression(1, TypeSymbol.Int);
 
@@ -454,6 +438,12 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out VariableSymbol variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, (string)syntax.Identifier.Value);
+                return new BoundInvalidExpression();
+            }
+
+            if (variable is GlobalVariableSymbol globalVariable && globalVariable.Modifier == VariableModifier.Constant)
+            {
+                diagnostics.ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
                 return new BoundInvalidExpression();
             }
 
@@ -480,6 +470,12 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out var variable))
             {
                 diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, (string)syntax.Identifier.Value);
+                return new BoundInvalidExpression();
+            }
+
+            if (variable is GlobalVariableSymbol globalVariable && globalVariable.Modifier == VariableModifier.Constant)
+            {
+                diagnostics.ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
                 return new BoundInvalidExpression();
             }
 

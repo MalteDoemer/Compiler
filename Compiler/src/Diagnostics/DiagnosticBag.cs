@@ -32,6 +32,7 @@ namespace Compiler.Diagnostics
            "Duplicated parameter '{0}'.",
            "Function '{0}' is already declared",
            "Statement isn't a global statement.",
+           "Cannot assign a value to the constant '{0}'.",
         };
 
         private readonly List<Diagnostic> builder;

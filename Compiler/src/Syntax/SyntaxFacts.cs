@@ -33,6 +33,16 @@ namespace Compiler.Syntax
             }
         }
 
+        internal static IEnumerable<SyntaxTokenKind> GetTypeKeywords()
+        {
+            yield return SyntaxTokenKind.IntKeyword;
+            yield return SyntaxTokenKind.FloatKeyword;
+            yield return SyntaxTokenKind.BoolKeyword;
+            yield return SyntaxTokenKind.StringKeyword;
+            yield return SyntaxTokenKind.AnyKeyword;
+            yield return SyntaxTokenKind.VoidKeyword;
+        }
+
         internal static bool IsTypeKeyword(this SyntaxTokenKind kind)
         {
             switch (kind)
@@ -117,7 +127,8 @@ namespace Compiler.Syntax
                 case "while": return SyntaxTokenKind.WhileKeyword;
                 case "do": return SyntaxTokenKind.DoKeyword;
                 case "for": return SyntaxTokenKind.ForKeyword;
-                case "function": return SyntaxTokenKind.FunctionDefinitionKeyword;
+                case "def": return SyntaxTokenKind.FunctionDefinitionKeyword;
+                case "const": return SyntaxTokenKind.ConstKeyword;
                 default: return null;
             }
         }
@@ -203,6 +214,8 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.ElseKeyword: return "else";
                 case SyntaxTokenKind.WhileKeyword: return "while";
                 case SyntaxTokenKind.ForKeyword: return "for";
+                case SyntaxTokenKind.FunctionDefinitionKeyword: return "def";
+                case SyntaxTokenKind.ConstKeyword: return "const";
                 default: return null;
             }
         }

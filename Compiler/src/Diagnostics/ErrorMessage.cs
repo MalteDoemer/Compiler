@@ -21,5 +21,6 @@ namespace Compiler.Diagnostics
         DuplicatedParameters,
         FunctionAlreadyDeclared,
         InvalidGlobalStatement,
+        CannotAssignToConst,
     }
 }

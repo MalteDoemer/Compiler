@@ -64,5 +64,6 @@ namespace Compiler.Syntax
         AnyKeyword,
         Colon,
         FunctionDefinitionKeyword,
+        ConstKeyword,
     }
 }

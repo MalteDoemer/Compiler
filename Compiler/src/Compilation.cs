@@ -48,26 +48,21 @@ namespace Compiler
         {
             if (Diagnostics.Length > 0) return;
 
-            var statement = GetStatement();
-            var evaluator = new Evaluator(statement, variables);
+            var evaluator = new Evaluator(program, globals);
             evaluator.Evaluate();
         }
 
         public object EvaluateExpression()
         {
-           if (Diagnostics.Length > 0) return null;
+            if (Diagnostics.Length > 0) return null;
 
-
-            var statement = GetStatement();
-            var evaluator = new Evaluator(statement, variables);
-            evaluator.Evaluate();
-            return evaluator.lastValue;
+            var evaluator = new Evaluator(program, globals);
+            return evaluator.Evaluate();
         }
 
-       
         public static Compilation Compile(SourceText text) => new Compilation(null, text, new Dictionary<string, object>(), false);
 
-        public static Compilation CompileScript(SourceText text, Compilation previous = null) 
+        public static Compilation CompileScript(SourceText text, Compilation previous = null)
         {
             var env = previous == null ? new Dictionary<string, object>() : previous.globals;
             return new Compilation(previous, text, env, true);

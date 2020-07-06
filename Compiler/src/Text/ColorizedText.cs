@@ -47,6 +47,8 @@ namespace Compiler.Text
                     case SyntaxTokenKind.FloatKeyword:
                     case SyntaxTokenKind.StringKeyword:
                     case SyntaxTokenKind.BoolKeyword:
+                    case SyntaxTokenKind.ConstKeyword:
+                    case SyntaxTokenKind.FunctionDefinitionKeyword:
                         builder.Add(new ColorizedToken(token, ConsoleColor.Blue));
                         break;
                     case SyntaxTokenKind.DoubleQuote:

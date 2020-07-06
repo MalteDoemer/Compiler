@@ -29,21 +29,37 @@ namespace Compiler.Syntax
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
-        private SyntaxToken MatchToken(SyntaxTokenKind kind)
+        private SyntaxToken MatchToken(SyntaxTokenKind kind, params SyntaxTokenKind[] others)
         {
-            if (kind == current.Kind) return Advance();
-            else
-            {
-                if (isTreeValid)
-                    diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
+            if (current.Kind == kind) return Advance();
 
-                var res = new SyntaxToken(kind, current.Span.Start, current.Span.Length, current.Value, false);
-                pos++;
+            foreach (var kind2 in others)
+                if (current.Kind == kind2) return Advance();
 
-                isTreeValid = false;
-                return res;
-            }
+
+            if (isTreeValid)
+                diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
+            var res = new SyntaxToken(kind, current.Span.Start, current.Span.Length, current.Value, false);
+            pos++;
+            isTreeValid = false;
+            return res;
         }
+
+        // private SyntaxToken MatchToken(SyntaxTokenKind kind)
+        // {
+        //     if (kind == current.Kind) return Advance();
+        //     else
+        //     {
+        //         if (isTreeValid)
+        //             diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
+
+        //         var res = new SyntaxToken(kind, current.Span.Start, current.Span.Length, current.Value, false);
+        //         pos++;
+
+        //         isTreeValid = false;
+        //         return res;
+        //     }
+        // }
 
         private SyntaxToken Advance()
         {
@@ -102,7 +118,13 @@ namespace Compiler.Syntax
             var functionKeyword = Advance();
             var identifier = MatchToken(SyntaxTokenKind.Identifier);
             var lparen = MatchToken(SyntaxTokenKind.LParen);
-            var parameters = ParseSeperatedSyntaxList<ParameterSyntax>(ParseParameter, SyntaxTokenKind.Comma);
+
+            SeperatedSyntaxList<ParameterSyntax> parameters;
+            if (current.Kind == SyntaxTokenKind.RParen)
+                parameters = SeperatedSyntaxList<ParameterSyntax>.Empty;
+            else 
+                parameters = ParseSeperatedSyntaxList<ParameterSyntax>(ParseParameter, SyntaxTokenKind.Comma);
+
             var rparen = MatchToken(SyntaxTokenKind.RParen);
             var returnType = ParseOptionalTypeClause();
             var body = ParseBlockStatement();
@@ -131,6 +153,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.DoKeyword:
                     return ParseDoWhileStatement();
                 case SyntaxTokenKind.VarKeyword:
+                case SyntaxTokenKind.ConstKeyword:
                     return ParseVariableDeclaration();
                 default:
                     return ParseExpressionStatement();
@@ -187,7 +210,7 @@ namespace Compiler.Syntax
             return new ExpressionStatement(expression, isTreeValid);
         }
 
-        private BlockStatment ParseBlockStatement()
+        private BlockStatmentSyntax ParseBlockStatement()
         {
             var lcurly = MatchToken(SyntaxTokenKind.LCurly);
 
@@ -210,17 +233,17 @@ namespace Compiler.Syntax
             }
 
             var rcurly = MatchToken(SyntaxTokenKind.RCurly);
-            return new BlockStatment(lcurly, builder.ToImmutable(), rcurly, isTreeValid);
+            return new BlockStatmentSyntax(lcurly, builder.ToImmutable(), rcurly, isTreeValid);
         }
 
         private VariableDeclarationStatement ParseVariableDeclaration()
         {
-            var varKeyword = MatchToken(SyntaxTokenKind.VarKeyword);
+            var declareKeyword = MatchToken(SyntaxTokenKind.VarKeyword, SyntaxTokenKind.ConstKeyword);
             var identifier = MatchToken(SyntaxTokenKind.Identifier);
             var type = ParseOptionalTypeClause();
             var equalToken = MatchToken(SyntaxTokenKind.Equal);
             var expr = ParseExpression();
-            return new VariableDeclarationStatement(varKeyword, identifier, type, equalToken, expr, isTreeValid);
+            return new VariableDeclarationStatement(declareKeyword, identifier, type, equalToken, expr, isTreeValid);
         }
 
         private TypeClauseSyntax ParseOptionalTypeClause()
@@ -236,15 +259,7 @@ namespace Compiler.Syntax
         private TypeClauseSyntax ParseTypeClause()
         {
             var colon = MatchToken(SyntaxTokenKind.Colon);
-            SyntaxToken typeToken;
-            if (!current.Kind.IsTypeKeyword())
-            {
-                if (isTreeValid)
-                    diagnostics.ReportSyntaxError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
-                isTreeValid = false;
-                typeToken = new SyntaxToken(SyntaxTokenKind.AnyKeyword, current.Span.Start, current.Span.Length, SyntaxTokenKind.AnyKeyword.GetStringRepresentation(), false);
-            }
-            typeToken = Advance();
+            var typeToken = MatchToken(SyntaxTokenKind.AnyKeyword, SyntaxFacts.GetTypeKeywords().ToArray());
             return new TypeClauseSyntax(colon, typeToken, isTreeValid);
         }
 
@@ -293,8 +308,12 @@ namespace Compiler.Syntax
             var start = current.Span.Start;
             MatchToken(SyntaxTokenKind.LParen);
             var expr = ParseExpression();
-            if (current.Kind != SyntaxTokenKind.RParen && isTreeValid)
-                diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, current.Span.End));
+            if (current.Kind != SyntaxTokenKind.RParen)
+            {
+                if (isTreeValid)
+                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, current.Span.End));
+                isTreeValid = false;
+            }
             MatchToken(SyntaxTokenKind.RParen);
             return expr;
         }
