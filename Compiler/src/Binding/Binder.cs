@@ -16,7 +16,7 @@ namespace Compiler.Binding
         private readonly FunctionSymbol function;
         private readonly bool isScript;
         private readonly Stack<(BoundLabel breakLabel, BoundLabel continueLabel)> labelStack;
-
+        private int labelCounter;
         private BoundScope scope;
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
@@ -231,8 +231,9 @@ namespace Compiler.Binding
 
         private BoundStatement BindLoopBody(StatementSyntax syntax, out BoundLabel breakLabel, out BoundLabel continueLabel)
         {
-            breakLabel = new BoundLabel("break");
-            continueLabel = new BoundLabel("continue");
+            labelCounter++;
+            breakLabel = new BoundLabel($"break{labelCounter}");
+            continueLabel = new BoundLabel($"continue{labelCounter}");
 
             labelStack.Push((breakLabel, continueLabel));
             var res = BindStatement(syntax);
