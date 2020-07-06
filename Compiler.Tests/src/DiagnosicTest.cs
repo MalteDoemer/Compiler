@@ -1,13 +1,11 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using Compiler;
 using Compiler.Binding;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
 using Xunit;
 using Compiler.Symbols;
-using System.Reflection;
 
 namespace Compiler.Test
 {
@@ -35,21 +33,9 @@ namespace Compiler.Test
             AssertDiagnostic(text, ErrorMessage.NeverClosedParenthesis);
         }
 
-        [Fact]
-        public static void Report_Never_Closed_Curly()
-        {
-            var text = @"
-               [{
-                   int i = 0
-                   string str = 'fett'
-            ]";
-            AssertDiagnostic(text, ErrorMessage.NeverClosedCurlyBrackets);
-        }
-
         [Theory]
         [InlineData("var [14.03] = 0", SyntaxTokenKind.Identifier)]
         [InlineData("var i [134] 0", SyntaxTokenKind.Equal)]
-        [InlineData("1 [1]", SyntaxTokenKind.End)]
         public static void Report_Expected_Token(string text, SyntaxTokenKind expectedKind)
         {
             AssertDiagnostic(text, ErrorMessage.ExpectedToken, expectedKind);
