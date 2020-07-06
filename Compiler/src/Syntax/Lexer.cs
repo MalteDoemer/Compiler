@@ -174,10 +174,7 @@ namespace Compiler.Syntax
             do
             {
                 token = NextToken();
-                var shouldYield = verbose ? true : (token.Kind != SyntaxTokenKind.Space &&
-                                                    token.Kind != SyntaxTokenKind.Comment &&
-                                                    token.Kind != SyntaxTokenKind.SingleQuote &&
-                                                    token.Kind != SyntaxTokenKind.DoubleQuote);
+                var shouldYield = verbose ? true : (token.Kind != SyntaxTokenKind.Space && token.Kind != SyntaxTokenKind.Comment);
                 if (shouldYield)
                     yield return token;
             } while (token.Kind != SyntaxTokenKind.End);

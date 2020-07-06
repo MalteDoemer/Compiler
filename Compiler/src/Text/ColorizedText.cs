@@ -53,8 +53,6 @@ namespace Compiler.Text
                     case SyntaxTokenKind.FunctionDefinitionKeyword:
                         builder.Add(new ColorizedToken(token, ConsoleColor.Blue));
                         break;
-                    case SyntaxTokenKind.DoubleQuote:
-                    case SyntaxTokenKind.SingleQuote:
                     case SyntaxTokenKind.String:
                         builder.Add(new ColorizedToken(token, ConsoleColor.DarkCyan));
                         break;
