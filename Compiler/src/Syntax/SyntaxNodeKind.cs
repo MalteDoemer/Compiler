@@ -1,0 +1,29 @@
+namespace Compiler.Syntax
+{
+    public enum SyntaxNodeKind
+    {
+        AdditionalAssignmentExpressionSyntax,
+        AssignmentExpressionSyntax,
+        BinaryExpressionSyntax,
+        BlockStatmentSyntax,
+        BreakStatementSyntax,
+        CallExpressionSyntax,
+        CompilationUnitSyntax,
+        ContinueStatementSyntax,
+        DoWhileStatementSyntax,
+        ElseStatementSyntax,
+        ExpressionStatementSyntax,
+        ForStatementSyntax,
+        FunctionDeclarationSyntax,
+        GlobalStatementSynatx,
+        IfStatementSyntax,
+        LiteralExpressionSyntax,
+        ParameterSyntax,
+        PostIncDecExpressionSyntax,
+        TypeClauseSyntax,
+        UnaryExpressionSyntax,
+        VariableDeclarationStatementSyntax,
+        VariableExpressionSyntax,
+        WhileStatementSyntax,
+    }
+}

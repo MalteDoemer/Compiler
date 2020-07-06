@@ -215,7 +215,7 @@ namespace Compiler.Syntax
             return new WhileStatementSyntax(whileToken, condition, body, isTreeValid);
         }
 
-        private ExpressionStatement ParseExpressionStatement()
+        private ExpressionStatementSyntax ParseExpressionStatement()
         {
             var expression = ParseExpression();
             if (!SyntaxFacts.IsExpressionStatement(expression, isScript))
@@ -224,7 +224,7 @@ namespace Compiler.Syntax
                     diagnostics.ReportSyntaxError(ErrorMessage.InvalidStatement, expression.Span);
                 isTreeValid = false;
             }
-            return new ExpressionStatement(expression, isTreeValid);
+            return new ExpressionStatementSyntax(expression, isTreeValid);
         }
 
         private BlockStatmentSyntax ParseBlockStatement()
@@ -253,14 +253,14 @@ namespace Compiler.Syntax
             return new BlockStatmentSyntax(lcurly, builder.ToImmutable(), rcurly, isTreeValid);
         }
 
-        private VariableDeclarationStatement ParseVariableDeclaration()
+        private VariableDeclarationStatementSyntax ParseVariableDeclaration()
         {
             var declareKeyword = MatchToken(SyntaxTokenKind.VarKeyword, SyntaxTokenKind.ConstKeyword);
             var identifier = MatchToken(SyntaxTokenKind.Identifier);
             var type = ParseOptionalTypeClause();
             var equalToken = MatchToken(SyntaxTokenKind.Equal);
             var expr = ParseExpression();
-            return new VariableDeclarationStatement(declareKeyword, identifier, type, equalToken, expr, isTreeValid);
+            return new VariableDeclarationStatementSyntax(declareKeyword, identifier, type, equalToken, expr, isTreeValid);
         }
 
         private TypeClauseSyntax ParseOptionalTypeClause()
@@ -353,11 +353,11 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.PipeEqual:
                     var op1 = Advance();
                     var expr2 = ParseExpression();
-                    return new AdditionalAssignmentExpression(identifier, op1, expr2, isTreeValid);
+                    return new AdditionalAssignmentExpressionSyntax(identifier, op1, expr2, isTreeValid);
                 case SyntaxTokenKind.PlusPlus:
                 case SyntaxTokenKind.MinusMinus:
                     var op2 = Advance();
-                    return new PostIncDecExpression(identifier, op2, isTreeValid);
+                    return new PostIncDecExpressionSyntax(identifier, op2, isTreeValid);
                 case SyntaxTokenKind.LParen:
                     return ParseFunctionCall(identifier);
                 default:

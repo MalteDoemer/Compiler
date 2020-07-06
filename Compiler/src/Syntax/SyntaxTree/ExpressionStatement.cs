@@ -2,9 +2,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class ExpressionStatement : StatementSyntax
+    internal sealed class ExpressionStatementSyntax : StatementSyntax
     {
-        public ExpressionStatement(ExpressionSyntax expression, bool isValid = true)
+        public ExpressionStatementSyntax(ExpressionSyntax expression, bool isValid = true)
         {
             Expression = expression;
             IsValid = isValid;

@@ -142,8 +142,8 @@ namespace Compiler.Syntax
             {
                 case CallExpressionSyntax _:
                 case AssignmentExpressionSyntax __:
-                case AdditionalAssignmentExpression ___:
-                case PostIncDecExpression ____:
+                case AdditionalAssignmentExpressionSyntax ___:
+                case PostIncDecExpressionSyntax ____:
                     return true;
                 default: return false;
             }
@@ -155,7 +155,7 @@ namespace Compiler.Syntax
 
             switch (stmt)
             {
-                case VariableDeclarationStatement _:
+                case VariableDeclarationStatementSyntax _:
                     return true;
                 default: return false;
             }

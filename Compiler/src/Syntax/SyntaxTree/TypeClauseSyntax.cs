@@ -1,7 +1,5 @@
 using Compiler.Text;
 
-
-
 namespace Compiler.Syntax
 {
     internal sealed class TypeClauseSyntax : SyntaxNode

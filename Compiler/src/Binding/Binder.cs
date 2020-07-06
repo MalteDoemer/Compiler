@@ -160,11 +160,11 @@ namespace Compiler.Binding
         {
             if (!syntax.IsValid)
                 return new BoundInvalidStatement();
-            else if (syntax is ExpressionStatement es)
+            else if (syntax is ExpressionStatementSyntax es)
                 return BindExpressionStatement(es);
             else if (syntax is BlockStatmentSyntax bs)
                 return BindBlockStatement(bs);
-            else if (syntax is VariableDeclarationStatement vs)
+            else if (syntax is VariableDeclarationStatementSyntax vs)
                 return BindVariableDeclarationStatement(vs);
             else if (syntax is IfStatementSyntax ifs)
                 return BindIfStatement(ifs);
@@ -315,7 +315,7 @@ namespace Compiler.Binding
             return new BoundIfStatement(condition, stmt, elseStmt);
         }
 
-        private BoundStatement BindVariableDeclarationStatement(VariableDeclarationStatement syntax)
+        private BoundStatement BindVariableDeclarationStatement(VariableDeclarationStatementSyntax syntax)
         {
             TypeSymbol type;
             BoundExpression expr;
@@ -349,7 +349,7 @@ namespace Compiler.Binding
             return new BoundVariableDeclarationStatement(variable, expr);
         }
 
-        private BoundStatement BindExpressionStatement(ExpressionStatement syntax)
+        private BoundStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
         {
             var expr = BindExpression(syntax.Expression, true);
             if (expr is BoundInvalidExpression)
@@ -406,9 +406,9 @@ namespace Compiler.Binding
                 return BindVariableExpression(ve);
             else if (syntax is AssignmentExpressionSyntax ee)
                 return BindAssignmentExpression(ee);
-            else if (syntax is AdditionalAssignmentExpression ae)
+            else if (syntax is AdditionalAssignmentExpressionSyntax ae)
                 return BindAdditioalAssignmentExpression(ae);
-            else if (syntax is PostIncDecExpression ide)
+            else if (syntax is PostIncDecExpressionSyntax ide)
                 return BindPostIncDecExpression(ide);
             else if (syntax is CallExpressionSyntax cs)
                 return BindCallExpession(cs);
@@ -469,7 +469,7 @@ namespace Compiler.Binding
             return new BoundConversionExpression(type, expr);
         }
 
-        private BoundExpression BindPostIncDecExpression(PostIncDecExpression syntax)
+        private BoundExpression BindPostIncDecExpression(PostIncDecExpressionSyntax syntax)
         {
             if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out VariableSymbol variable))
             {
@@ -500,7 +500,7 @@ namespace Compiler.Binding
             return new BoundAssignementExpression(variable, binaryExpression);
         }
 
-        private BoundExpression BindAdditioalAssignmentExpression(AdditionalAssignmentExpression syntax)
+        private BoundExpression BindAdditioalAssignmentExpression(AdditionalAssignmentExpressionSyntax syntax)
         {
             if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out VariableSymbol variable))
             {

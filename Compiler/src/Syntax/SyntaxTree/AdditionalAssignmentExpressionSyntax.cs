@@ -4,9 +4,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class AdditionalAssignmentExpression : ExpressionSyntax
+    internal sealed class AdditionalAssignmentExpressionSyntax : ExpressionSyntax
     {
-        public AdditionalAssignmentExpression(SyntaxToken identifier, SyntaxToken op, ExpressionSyntax expression, bool isValid = true)
+        public AdditionalAssignmentExpressionSyntax(SyntaxToken identifier, SyntaxToken op, ExpressionSyntax expression, bool isValid = true)
         {
             Identifier = identifier;
             Op = op;
