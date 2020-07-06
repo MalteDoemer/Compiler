@@ -60,7 +60,7 @@ namespace Compiler
                         lastValue = EvaluateExpression(es.Expression);
                         instPtr++;
                         break;
-                    case BoundVariableDeclaration vs:
+                    case BoundVariableDeclarationStatement vs:
                         EvaluateVariableDeclaration(vs);
                         instPtr++;
                         break;
@@ -208,7 +208,7 @@ namespace Compiler
             else throw new Exception($"Unexpected Conversion Type <{expr.Type}>");
         }
 
-        private void EvaluateVariableDeclaration(BoundVariableDeclaration vs)
+        private void EvaluateVariableDeclaration(BoundVariableDeclarationStatement vs)
         {
             var val = EvaluateExpression(vs.Expression);
             if (vs.Variable is LocalVariableSymbol local)

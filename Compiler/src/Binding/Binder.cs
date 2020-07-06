@@ -287,7 +287,7 @@ namespace Compiler.Binding
                 diagnostics.ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, syntax.Identifier.Span, variable.Name);
                 return new BoundInvalidStatement();
             }
-            return new BoundVariableDeclaration(variable, expr);
+            return new BoundVariableDeclarationStatement(variable, expr);
         }
 
         private BoundStatement BindBlockStatement(BlockStatmentSyntax syntax)

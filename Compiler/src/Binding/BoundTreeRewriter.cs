@@ -21,7 +21,7 @@ namespace Compiler.Binding
                 return RewriteWhileStatement(ws);
             else if (statement is BoundDoWhileStatement dws)
                 return RewriteDoWhileStatement(dws);
-            else if (statement is BoundVariableDeclaration vs)
+            else if (statement is BoundVariableDeclarationStatement vs)
                 return RewriteVariableDeclaration(vs);
             else if (statement is BoundGotoStatement gs)
                 return RewriteGotoStatement(gs);
@@ -42,13 +42,13 @@ namespace Compiler.Binding
             return new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfFalse);
         }
 
-        protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclaration node)
+        protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclarationStatement node)
         {
             var expression = RewriteExpression(node.Expression);
             if (expression == node.Expression)
                 return node;
 
-            return new BoundVariableDeclaration(node.Variable, expression);
+            return new BoundVariableDeclarationStatement(node.Variable, expression);
         }
 
         protected virtual BoundStatement RewriteWhileStatement(BoundWhileStatement node)
