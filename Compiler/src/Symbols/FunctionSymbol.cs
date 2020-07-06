@@ -12,15 +12,15 @@ namespace Compiler.Symbols
             ReturnType = returnType;
         }
 
-        internal FunctionSymbol(string name, ImmutableArray<ParameterSymbol> parameters, TypeSymbol returnType, BlockStatmentSyntax body) : base(name)
+        internal FunctionSymbol(string name, ImmutableArray<ParameterSymbol> parameters, TypeSymbol returnType, FunctionDeclarationSyntax syntax) : base(name)
         {
             Parameters = parameters;
             ReturnType = returnType;
-            Body = body;
+            Syntax = syntax;
         }
 
         public ImmutableArray<ParameterSymbol> Parameters { get; }
         public TypeSymbol ReturnType { get; }
-        internal BlockStatmentSyntax Body { get; }
+        internal FunctionDeclarationSyntax Syntax { get; }
     }
 }

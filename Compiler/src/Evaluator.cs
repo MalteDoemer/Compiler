@@ -29,7 +29,14 @@ namespace Compiler
         public dynamic Evaluate()
         {
             EvaluateBlock(program.GlobalStatements);
-            // TODO invoke main function
+            if (program.MainFunction != null)
+            {
+                var locals = new Dictionary<string, object>();
+                stackFrames.Push(locals);
+                var body = program.GetFunctionBody(program.MainFunction);
+                EvaluateBlock(body);
+                stackFrames.Pop();
+            }
             return lastValue;
         }
 
@@ -118,7 +125,7 @@ namespace Compiler
 
             if (expr.Variable is LocalVariableSymbol local)
                 stackFrames.Peek()[local.Name] = val;
-            if (expr.Variable is ParameterSymbol param)
+            else if (expr.Variable is ParameterSymbol param)
                 stackFrames.Peek()[param.Name] = val;
             else if (expr.Variable is GlobalVariableSymbol global)
                 globals[global.Name] = val;

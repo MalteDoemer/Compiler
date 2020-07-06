@@ -6,11 +6,12 @@ namespace Compiler.Binding
 {
     internal class BoundProgram
     {
-        public BoundProgram(BoundProgram previous, BoundBlockStatement globalStatements, ImmutableArray<VariableSymbol> globalVariables, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, ImmutableArray<Diagnostic> diagnostics)
+        public BoundProgram(BoundProgram previous, BoundBlockStatement globalStatements, ImmutableArray<VariableSymbol> globalVariables, FunctionSymbol mainFunction, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, ImmutableArray<Diagnostic> diagnostics)
         {
             Previous = previous;
             GlobalStatements = globalStatements;
             GlobalVariables = globalVariables;
+            MainFunction = mainFunction;
             Functions = functions;
             Diagnostics = diagnostics;
         }
@@ -18,8 +19,10 @@ namespace Compiler.Binding
         public BoundProgram Previous { get; }
         public BoundBlockStatement GlobalStatements { get; }
         public ImmutableArray<VariableSymbol> GlobalVariables { get; }
+        public FunctionSymbol MainFunction { get; }
         public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> Functions { get; }
         public ImmutableArray<Diagnostic> Diagnostics { get; }
+
 
         public BoundBlockStatement GetFunctionBody(FunctionSymbol symbol)
         {

@@ -5,7 +5,10 @@ namespace Compiler.Text
     public struct TextSpan
     {
         private readonly static TextSpan invalid = new TextSpan(-10, -10);
+        private readonly static TextSpan undefined = new TextSpan(-3,-4);
+
         public static TextSpan Invalid { get => invalid; }
+        public static TextSpan Undefined { get => undefined; }
 
 
         private TextSpan(int start, int length)

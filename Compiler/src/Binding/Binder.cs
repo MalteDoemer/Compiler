@@ -6,6 +6,7 @@ using Compiler.Diagnostics;
 using Compiler.Lowering;
 using Compiler.Symbols;
 using Compiler.Syntax;
+using Compiler.Text;
 
 namespace Compiler.Binding
 {
@@ -27,7 +28,7 @@ namespace Compiler.Binding
             this.scope = new BoundScope(parentScope);
             this.diagnostics = new DiagnosticBag();
 
-            if (function != null)   
+            if (function != null)
                 foreach (var param in function.Parameters)
                     scope.TryDeclareVariable(param);
         }
@@ -64,7 +65,7 @@ namespace Compiler.Binding
             foreach (var symbol in declaredFunctions)
             {
                 var binder = new Binder(currentScope, isScript, symbol);
-                var body = binder.BindBlockStatement(symbol.Body);
+                var body = binder.BindBlockStatement(symbol.Syntax.Body);
 
                 if (!(body is BoundInvalidStatement))
                 {
@@ -76,7 +77,18 @@ namespace Compiler.Binding
             }
 
 
-            return new BoundProgram(previous, globalBlockStatement, declaredVariables, functions.ToImmutable(), diagnostics.ToImmutable());
+            FunctionSymbol mainFunc = null;
+
+            if (!isScript && !globalBinder.scope.TryLookUpFunction("main", out mainFunc))
+                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Program doesn't define main fuction.", TextSpan.Undefined));
+
+            if (mainFunc != null && mainFunc.Parameters.Length > 0)
+                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function cannot have arguments.", mainFunc.Syntax.Parameters.Span));
+
+            if (mainFunc != null && mainFunc.ReturnType != TypeSymbol.Void)
+                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function must return void.", mainFunc.Syntax.ReturnType.Span));
+
+            return new BoundProgram(previous, globalBlockStatement, declaredVariables, mainFunc, functions.ToImmutable(), diagnostics.ToImmutable());
         }
 
         private static BoundScope CreateBoundScopes(BoundProgram previous)
@@ -130,8 +142,14 @@ namespace Compiler.Binding
                 else parameters.Add(new ParameterSymbol(name, type));
             }
 
-            var returnType = BindFacts.GetTypeSymbol(func.ReturnType.TypeToken.Kind);
-            var symbol = new FunctionSymbol(func.Identifier.Value.ToString(), parameters.ToImmutable(), returnType, func.Body);
+            TypeSymbol returnType;
+            if (func.ReturnType.IsExplicit)
+                returnType = BindFacts.GetTypeSymbol(func.ReturnType.TypeToken.Kind);
+            else 
+                returnType = TypeSymbol.Void;
+            // TODO infer return type
+
+            var symbol = new FunctionSymbol(func.Identifier.Value.ToString(), parameters.ToImmutable(), returnType, func);
 
             if (!scope.TryDeclareFunction(symbol))
                 diagnostics.ReportIdentifierError(ErrorMessage.FunctionAlreadyDeclared, func.Identifier.Span, func.Identifier.Value);
@@ -240,14 +258,25 @@ namespace Compiler.Binding
 
         private BoundStatement BindVariableDeclarationStatement(VariableDeclarationStatement syntax)
         {
-            var type = BindFacts.GetTypeSymbol(syntax.TypeClause.TypeToken.Kind);
-            var expr = CheckTypeAndConversion(type, syntax.Expression);
+            TypeSymbol type;
+            BoundExpression expr;
+
+            if (syntax.TypeClause.IsExplicit)
+            {
+                type = BindFacts.GetTypeSymbol(syntax.TypeClause.TypeToken.Kind);
+                expr = CheckTypeAndConversion(type, syntax.Expression);
+            }
+            else
+            {
+                expr = BindExpression(syntax.Expression, canBeVoid: false);
+                type = expr.ResultType;
+            }
 
             if (expr is BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
-            VariableSymbol variable;
 
+            VariableSymbol variable;
             if (function == null)
                 variable = new GlobalVariableSymbol(syntax.Identifier.Value.ToString(), type, syntax.VarKeyword.Kind == SyntaxTokenKind.ConstKeyword ? VariableModifier.Constant : VariableModifier.None);
             else
@@ -543,7 +572,6 @@ namespace Compiler.Binding
         {
             var value = syntax.Literal.Value;
             var type = BindFacts.GetTypeSymbol(syntax.Literal.Kind);
-
             return new BoundLiteralExpression(value, type);
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Compiler.Diagnostics;
+using Compiler.Symbols;
 using Compiler.Text;
 
 namespace Compiler.Syntax
@@ -253,14 +254,14 @@ namespace Compiler.Syntax
 
             var colon = new SyntaxToken(SyntaxTokenKind.Colon, current.Span.Start, 0, ':');
             var typeToken = new SyntaxToken(SyntaxTokenKind.AnyKeyword, current.Span.Start, 0, SyntaxTokenKind.AnyKeyword.GetStringRepresentation());
-            return new TypeClauseSyntax(colon, typeToken, isTreeValid);
+            return new TypeClauseSyntax(colon, typeToken, isExplicit: false , isValid: isTreeValid);
         }
 
         private TypeClauseSyntax ParseTypeClause()
         {
             var colon = MatchToken(SyntaxTokenKind.Colon);
             var typeToken = MatchToken(SyntaxTokenKind.AnyKeyword, SyntaxFacts.GetTypeKeywords().ToArray());
-            return new TypeClauseSyntax(colon, typeToken, isTreeValid);
+            return new TypeClauseSyntax(colon, typeToken,isExplicit: true ,isTreeValid);
         }
 
         private ExpressionSyntax ParseExpression() => ParseExpression(SyntaxFacts.MaxPrecedence);
