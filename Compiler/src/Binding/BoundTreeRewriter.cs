@@ -57,7 +57,7 @@ namespace Compiler.Binding
             var body = RewriteStatement(node.Body);
             if (condition == node.Condition && body == node.Body)
                 return node;
-            return new BoundWhileStatement(condition, body);
+            return new BoundWhileStatement(condition, body, node.BreakLabel, node.ContinueLabel);
         }
 
         protected virtual BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
@@ -66,7 +66,7 @@ namespace Compiler.Binding
             var body = RewriteStatement(node.Body);
             if (condition == node.Condition && body == node.Body)
                 return node;
-            return new BoundWhileStatement(condition, body);
+            return new BoundWhileStatement(condition, body, node.BreakLabel, node.ContinueLabel);
         }
 
         protected virtual BoundStatement RewriteIfStatement(BoundIfStatement node)
@@ -89,7 +89,7 @@ namespace Compiler.Binding
             if (variableDecl == node.VariableDeclaration && condition == node.Condition && increment == node.Increment && body == node.Body)
                 return node;
 
-            return new BoundForStatement(variableDecl, condition, increment, body);
+            return new BoundForStatement(variableDecl, condition, increment, body, node.BreakLabel, node.ContinueLabel);
         }
 
         protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)

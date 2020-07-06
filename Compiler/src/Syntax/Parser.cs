@@ -156,9 +156,25 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.VarKeyword:
                 case SyntaxTokenKind.ConstKeyword:
                     return ParseVariableDeclaration();
+                case SyntaxTokenKind.BreakKewyword:
+                    return ParseBreakStatement();
+                case SyntaxTokenKind.ContinueKeyword:
+                    return ParseContinueStatement();
                 default:
                     return ParseExpressionStatement();
             }
+        }
+
+        private StatementSyntax ParseContinueStatement()
+        {
+            var continueKewyword = MatchToken(SyntaxTokenKind.ContinueKeyword);
+            return new ContinueStatementSyntax(continueKewyword, isTreeValid);
+        }
+
+        private StatementSyntax ParseBreakStatement()
+        {
+            var breakKewyword = MatchToken(SyntaxTokenKind.BreakKewyword);
+            return new BreakStatementSyntax(breakKewyword, isTreeValid);
         }
 
         private DoWhileStatementSyntax ParseDoWhileStatement()

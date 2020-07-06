@@ -15,7 +15,7 @@ namespace Compiler.Binding
         private readonly DiagnosticBag diagnostics;
         private readonly FunctionSymbol function;
         private readonly bool isScript;
-
+        private readonly Stack<(BoundLabel breakLabel, BoundLabel continueLabel)> labelStack;
 
         private BoundScope scope;
 
@@ -25,6 +25,7 @@ namespace Compiler.Binding
         {
             this.isScript = isScript;
             this.function = function;
+            this.labelStack = new Stack<(BoundLabel breakLabel, BoundLabel continueLabel)>();
             this.scope = new BoundScope(parentScope);
             this.diagnostics = new DiagnosticBag();
 
@@ -145,7 +146,7 @@ namespace Compiler.Binding
             TypeSymbol returnType;
             if (func.ReturnType.IsExplicit)
                 returnType = BindFacts.GetTypeSymbol(func.ReturnType.TypeToken.Kind);
-            else 
+            else
                 returnType = TypeSymbol.Void;
             // TODO infer return type
 
@@ -154,7 +155,6 @@ namespace Compiler.Binding
             if (!scope.TryDeclareFunction(symbol))
                 diagnostics.ReportIdentifierError(ErrorMessage.FunctionAlreadyDeclared, func.Identifier.Span, func.Identifier.Value);
         }
-
 
         private BoundStatement BindStatement(StatementSyntax syntax)
         {
@@ -172,6 +172,10 @@ namespace Compiler.Binding
                 return BindWhileStatement(ws);
             else if (syntax is DoWhileStatementSyntax dws)
                 return BindDoWhileStatement(dws);
+            else if (syntax is BreakStatementSyntax brs)
+                return BindBreakStatement(brs);
+            else if (syntax is ContinueStatementSyntax cs)
+                return BindContinueStatement(cs);
             else if (syntax is ForStatementSyntax fs)
             {
                 scope = new BoundScope(scope);
@@ -182,9 +186,63 @@ namespace Compiler.Binding
             else throw new Exception($"Unexpected StatementSyntax <{syntax}>");
         }
 
+        private BoundStatement BindBlockStatement(BlockStatmentSyntax syntax)
+        {
+            var builder = ImmutableArray.CreateBuilder<BoundStatement>();
+            scope = new BoundScope(scope);
+
+            foreach (var stmt in syntax.Statements)
+            {
+                var bound = BindStatement(stmt);
+                if (bound is BoundInvalidStatement)
+                {
+                    scope = scope.Parent;
+                    return new BoundInvalidStatement();
+                }
+                builder.Add(bound);
+            }
+
+            scope = scope.Parent;
+
+            return new BoundBlockStatement(builder.ToImmutable());
+        }
+
+        private BoundStatement BindContinueStatement(ContinueStatementSyntax syntax)
+        {
+            if (labelStack.Count == 0)
+            {
+                diagnostics.ReportSyntaxError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "continue");
+                return new BoundInvalidStatement();
+            }
+
+            return new BoundGotoStatement(labelStack.Peek().continueLabel);
+        }
+
+        private BoundStatement BindBreakStatement(BreakStatementSyntax syntax)
+        {
+            if (labelStack.Count == 0)
+            {
+                diagnostics.ReportSyntaxError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "break");
+                return new BoundInvalidStatement();
+            }
+
+            return new BoundGotoStatement(labelStack.Peek().breakLabel);
+        }
+
+        private BoundStatement BindLoopBody(StatementSyntax syntax, out BoundLabel breakLabel, out BoundLabel continueLabel)
+        {
+            breakLabel = new BoundLabel("break");
+            continueLabel = new BoundLabel("continue");
+
+            labelStack.Push((breakLabel, continueLabel));
+            var res = BindStatement(syntax);
+            labelStack.Pop();
+            return res;
+        }
+
         private BoundStatement BindDoWhileStatement(DoWhileStatementSyntax syntax)
         {
-            var body = BindStatement(syntax.Body);
+            var body = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
             if (body is BoundInvalidStatement)
                 return new BoundInvalidStatement();
 
@@ -193,7 +251,7 @@ namespace Compiler.Binding
             if (condition is BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
-            return new BoundDoWhileStatement(body, condition);
+            return new BoundDoWhileStatement(body, condition, breakLabel, continueLabel);
         }
 
         private BoundStatement BindForStatement(ForStatementSyntax syntax)
@@ -213,12 +271,12 @@ namespace Compiler.Binding
             if (increment is BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
-            var body = BindStatement(syntax.Body);
+            var body = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
 
             if (body is BoundInvalidStatement)
                 return new BoundInvalidStatement();
 
-            return new BoundForStatement(variableDecl, condition, increment, body);
+            return new BoundForStatement(variableDecl, condition, increment, body, breakLabel, continueLabel);
         }
 
         private BoundStatement BindWhileStatement(WhileStatementSyntax syntax)
@@ -228,12 +286,12 @@ namespace Compiler.Binding
             if (condition is BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
-            var body = BindStatement(syntax.Body);
+            var body = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
 
             if (body is BoundInvalidStatement)
                 return new BoundInvalidStatement();
 
-            return new BoundWhileStatement(condition, body);
+            return new BoundWhileStatement(condition, body, breakLabel, continueLabel);
         }
 
         private BoundStatement BindIfStatement(IfStatementSyntax syntax)
@@ -288,27 +346,6 @@ namespace Compiler.Binding
                 return new BoundInvalidStatement();
             }
             return new BoundVariableDeclarationStatement(variable, expr);
-        }
-
-        private BoundStatement BindBlockStatement(BlockStatmentSyntax syntax)
-        {
-            var builder = ImmutableArray.CreateBuilder<BoundStatement>();
-            scope = new BoundScope(scope);
-
-            foreach (var stmt in syntax.Statements)
-            {
-                var bound = BindStatement(stmt);
-                if (bound is BoundInvalidStatement)
-                {
-                    scope = scope.Parent;
-                    return new BoundInvalidStatement();
-                }
-                builder.Add(bound);
-            }
-
-            scope = scope.Parent;
-
-            return new BoundBlockStatement(builder.ToImmutable());
         }
 
         private BoundStatement BindExpressionStatement(ExpressionStatement syntax)

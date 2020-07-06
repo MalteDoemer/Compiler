@@ -22,5 +22,6 @@ namespace Compiler.Diagnostics
         FunctionAlreadyDeclared,
         InvalidGlobalStatement,
         CannotAssignToConst,
+        InvalidBreakOrContinue,
     }
 }

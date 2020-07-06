@@ -30,7 +30,7 @@ namespace Compiler.Lowering
                     foreach (var s in block.Statements.Reverse())
                         stack.Push(s);
                 }
-                else 
+                else
                 {
                     builder.Add(current);
                 }
@@ -46,36 +46,6 @@ namespace Compiler.Lowering
             return Flatten(res);
         }
 
-
-        protected override BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
-        {
-            var startLabel = CreateLabel();
-
-            var boundStartLabel = new BoundLabelStatement(startLabel);
-            var gotoStart = new BoundConditionalGotoStatement(startLabel, node.Condition, false);
-
-            var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
-                boundStartLabel,
-                node.Body,
-                gotoStart    
-            ));
-
-            return RewriteStatement(res);
-        }
-
-        protected override BoundStatement RewriteForStatement(BoundForStatement node)
-        {
-            var decl = node.VariableDeclaration;
-            var inc = new BoundExpressionStatement(node.Increment);
-            var body = node.Body;
-            var condition = node.Condition;
-
-            var whileBody = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(body, inc));
-            var whileLoop = new BoundWhileStatement(condition, whileBody);
-
-            var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(decl, whileLoop));
-            return RewriteStatement(res);
-        }
 
         protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
         {
@@ -112,16 +82,24 @@ namespace Compiler.Lowering
 
         protected override BoundStatement RewriteWhileStatement(BoundWhileStatement node)
         {
-            var continueLabel = CreateLabel();
+
+            // goto continue
+            // body:
+            // <body>
+            // continue:
+            // gotoTrue <condition> body
+            // break:
+
+
+
             var checkLabel = CreateLabel();
-            var endLabel = CreateLabel();
 
             var gotoCheck = new BoundGotoStatement(checkLabel);
-            var gotoContinue = new BoundConditionalGotoStatement(continueLabel, node.Condition, false);
+            var gotoContinue = new BoundConditionalGotoStatement(node.ContinueLabel, node.Condition, false);
 
-            var continueLabelStmt = new BoundLabelStatement(continueLabel);
+            var continueLabelStmt = new BoundLabelStatement(node.ContinueLabel);
             var checkLabelStmt = new BoundLabelStatement(checkLabel);
-            var endLabelStmt = new BoundLabelStatement(endLabel);
+            var breakLabelStmt = new BoundLabelStatement(node.BreakLabel);
 
 
             var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
@@ -130,9 +108,96 @@ namespace Compiler.Lowering
                     node.Body,
                     checkLabelStmt,
                     gotoContinue,
-                    endLabelStmt
+                    breakLabelStmt
             ));
 
+            return RewriteStatement(res);
+        }
+
+        protected override BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
+        {
+            var continueLabelStmt = new BoundLabelStatement(node.ContinueLabel);
+            var breakLabelStmt = new BoundLabelStatement(node.BreakLabel);
+
+            var gotoContinue = new BoundConditionalGotoStatement(node.ContinueLabel, node.Condition, false);
+
+            var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
+                continueLabelStmt,
+                node.Body,
+                gotoContinue,
+                breakLabelStmt
+            ));
+
+            return RewriteStatement(res);
+        }
+
+        protected override BoundStatement RewriteForStatement(BoundForStatement node)
+        {
+            /*
+            
+            for <decl>, <condition>, <increment> {
+                <body>
+            }
+
+
+            ----->
+
+            {
+                <decl>
+                while <condition>{
+                    <body>
+                    continue:
+                    <increment>
+                }
+                break:
+            }
+
+
+            ----->
+
+
+            <decl>
+            goto check
+            body:
+            <body>
+            continue:
+            <increment>
+            check:
+            gotoTrue body <condtiton>
+            break:            
+            */
+
+
+            var decl = node.VariableDeclaration;
+            var increment = new BoundExpressionStatement(node.Increment);
+            var body = node.Body;
+            var condition = node.Condition;
+
+            var bodyLabel = CreateLabel();
+            var continueLabel = node.ContinueLabel;
+            var checkLabel = CreateLabel();
+            var breakLabel = node.BreakLabel;
+
+            var bodyLabelStmt = new BoundLabelStatement(bodyLabel);
+            var continueLabelStmt = new BoundLabelStatement(continueLabel);
+            var checkLabelStmt = new BoundLabelStatement(checkLabel);
+            var breakLabelStmt = new BoundLabelStatement(breakLabel);
+
+
+            var gotoCheck = new BoundGotoStatement(checkLabel);
+            var gotoTrueBody = new BoundConditionalGotoStatement(bodyLabel, node.Condition, jumpIfFalse: false);
+
+            var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
+                decl,
+                gotoCheck,
+                bodyLabelStmt,
+                body,
+                continueLabelStmt,
+                increment,
+                checkLabelStmt,
+                gotoTrueBody,
+                breakLabelStmt
+            ));
             return RewriteStatement(res);
         }
     }

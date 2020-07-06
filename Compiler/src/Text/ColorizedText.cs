@@ -36,6 +36,8 @@ namespace Compiler.Text
                     case SyntaxTokenKind.WhileKeyword:
                     case SyntaxTokenKind.DoKeyword:
                     case SyntaxTokenKind.ForKeyword:
+                    case SyntaxTokenKind.BreakKewyword:
+                    case SyntaxTokenKind.ContinueKeyword:
                         builder.Add(new ColorizedToken(token, ConsoleColor.Magenta));
                         break;
                     case SyntaxTokenKind.True:

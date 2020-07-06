@@ -65,5 +65,7 @@ namespace Compiler.Syntax
         Colon,
         FunctionDefinitionKeyword,
         ConstKeyword,
+        ContinueKeyword,
+        BreakKewyword,
     }
 }

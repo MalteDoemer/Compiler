@@ -129,6 +129,8 @@ namespace Compiler.Syntax
                 case "for": return SyntaxTokenKind.ForKeyword;
                 case "def": return SyntaxTokenKind.FunctionDefinitionKeyword;
                 case "const": return SyntaxTokenKind.ConstKeyword;
+                case "continue": return SyntaxTokenKind.ContinueKeyword;
+                case "break": return SyntaxTokenKind.BreakKewyword;
                 default: return null;
             }
         }
@@ -216,6 +218,8 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.ForKeyword: return "for";
                 case SyntaxTokenKind.FunctionDefinitionKeyword: return "def";
                 case SyntaxTokenKind.ConstKeyword: return "const";
+                case SyntaxTokenKind.ContinueKeyword: return "continue";
+                case SyntaxTokenKind.BreakKewyword: return "break";
                 default: return null;
             }
         }
