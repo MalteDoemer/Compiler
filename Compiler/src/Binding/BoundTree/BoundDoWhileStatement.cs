@@ -9,7 +9,7 @@ namespace Compiler.Binding
             BreakLabel = breakLabel;
             ContinueLabel = continueLabel;
         }
-
+        public override BoundNodeKind Kind => BoundNodeKind.BoundDoWhileStatement;
         public BoundStatement Body { get; }
         public BoundExpression Condition { get; }
         public BoundLabel BreakLabel { get; }

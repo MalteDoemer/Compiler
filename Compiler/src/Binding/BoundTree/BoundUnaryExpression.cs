@@ -12,7 +12,7 @@ namespace Compiler.Binding
             Right = right;
         }
 
-
+        public override BoundNodeKind Kind => BoundNodeKind.BoundUnaryExpression;
         public BoundUnaryOperator Op { get; }
         public BoundExpression Right { get; }
         public TextSpan OperatorSpan { get; }

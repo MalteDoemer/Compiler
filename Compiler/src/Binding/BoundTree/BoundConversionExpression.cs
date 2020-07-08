@@ -9,9 +9,8 @@ namespace Compiler.Binding
             Type = type;
             Expression = expression;
         }
-
+        public override BoundNodeKind Kind => BoundNodeKind.BoundConversionExpression;
         public override TypeSymbol ResultType => Type;
-
         public TypeSymbol Type { get; }
         public BoundExpression Expression { get; }
     }

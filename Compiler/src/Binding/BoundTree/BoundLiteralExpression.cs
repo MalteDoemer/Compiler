@@ -10,7 +10,7 @@ namespace Compiler.Binding
             Value = value;
             ResultType = symbol;
         }
-        
+        public override BoundNodeKind Kind => BoundNodeKind.BoundLiteralExpression;
         public object Value { get; }
         public override TypeSymbol ResultType { get; }
     }

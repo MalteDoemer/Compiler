@@ -10,6 +10,30 @@ using Compiler.Text;
 
 namespace Compiler.Binding
 {
+    internal enum BoundNodeKind
+    {
+        BoundAssignementExpression,
+        BoundBinaryExpression,
+        BoundBlockStatement,
+        BoundCallExpression,
+        BoundConditionalGotoStatement,
+        BoundConversionExpression,
+        BoundDoWhileStatement,
+        BoundExpressionStatement,
+        BoundForStatement,
+        BoundGotoStatement,
+        BoundIfStatement,
+        BoundInvalidExpression,
+        BoundInvalidStatement,
+        BoundLabelStatement,
+        BoundLiteralExpression,
+        BoundUnaryExpression,
+        BoundVariableDeclarationStatement,
+        BoundVariableExpression,
+        BoundWhileStatement,
+        BoundProgram   
+    }
+
     internal sealed class Binder : IDiagnostable
     {
         private readonly DiagnosticBag diagnostics;

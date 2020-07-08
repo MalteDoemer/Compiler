@@ -17,13 +17,14 @@ namespace Compiler.Binding
             Diagnostics = diagnostics;
         }
 
+        public override BoundNodeKind Kind => BoundNodeKind.BoundProgram;
+        
         public BoundProgram Previous { get; }
         public BoundBlockStatement GlobalStatements { get; }
         public ImmutableArray<VariableSymbol> GlobalVariables { get; }
         public FunctionSymbol MainFunction { get; }
         public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> Functions { get; }
         public ImmutableArray<Diagnostic> Diagnostics { get; }
-
 
         public BoundBlockStatement GetFunctionBody(FunctionSymbol symbol)
         {
@@ -42,7 +43,7 @@ namespace Compiler.Binding
 
         }
 
-        
+
 
     }
 }

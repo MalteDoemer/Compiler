@@ -45,23 +45,7 @@ namespace Compiler.Syntax
             isTreeValid = false;
             return res;
         }
-
-        // private SyntaxToken MatchToken(SyntaxTokenKind kind)
-        // {
-        //     if (kind == current.Kind) return Advance();
-        //     else
-        //     {
-        //         if (isTreeValid)
-        //             diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
-
-        //         var res = new SyntaxToken(kind, current.Span.Start, current.Span.Length, current.Value, false);
-        //         pos++;
-
-        //         isTreeValid = false;
-        //         return res;
-        //     }
-        // }
-
+        
         private SyntaxToken Advance()
         {
             var res = current;

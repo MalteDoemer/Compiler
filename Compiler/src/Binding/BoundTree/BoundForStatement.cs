@@ -13,7 +13,7 @@ namespace Compiler.Binding
             BreakLabel = breakLabel;
             ContinueLabel = continueLabel;
         }
-
+        public override BoundNodeKind Kind => BoundNodeKind.BoundForStatement;
         public BoundStatement VariableDeclaration { get; }
         public BoundExpression Condition { get; }
         public BoundExpression Increment { get; }

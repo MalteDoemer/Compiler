@@ -10,7 +10,7 @@ namespace Compiler.Binding
             Body = body;
             ElseStatement = elseStatement;
         }
-
+        public override BoundNodeKind Kind => BoundNodeKind.BoundIfStatement;
         public BoundExpression Condition { get; }
         public BoundStatement Body { get; }
         public BoundStatement ElseStatement { get; }

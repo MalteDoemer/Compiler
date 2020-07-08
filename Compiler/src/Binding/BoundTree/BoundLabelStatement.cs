@@ -6,7 +6,7 @@ namespace Compiler.Binding
         {
             Label = label;
         }
-
+        public override BoundNodeKind Kind => BoundNodeKind.BoundLabelStatement;
         public BoundLabel Label { get; }
     }
 

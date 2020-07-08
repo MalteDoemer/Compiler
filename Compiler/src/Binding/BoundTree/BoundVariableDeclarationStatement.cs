@@ -11,7 +11,7 @@ namespace Compiler.Binding
             Expression = expr;
         }
 
-
+        public override BoundNodeKind Kind => BoundNodeKind.BoundVariableDeclarationStatement;
         public VariableSymbol Variable { get; }
         public BoundExpression Expression { get; }
     }

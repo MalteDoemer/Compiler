@@ -8,7 +8,7 @@ namespace Compiler.Binding
         {
             Expression = expression;
         }
-
+        public override BoundNodeKind Kind => BoundNodeKind.BoundExpressionStatement;
         public BoundExpression Expression { get; }
     }
 }

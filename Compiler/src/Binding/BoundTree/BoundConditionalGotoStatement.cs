@@ -9,6 +9,7 @@ namespace Compiler.Binding
             JumpIfFalse = jumpIfFalse;
         }
 
+        public override BoundNodeKind Kind => BoundNodeKind.BoundConditionalGotoStatement;
         public BoundLabel Label { get; }
         public BoundExpression Condition { get; }
         public bool JumpIfFalse { get; }

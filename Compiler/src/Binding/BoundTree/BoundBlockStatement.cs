@@ -10,6 +10,7 @@ namespace Compiler.Binding
             Statements = statements;
         }
 
+        public override BoundNodeKind Kind => BoundNodeKind.BoundBlockStatement;
         public ImmutableArray<BoundStatement> Statements { get; }
     }
 }

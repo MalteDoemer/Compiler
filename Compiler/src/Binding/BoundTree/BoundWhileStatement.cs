@@ -12,6 +12,7 @@ namespace Compiler.Binding
             ContinueLabel = continueLabel;
         }
 
+        public override BoundNodeKind Kind => BoundNodeKind.BoundWhileStatement;
         public BoundExpression Condition { get; }
         public BoundStatement Body { get; }
         public BoundLabel BreakLabel { get; }

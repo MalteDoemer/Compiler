@@ -13,7 +13,7 @@ namespace Compiler.Binding
             Right = right;
         }
 
-
+        public override BoundNodeKind Kind => BoundNodeKind.BoundBinaryExpression;
         public BoundBinaryOperator Op { get; }
         public BoundExpression Left { get; }
         public BoundExpression Right { get; }

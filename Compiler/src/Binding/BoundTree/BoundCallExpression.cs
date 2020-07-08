@@ -12,6 +12,7 @@ namespace Compiler.Binding
             Arguments = arguments;
         }
 
+        public override BoundNodeKind Kind => BoundNodeKind.BoundCallExpression;
         public override TypeSymbol ResultType => Symbol.ReturnType;
         public FunctionSymbol Symbol { get; }
         public ImmutableArray<BoundExpression> Arguments { get; }
