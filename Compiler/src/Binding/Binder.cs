@@ -330,7 +330,7 @@ namespace Compiler.Binding
             {
                 expr = null;
                 if (function.ReturnType != TypeSymbol.Void)
-                    ReportTypeError(ErrorMessage.FunctionCannotReturnVoid, syntax.Span);
+                    ReportTypeError(ErrorMessage.IncompatibleTypes, syntax.VoidToken.Span, function.ReturnType, TypeSymbol.Void);
             }
             else
             {

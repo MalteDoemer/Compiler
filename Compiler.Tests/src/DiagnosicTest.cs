@@ -30,6 +30,48 @@ namespace Compiler.Test
         }
 
         [Fact]
+        public static void Report_Cannot_Return_Outside_A_Function()
+        {
+            var text = @"
+                [return 20]
+            ";
+            AssertDiagnostic(text, ErrorMessage.ReturnOnlyInFunction);
+        }
+
+        [Fact]
+        public static void Report_Wrong_Return_Type()
+        {
+            var text = @"
+                def test() : int {
+                    return [false]
+                }
+            ";
+            AssertDiagnostic(text, ErrorMessage.IncompatibleTypes, TypeSymbol.Int, TypeSymbol.Bool);
+        }
+
+        [Fact]
+        public static void Report_Cannot_Return_Void()
+        {
+            var text = @"
+                def test() : int {
+                    return [void]
+                }
+            ";
+            AssertDiagnostic(text, ErrorMessage.IncompatibleTypes, TypeSymbol.Int, TypeSymbol.Void);
+        }
+
+        [Fact]
+        public static void Report_Wrong_Return_Type_Void()
+        {
+            var text = @"
+                def test() {
+                    return [23]
+                }
+            ";
+            AssertDiagnostic(text, ErrorMessage.IncompatibleTypes, TypeSymbol.Void, TypeSymbol.Int);
+        }
+
+        [Fact]
         public static void Report_Cannot_Assing_To_Const_As_Local()
         {
             var text = @"

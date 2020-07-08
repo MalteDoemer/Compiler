@@ -35,7 +35,6 @@ namespace Compiler.Diagnostics
            "Cannot assign a value to the constant '{0}'.",
            "The keyword '{0}' can only be used inside a loop.",
            "The keyword 'return' can only be used inside a function.",
-           "Function cannot return 'void'."
         };
 
         private readonly List<Diagnostic> builder;
