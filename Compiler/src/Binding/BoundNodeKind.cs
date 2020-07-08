@@ -10,7 +10,7 @@ namespace Compiler.Binding
         BoundBinaryExpression,
         BoundCallExpression,
         BoundConversionExpression,
-        BoundAssignementExpression,
+        BoundAssignmentExpression,
 
         BoundBlockStatement,
         BoundExpressionStatement,

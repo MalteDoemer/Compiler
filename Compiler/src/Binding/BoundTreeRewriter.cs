@@ -5,31 +5,32 @@ namespace Compiler.Binding
 {
     internal abstract class BoundTreeRewriter
     {
-        public virtual BoundStatement RewriteStatement(BoundStatement statement)
+        protected virtual BoundStatement RewriteStatement(BoundStatement statement)
         {
-            // TODO get rid of is
-            if (statement is BoundExpressionStatement es)
-                return RewriteExpressionStatement(es);
-            else if (statement is BoundBlockStatement bs)
-                return RewriteBlockStatement(bs);
-            else if (statement is BoundForStatement fs)
-                return RewriteForStatement(fs);
-            else if (statement is BoundIfStatement ifs)
-                return RewriteIfStatement(ifs);
-            else if (statement is BoundWhileStatement ws)
-                return RewriteWhileStatement(ws);
-            else if (statement is BoundDoWhileStatement dws)
-                return RewriteDoWhileStatement(dws);
-            else if (statement is BoundVariableDeclarationStatement vs)
-                return RewriteVariableDeclaration(vs);
-            else if (statement is BoundGotoStatement gs)
-                return RewriteGotoStatement(gs);
-            else if (statement is BoundConditionalGotoStatement gcs)
-                return RewriteConditionalGotoStatement(gcs);
-            else if (statement is BoundLabelStatement ls)
-                return RewriteLabelStatement(ls);
-
-            else throw new Exception($"Unknown BoundStatement <{statement}>");
+            switch (statement.Kind)
+            {
+                case BoundNodeKind.BoundBlockStatement:
+                    return RewriteBlockStatement((BoundBlockStatement)statement);
+                case BoundNodeKind.BoundExpressionStatement:
+                    return RewriteExpressionStatement((BoundExpressionStatement)statement);
+                case BoundNodeKind.BoundVariableDeclarationStatement:
+                    return RewriteVariableDeclaration((BoundVariableDeclarationStatement)statement);
+                case BoundNodeKind.BoundIfStatement:
+                    return RewriteIfStatement((BoundIfStatement)statement);
+                case BoundNodeKind.BoundForStatement:
+                    return RewriteForStatement((BoundForStatement)statement);
+                case BoundNodeKind.BoundWhileStatement:
+                    return RewriteWhileStatement((BoundWhileStatement)statement);
+                case BoundNodeKind.BoundDoWhileStatement:
+                    return RewriteDoWhileStatement((BoundDoWhileStatement)statement);
+                case BoundNodeKind.BoundConditionalGotoStatement:
+                    return RewriteConditionalGotoStatement((BoundConditionalGotoStatement)statement);
+                case BoundNodeKind.BoundGotoStatement:
+                    return RewriteGotoStatement((BoundGotoStatement)statement);
+                case BoundNodeKind.BoundLabelStatement:
+                    return RewriteLabelStatement((BoundLabelStatement)statement);
+                default: throw new Exception($"Unknown BoundStatement <{statement}>");
+            }
         }
 
         protected virtual BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
@@ -128,25 +129,26 @@ namespace Compiler.Binding
             return new BoundExpressionStatement(expr, node.IsValid);
         }
 
-        public virtual BoundExpression RewriteExpression(BoundExpression expression)
+        protected virtual BoundExpression RewriteExpression(BoundExpression expression)
         {
-            // TODO get rid of is
-            if (expression is BoundLiteralExpression le)
-                return RewriteLiteralExpression(le);
-            else if (expression is BoundUnaryExpression ue)
-                return RewriteUnaryExpression(ue);
-            else if (expression is BoundBinaryExpression be)
-                return RewriteBinaryExpression(be);
-            else if (expression is BoundVariableExpression ve)
-                return RewriteVaraibleExpression(ve);
-            else if (expression is BoundAssignementExpression ae)
-                return RewriteAssignmentExpression(ae);
-            else if (expression is BoundCallExpression bc)
-                return RewriteCallExpression(bc);
-            else if (expression is BoundConversionExpression cc)
-                return RewriteConversionExpression(cc);
-            else throw new Exception($"Unknown BoundExpression <{expression}>");
-
+            switch (expression.Kind)
+            {
+                case BoundNodeKind.BoundLiteralExpression:
+                    return RewriteLiteralExpression((BoundLiteralExpression)expression);
+                case BoundNodeKind.BoundVariableExpression:
+                    return RewriteVariableExpression((BoundVariableExpression)expression);
+                case BoundNodeKind.BoundUnaryExpression:
+                    return RewriteUnaryExpression((BoundUnaryExpression)expression);
+                case BoundNodeKind.BoundBinaryExpression:
+                    return RewriteBinaryExpression((BoundBinaryExpression)expression);
+                case BoundNodeKind.BoundCallExpression:
+                    return RewriteCallExpression((BoundCallExpression)expression);
+                case BoundNodeKind.BoundConversionExpression:
+                    return RewriteConversionExpression((BoundConversionExpression)expression);
+                case BoundNodeKind.BoundAssignmentExpression:
+                    return RewriteAssignmentExpression((BoundAssignmentExpression)expression);
+                default: throw new Exception($"Unknown BoundExpression <{expression}>");
+            }
         }
 
         protected virtual BoundExpression RewriteConversionExpression(BoundConversionExpression node)
@@ -186,12 +188,12 @@ namespace Compiler.Binding
             return new BoundCallExpression(node.Symbol, builder.MoveToImmutable(), node.IsValid);
         }
 
-        protected virtual BoundExpression RewriteAssignmentExpression(BoundAssignementExpression node)
+        protected virtual BoundExpression RewriteAssignmentExpression(BoundAssignmentExpression node)
         {
             var expr = RewriteExpression(node.Expression);
             if (expr == node.Expression)
                 return node;
-            return new BoundAssignementExpression(node.Variable, expr, node.IsValid);
+            return new BoundAssignmentExpression(node.Variable, expr, node.IsValid);
         }
 
         protected virtual BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)
@@ -217,7 +219,7 @@ namespace Compiler.Binding
 
         protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node) => node;
 
-        protected virtual BoundExpression RewriteVaraibleExpression(BoundVariableExpression node) => node;
+        protected virtual BoundExpression RewriteVariableExpression(BoundVariableExpression node) => node;
 
         protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node) => node;
     }

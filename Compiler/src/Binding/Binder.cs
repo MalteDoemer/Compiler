@@ -436,7 +436,7 @@ namespace Compiler.Binding
                 ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
 
             var expr = CheckTypeAndConversion(variable.Type, syntax.Expression);
-            return new BoundAssignementExpression(variable, expr, isTreeValid);
+            return new BoundAssignmentExpression(variable, expr, isTreeValid);
         }
 
         private BoundExpression BindAdditionalAssignmentExpressionSyntax(AdditionalAssignmentExpressionSyntax syntax)
@@ -458,7 +458,7 @@ namespace Compiler.Binding
                 ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
 
             var binaryExpression = new BoundBinaryExpression(op, left, right, resultType, isTreeValid);
-            return new BoundAssignementExpression(variable, binaryExpression, isTreeValid);
+            return new BoundAssignmentExpression(variable, binaryExpression, isTreeValid);
         }
 
         private BoundExpression BindPostIncDecExpressionSyntax(PostIncDecExpressionSyntax syntax)
@@ -478,7 +478,7 @@ namespace Compiler.Binding
                 ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
 
             var binaryExpression = new BoundBinaryExpression(op, left, right, resultType, isTreeValid);
-            return new BoundAssignementExpression(variable, binaryExpression, isTreeValid);
+            return new BoundAssignmentExpression(variable, binaryExpression, isTreeValid);
         }
 
         private BoundBinaryOperator BindBinaryOperator(SyntaxTokenKind op)

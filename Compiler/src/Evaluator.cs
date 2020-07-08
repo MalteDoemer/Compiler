@@ -95,7 +95,7 @@ namespace Compiler
                     return EvaluateUnaryExpression(ue);
                 case BoundBinaryExpression be:
                     return EvaluateBinaryExpression(be);
-                case BoundAssignementExpression ae:
+                case BoundAssignmentExpression ae:
                     return EvaluateAssignment(ae);
                 case BoundCallExpression boundCall:
                     return EvaluateFunctionCall(boundCall);
@@ -117,7 +117,7 @@ namespace Compiler
             else throw new Exception("Impossible to reach");
         }
 
-        private dynamic EvaluateAssignment(BoundAssignementExpression expr)
+        private dynamic EvaluateAssignment(BoundAssignmentExpression expr)
         {
             var val = EvaluateExpression(expr.Expression);
 
