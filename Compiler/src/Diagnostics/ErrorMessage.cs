@@ -23,5 +23,7 @@ namespace Compiler.Diagnostics
         InvalidGlobalStatement,
         CannotAssignToConst,
         InvalidBreakOrContinue,
+        ReturnOnlyInFunction,
+        FunctionCannotReturnVoid,
     }
 }

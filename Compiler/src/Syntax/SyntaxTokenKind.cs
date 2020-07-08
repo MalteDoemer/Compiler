@@ -84,5 +84,6 @@ namespace Compiler.Syntax
         DoKeyword,
         ContinueKeyword,
         BreakKewyword,
+        ReturnKeyword,
     }
 }

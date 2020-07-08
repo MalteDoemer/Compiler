@@ -131,6 +131,7 @@ namespace Compiler.Syntax
                 case "const": return SyntaxTokenKind.ConstKeyword;
                 case "continue": return SyntaxTokenKind.ContinueKeyword;
                 case "break": return SyntaxTokenKind.BreakKewyword;
+                case "return": return SyntaxTokenKind.ReturnKeyword;
                 default: return null;
             }
         }
@@ -220,6 +221,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.ConstKeyword: return "const";
                 case SyntaxTokenKind.ContinueKeyword: return "continue";
                 case SyntaxTokenKind.BreakKewyword: return "break";
+                case SyntaxTokenKind.ReturnKeyword: return "return";
                 default: return null;
             }
         }

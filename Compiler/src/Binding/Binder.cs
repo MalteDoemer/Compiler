@@ -202,6 +202,8 @@ namespace Compiler.Binding
                     return BindBreakStatementSyntax((BreakStatementSyntax)syntax);
                 case SyntaxNodeKind.ContinueStatementSyntax:
                     return BindContinueStatementSyntax((ContinueStatementSyntax)syntax);
+                case SyntaxNodeKind.ReturnStatementSyntax:
+                    return BindReturnStatementSyntax((ReturnStatementSyntax)syntax);
                 default: throw new Exception($"Unexpected SyntaxKind <{syntax.Kind}>");
             }
         }
@@ -313,6 +315,29 @@ namespace Compiler.Binding
                 label = labelStack.Peek().continueLabel;
 
             return new BoundGotoStatement(label, isTreeValid);
+        }
+
+        private BoundStatement BindReturnStatementSyntax(ReturnStatementSyntax syntax)
+        {
+            BoundExpression expr;
+
+            if (function == null)
+            {
+                ReportSyntaxError(ErrorMessage.ReturnOnlyInFunction, syntax.Span);
+                expr = null;
+            }
+            else if (syntax.ReturnExpression == null)
+            {
+                expr = null;
+                if (function.ReturnType != TypeSymbol.Void)
+                    ReportTypeError(ErrorMessage.FunctionCannotReturnVoid, syntax.Span);
+            }
+            else
+            {
+                expr = CheckTypeAndConversion(function.ReturnType, syntax.ReturnExpression);
+            }
+
+            return new BoundReturnStatement(expr, isTreeValid);
         }
 
         private BoundStatement BindLoopBody(StatementSyntax syntax, out BoundLabel breakLabel, out BoundLabel continueLabel)
@@ -540,7 +565,7 @@ namespace Compiler.Binding
                 ReportTypeError(ErrorMessage.MissingExplicitConversion, expression.Span, type, expr.ResultType);
             else if (conversionType == ConversionType.None)
                 ReportTypeError(ErrorMessage.IncompatibleTypes, expression.Span, type, expr.ResultType);
-                
+
             return new BoundConversionExpression(type, expr, isTreeValid);
         }
 

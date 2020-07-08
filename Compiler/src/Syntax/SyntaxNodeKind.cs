@@ -28,5 +28,6 @@ namespace Compiler.Syntax
         DoWhileStatementSyntax,
         BreakStatementSyntax,
         ContinueStatementSyntax,
+        ReturnStatementSyntax,
     }
 }

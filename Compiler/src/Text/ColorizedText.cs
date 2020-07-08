@@ -38,6 +38,7 @@ namespace Compiler.Text
                     case SyntaxTokenKind.ForKeyword:
                     case SyntaxTokenKind.BreakKewyword:
                     case SyntaxTokenKind.ContinueKeyword:
+                    case SyntaxTokenKind.ReturnKeyword:
                         builder.Add(new ColorizedToken(token, ConsoleColor.Magenta));
                         break;
                     case SyntaxTokenKind.True:

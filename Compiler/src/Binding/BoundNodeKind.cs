@@ -23,5 +23,6 @@ namespace Compiler.Binding
         BoundGotoStatement,
         BoundLabelStatement,
         BoundInvalidExpression,
+        BoundReturnStatement,
     }
 }

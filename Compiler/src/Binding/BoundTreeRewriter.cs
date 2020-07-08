@@ -29,8 +29,18 @@ namespace Compiler.Binding
                     return RewriteGotoStatement((BoundGotoStatement)statement);
                 case BoundNodeKind.BoundLabelStatement:
                     return RewriteLabelStatement((BoundLabelStatement)statement);
+                case BoundNodeKind.BoundReturnStatement:
+                    return RewriteReturnStatement((BoundReturnStatement)statement);
                 default: throw new Exception($"Unknown BoundStatement <{statement}>");
             }
+        }
+
+        private BoundStatement RewriteReturnStatement(BoundReturnStatement node)
+        {
+            var expr = node.Expression == null ? null : RewriteExpression(node.Expression);
+            if (expr == node.Expression)
+                return node;
+            return new BoundReturnStatement(expr, node.IsValid);
         }
 
         protected virtual BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)

@@ -73,6 +73,12 @@ namespace Compiler
                     case BoundGotoStatement gs:
                         instPtr = labelToIndex[gs.Label];
                         break;
+                    case BoundReturnStatement rs:
+                        object res = null;
+                        if (rs.Expression != null)
+                            res = EvaluateExpression(rs.Expression);
+                        lastValue = res;
+                        return res;
                     case BoundLabelStatement _:
                         instPtr++;
                         break;

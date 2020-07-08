@@ -144,9 +144,19 @@ namespace Compiler.Syntax
                     return ParseBreakStatement();
                 case SyntaxTokenKind.ContinueKeyword:
                     return ParseContinueStatement();
+                case SyntaxTokenKind.ReturnKeyword:
+                    return ParseReturnStatement();
                 default:
                     return ParseExpressionStatement();
             }
+        }
+
+        private StatementSyntax ParseReturnStatement()
+        {
+            var returnKeyword = MatchToken(SyntaxTokenKind.ReturnKeyword);
+            if (current.Kind == SyntaxTokenKind.VoidKeyword)
+                return new ReturnStatementSyntax(returnKeyword, null, MatchToken(SyntaxTokenKind.VoidKeyword), isTreeValid);
+            return new ReturnStatementSyntax(returnKeyword, ParseExpression(), null, isTreeValid);
         }
 
         private StatementSyntax ParseContinueStatement()
