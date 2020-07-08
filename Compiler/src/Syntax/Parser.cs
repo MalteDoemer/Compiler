@@ -15,7 +15,6 @@ namespace Compiler.Syntax
         private readonly ImmutableArray<SyntaxToken> tokens;
         private readonly bool isScript;
 
-
         private bool isTreeValid = true;
         private SyntaxToken current { get => Peak(0); }
         private int pos;
@@ -30,6 +29,14 @@ namespace Compiler.Syntax
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
+
+        private void ReportError(ErrorKind kind, ErrorMessage message, TextSpan span, params object[] values)
+        {
+            if (isTreeValid)
+                diagnostics.ReportDiagnostic(message, span, kind, ErrorLevel.Error, values);
+            isTreeValid = false;
+        }
+
         private SyntaxToken MatchToken(SyntaxTokenKind kind, params SyntaxTokenKind[] others)
         {
             if (current.Kind == kind) return Advance();
@@ -37,15 +44,12 @@ namespace Compiler.Syntax
             foreach (var kind2 in others)
                 if (current.Kind == kind2) return Advance();
 
-
-            if (isTreeValid)
-                diagnostics.ReportSyntaxError(ErrorMessage.ExpectedToken, current.Span, kind);
+            ReportError(ErrorKind.SyntaxError, ErrorMessage.ExpectedToken, current.Span, kind);
             var res = new SyntaxToken(kind, current.Span.Start, current.Span.Length, current.Value, false);
             pos++;
-            isTreeValid = false;
             return res;
         }
-        
+
         private SyntaxToken Advance()
         {
             var res = current;
@@ -89,11 +93,7 @@ namespace Compiler.Syntax
         {
             var stmt = ParseStatement();
             if (!SyntaxFacts.IsGlobalStatement(stmt, isScript))
-            {
-                if (isTreeValid)
-                    diagnostics.ReportSyntaxError(ErrorMessage.InvalidGlobalStatement, stmt.Span);
-                isTreeValid = false;
-            }
+                ReportError(ErrorKind.SyntaxError, ErrorMessage.InvalidGlobalStatement, stmt.Span);
 
             return new GlobalStatementSynatx(stmt, isTreeValid);
         }
@@ -107,7 +107,7 @@ namespace Compiler.Syntax
             SeperatedSyntaxList<ParameterSyntax> parameters;
             if (current.Kind == SyntaxTokenKind.RParen)
                 parameters = SeperatedSyntaxList<ParameterSyntax>.Empty;
-            else 
+            else
                 parameters = ParseSeperatedSyntaxList<ParameterSyntax>(ParseParameter, SyntaxTokenKind.Comma);
 
             var rparen = MatchToken(SyntaxTokenKind.RParen);
@@ -203,11 +203,7 @@ namespace Compiler.Syntax
         {
             var expression = ParseExpression();
             if (!SyntaxFacts.IsExpressionStatement(expression, isScript))
-            {
-                if (isTreeValid)
-                    diagnostics.ReportSyntaxError(ErrorMessage.InvalidStatement, expression.Span);
-                isTreeValid = false;
-            }
+                ReportError(ErrorKind.SyntaxError, ErrorMessage.InvalidStatement, expression.Span);
             return new ExpressionStatementSyntax(expression, isTreeValid);
         }
 
@@ -220,12 +216,7 @@ namespace Compiler.Syntax
             {
                 if (current.Kind == SyntaxTokenKind.End)
                 {
-                    if (isTreeValid)
-                    {
-                        var span = TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start);
-                        diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedCurlyBrackets, span);
-                    }
-                    isTreeValid = false;
+                    ReportError(ErrorKind.SyntaxError, ErrorMessage.NeverClosedCurlyBrackets, TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start));
                     break;
                 }
 
@@ -254,14 +245,14 @@ namespace Compiler.Syntax
 
             var colon = new SyntaxToken(SyntaxTokenKind.Colon, current.Span.Start, 0, ':');
             var typeToken = new SyntaxToken(SyntaxTokenKind.AnyKeyword, current.Span.Start, 0, SyntaxTokenKind.AnyKeyword.GetStringRepresentation());
-            return new TypeClauseSyntax(colon, typeToken, isExplicit: false , isValid: isTreeValid);
+            return new TypeClauseSyntax(colon, typeToken, isExplicit: false, isValid: isTreeValid);
         }
 
         private TypeClauseSyntax ParseTypeClause()
         {
             var colon = MatchToken(SyntaxTokenKind.Colon);
             var typeToken = MatchToken(SyntaxTokenKind.AnyKeyword, SyntaxFacts.GetTypeKeywords().ToArray());
-            return new TypeClauseSyntax(colon, typeToken,isExplicit: true ,isTreeValid);
+            return new TypeClauseSyntax(colon, typeToken, isExplicit: true, isTreeValid);
         }
 
         private ExpressionSyntax ParseExpression() => ParseExpression(SyntaxFacts.MaxPrecedence);
@@ -296,10 +287,7 @@ namespace Compiler.Syntax
                 return ParseFunctionCall(Advance());
             else
             {
-                if (isTreeValid)
-                    diagnostics.ReportSyntaxError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
-
-                isTreeValid = false;
+                ReportError(ErrorKind.SyntaxError, ErrorMessage.UnExpectedToken, current.Span, current.Kind);
                 return new LiteralExpressionSyntax(Advance(), false);
             }
         }
@@ -311,8 +299,7 @@ namespace Compiler.Syntax
             var expr = ParseExpression();
             if (current.Kind != SyntaxTokenKind.RParen)
             {
-                if (isTreeValid)
-                    diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, current.Span.End));
+                ReportError(ErrorKind.SyntaxError, ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, current.Span.End));
                 isTreeValid = false;
             }
             MatchToken(SyntaxTokenKind.RParen);
@@ -383,10 +370,7 @@ namespace Compiler.Syntax
             {
                 if (current.Kind == SyntaxTokenKind.End)
                 {
-                    if (isTreeValid)
-                        diagnostics.ReportSyntaxError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
-
-                    isTreeValid = false;
+                    ReportError(ErrorKind.SyntaxError, ErrorMessage.UnExpectedToken, current.Span, current.Kind);
                     break;
                 }
 
