@@ -19,6 +19,28 @@ namespace Compiler.Test
             AssertDiagnostic(text, ErrorMessage.InvalidDecimalPoint);
         }
 
+        // [Fact]
+        // public static void Report_Const_In_Global()
+        // {
+        //     var text = @"
+        //         const c = 0
+        //         [c] = 20
+        //     ";
+        //     AssertDiagnostic(text, ErrorMessage.CannotAssignToConst, "c");
+        // }
+
+        // [Fact]
+        // public static void Report_Const_In_Local()
+        // {
+        //     var text = @"
+        //         def test() {
+        //             const c = false
+        //             [c] = true
+        //         }
+        //     ";
+        //     //AssertDiagnostic(text, ErrorMessage.CannotAssignToConst, "c");
+        // }
+
         [Fact]
         public static void Report_Never_Closed_String()
         {
