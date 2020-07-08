@@ -234,12 +234,13 @@ namespace Compiler.Binding
             if (expr.Kind == BoundNodeKind.BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
+            bool isConst = syntax.VarKeyword.Kind == SyntaxTokenKind.ConstKeyword;
 
             VariableSymbol variable;
             if (function == null)
-                variable = new GlobalVariableSymbol(syntax.Identifier.Value.ToString(), type, syntax.VarKeyword.Kind == SyntaxTokenKind.ConstKeyword ? VariableModifier.Constant : VariableModifier.None);
+                variable = new GlobalVariableSymbol(syntax.Identifier.Value.ToString(), type, isConst ? VariableModifier.Constant : VariableModifier.None);
             else
-                variable = new LocalVariableSymbol(syntax.Identifier.Value.ToString(), type);
+                variable = new LocalVariableSymbol(syntax.Identifier.Value.ToString(), type, isConst ? VariableModifier.Constant : VariableModifier.None);
 
             if (!scope.TryDeclareVariable(variable))
             {
@@ -496,7 +497,7 @@ namespace Compiler.Binding
                 return new BoundInvalidExpression();
             }
 
-            if (variable is GlobalVariableSymbol globalVariable && globalVariable.Modifier == VariableModifier.Constant)
+            if (variable.Modifiers == VariableModifier.Constant)
             {
                 diagnostics.ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
                 return new BoundInvalidExpression();
@@ -519,7 +520,7 @@ namespace Compiler.Binding
                 return new BoundInvalidExpression();
             }
 
-            if (variable is GlobalVariableSymbol globalVariable && globalVariable.Modifier == VariableModifier.Constant)
+            if (variable.Modifiers == VariableModifier.Constant)
             {
                 diagnostics.ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
                 return new BoundInvalidExpression();
@@ -551,7 +552,7 @@ namespace Compiler.Binding
                 return new BoundInvalidExpression();
             }
 
-            if (variable is GlobalVariableSymbol globalVariable && globalVariable.Modifier == VariableModifier.Constant)
+            if (variable.Modifiers == VariableModifier.Constant)
             {
                 diagnostics.ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
                 return new BoundInvalidExpression();
