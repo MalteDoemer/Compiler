@@ -20,6 +20,30 @@ namespace Compiler.Test
         }
 
         [Fact]
+        public static void Report_Cannot_Assing_To_Const_As_Global()
+        {
+            var text = @"
+                const c = 0
+                [c] = 20
+            ";
+            AssertDiagnostic(text, ErrorMessage.CannotAssignToConst, "c");
+        }
+
+        [Fact]
+        public static void Report_Cannot_Assing_To_Const_As_Local()
+        {
+            var text = @"
+                def test() {
+                    const c = false
+                    [c] = true
+                }
+            ";
+            AssertDiagnostic(text, ErrorMessage.CannotAssignToConst, "c");
+        }
+
+
+
+        [Fact]
         public static void Report_Never_Closed_String()
         {
             var text = "['hello]";
