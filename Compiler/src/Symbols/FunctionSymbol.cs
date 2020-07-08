@@ -6,6 +6,8 @@ namespace Compiler.Symbols
 
     public sealed class FunctionSymbol : Symbol
     {
+        internal static readonly FunctionSymbol Invalid = new FunctionSymbol("$invalid", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.ErrorType);
+
         public FunctionSymbol(string name, ImmutableArray<ParameterSymbol> parameters, TypeSymbol returnType) : base(name)
         {
             Parameters = parameters;

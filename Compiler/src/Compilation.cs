@@ -46,7 +46,7 @@ namespace Compiler
 
         public void Evaluate()
         {
-            if (Diagnostics.Length > 0) return;
+            if (!program.IsValid) return;
 
             var evaluator = new Evaluator(program, globals);
             evaluator.Evaluate();
@@ -54,7 +54,7 @@ namespace Compiler
 
         public object EvaluateExpression()
         {
-            if (Diagnostics.Length > 0) return null;
+            if (!program.IsValid) return null;
 
             var evaluator = new Evaluator(program, globals);
             return evaluator.Evaluate();

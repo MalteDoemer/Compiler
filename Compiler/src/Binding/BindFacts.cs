@@ -133,7 +133,9 @@ namespace Compiler.Binding
 
         internal static ConversionType ClassifyConversion(TypeSymbol from, TypeSymbol to)
         {
-            if (from == to) return ConversionType.Identety;
+            if (from == null || to == null) return ConversionType.None;
+
+                if (from == to) return ConversionType.Identety;
 
             if (to == TypeSymbol.Any || from == TypeSymbol.Any) return ConversionType.Implicit;
 
@@ -144,7 +146,7 @@ namespace Compiler.Binding
                 case ("float", "string"): return ConversionType.Explicit;
                 case ("int", "string"): return ConversionType.Explicit;
                 case ("bool", "string"): return ConversionType.Explicit;
-                default : return ConversionType.None;
+                default: return ConversionType.None;
             }
         }
     }

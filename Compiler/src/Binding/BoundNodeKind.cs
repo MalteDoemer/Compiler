@@ -22,8 +22,5 @@ namespace Compiler.Binding
         BoundConditionalGotoStatement,
         BoundGotoStatement,
         BoundLabelStatement,
-
-        BoundInvalidExpression,
-        BoundInvalidStatement,
     }
 }

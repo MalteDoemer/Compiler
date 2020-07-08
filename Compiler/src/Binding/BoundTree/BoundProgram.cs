@@ -7,7 +7,7 @@ namespace Compiler.Binding
 {
     internal class BoundProgram : BoundNode
     {
-        public BoundProgram(BoundProgram previous, BoundBlockStatement globalStatements, ImmutableArray<VariableSymbol> globalVariables, FunctionSymbol mainFunction, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, ImmutableArray<Diagnostic> diagnostics)
+        public BoundProgram(BoundProgram previous, BoundBlockStatement globalStatements, ImmutableArray<VariableSymbol> globalVariables, FunctionSymbol mainFunction, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, ImmutableArray<Diagnostic> diagnostics, bool isValid)
         {
             Previous = previous;
             GlobalStatements = globalStatements;
@@ -15,10 +15,11 @@ namespace Compiler.Binding
             MainFunction = mainFunction;
             Functions = functions;
             Diagnostics = diagnostics;
+            IsValid = isValid;
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundProgram;
-        
+        public override bool IsValid { get; set; }
         public BoundProgram Previous { get; }
         public BoundBlockStatement GlobalStatements { get; }
         public ImmutableArray<VariableSymbol> GlobalVariables { get; }

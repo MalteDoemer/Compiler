@@ -2,6 +2,8 @@ namespace Compiler.Symbols
 {
     public abstract class VariableSymbol : Symbol
     {
+        internal static readonly VariableSymbol Invalid = new GlobalVariableSymbol("$invalid", TypeSymbol.ErrorType);
+
         public VariableSymbol(string name, TypeSymbol type, VariableModifier modifiers) : base(name)
         {
             Type = type;

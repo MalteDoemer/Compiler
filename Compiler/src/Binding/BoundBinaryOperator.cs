@@ -20,5 +20,6 @@ namespace Compiler.Binding
         BitwiseAnd,
         BitwiseOr,
         BitwiseXor,
+        Invalid,
     }
 }

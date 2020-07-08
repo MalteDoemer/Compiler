@@ -6,5 +6,6 @@ namespace Compiler.Binding
         Negation,
         LogicalNot,
         BitwiseNot,
+        Invalid,
     }
 }

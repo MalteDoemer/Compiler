@@ -23,9 +23,11 @@ namespace Compiler.Binding
         {
             if (variables.TryGetValue(identifier, out value))
                 return true;
-            if (Parent == null) return false;
+            if (Parent == null) {
+                value = VariableSymbol.Invalid;
+                return false;
+            }
             return Parent.TryLookUpVariable(identifier, out value);
-
         }
 
         public bool TryDeclareVariable(VariableSymbol variable)
@@ -40,7 +42,10 @@ namespace Compiler.Binding
         {
             if (functions.TryGetValue(identifier, out value))
                 return true;
-            if (Parent == null) return false;
+            if (Parent == null) {
+                value = FunctionSymbol.Invalid;
+                return false;
+            }
             return Parent.TryLookUpFunction(identifier, out value);
         }
 

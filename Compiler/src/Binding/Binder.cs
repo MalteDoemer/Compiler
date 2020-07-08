@@ -16,15 +16,39 @@ namespace Compiler.Binding
         private readonly FunctionSymbol function;
         private readonly bool isScript;
         private readonly Stack<(BoundLabel breakLabel, BoundLabel continueLabel)> labelStack;
+
+        private bool isTreeValid;
         private int labelCounter;
         private BoundScope scope;
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
+        private void ReportTypeError(ErrorMessage message, TextSpan span, params object[] values)
+        {
+            if (isTreeValid)
+                diagnostics.ReportTypeError(message, span, values);
+            isTreeValid = false;
+        }
+
+        private void ReportIdentifierError(ErrorMessage message, TextSpan span, params object[] values)
+        {
+            if (isTreeValid)
+                diagnostics.ReportIdentifierError(message, span, values);
+            isTreeValid = false;
+        }
+
+        private void ReportSyntaxError(ErrorMessage message, TextSpan span, params object[] values)
+        {
+            if (isTreeValid)
+                diagnostics.ReportSyntaxError(message, span, values);
+            isTreeValid = false;
+        }
+
         private Binder(BoundScope parentScope, bool isScript, FunctionSymbol function)
         {
             this.isScript = isScript;
             this.function = function;
+            this.isTreeValid = true;
             this.labelStack = new Stack<(BoundLabel breakLabel, BoundLabel continueLabel)>();
             this.scope = new BoundScope(parentScope);
             this.diagnostics = new DiagnosticBag();
@@ -41,6 +65,7 @@ namespace Compiler.Binding
             var functionSyntax = unit.Members.OfType<FunctionDeclarationSyntax>();
             var statementSyntax = unit.Members.OfType<GlobalStatementSynatx>();
             var globalBinder = new Binder(parentScope, isScript, function: null);
+            var isProgramValid = true;
 
             foreach (var func in functionSyntax)
                 globalBinder.DeclareFunction(func);
@@ -49,14 +74,13 @@ namespace Compiler.Binding
             foreach (var stmt in statementSyntax)
             {
                 var boundStmt = globalBinder.BindStatement(stmt.Statement);
-                if (boundStmt.Kind == BoundNodeKind.BoundInvalidStatement)
-                    continue;
                 globalStatementBuilder.Add(boundStmt);
             }
 
             diagnostics.AddRange(globalBinder.GetDiagnostics());
+            isProgramValid = isProgramValid && globalBinder.isTreeValid;
 
-            var globalBlockStatement = Lowerer.Lower(new BoundBlockStatement(globalStatementBuilder.ToImmutable()));
+            var globalBlockStatement = Lowerer.Lower(new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid));
             var declaredVariables = globalBinder.scope.GetDeclaredVariables();
             var declaredFunctions = globalBinder.scope.GetDeclaredFunctions();
 
@@ -67,14 +91,10 @@ namespace Compiler.Binding
             {
                 var binder = new Binder(currentScope, isScript, symbol);
                 var body = binder.BindBlockStatmentSyntax(symbol.Syntax.Body);
-
-                if (!(body.Kind == BoundNodeKind.BoundInvalidStatement))
-                {
-                    var loweredBody = Lowerer.Lower(body);
-                    functions.Add(symbol, loweredBody);
-                }
-
+                var loweredBody = Lowerer.Lower(body);
+                functions.Add(symbol, loweredBody);
                 diagnostics.AddRange(binder.GetDiagnostics());
+                isProgramValid = isProgramValid && binder.isTreeValid;
             }
 
 
@@ -89,7 +109,7 @@ namespace Compiler.Binding
             if (mainFunc != null && mainFunc.ReturnType != TypeSymbol.Void)
                 diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function must return void.", mainFunc.Syntax.ReturnType.Span));
 
-            return new BoundProgram(previous, globalBlockStatement, declaredVariables, mainFunc, functions.ToImmutable(), diagnostics.ToImmutable());
+            return new BoundProgram(previous, globalBlockStatement, declaredVariables, mainFunc, functions.ToImmutable(), diagnostics.ToImmutable(), isProgramValid);
         }
 
         private static BoundScope CreateBoundScopes(BoundProgram previous)
@@ -99,7 +119,8 @@ namespace Compiler.Binding
 
             while (previous != null)
             {
-                stack.Push(previous);
+                if (previous.IsValid) // TODO is this right?
+                    stack.Push(previous);
                 previous = previous.Previous;
             }
 
@@ -159,7 +180,7 @@ namespace Compiler.Binding
         private BoundStatement BindStatement(StatementSyntax syntax)
         {
             if (!syntax.IsValid)
-                return new BoundInvalidStatement();
+                isTreeValid = false;
 
             switch (syntax.Kind)
             {
@@ -189,30 +210,19 @@ namespace Compiler.Binding
         {
             var builder = ImmutableArray.CreateBuilder<BoundStatement>();
             scope = new BoundScope(scope);
-
             foreach (var stmt in syntax.Statements)
             {
                 var bound = BindStatement(stmt);
-                if (bound.Kind == BoundNodeKind.BoundInvalidStatement)
-                {
-                    scope = scope.Parent;
-                    return new BoundInvalidStatement();
-                }
                 builder.Add(bound);
             }
-
             scope = scope.Parent;
-
-            return new BoundBlockStatement(builder.ToImmutable());
+            return new BoundBlockStatement(builder.ToImmutable(), isTreeValid);
         }
 
         private BoundStatement BindExpressionStatementSyntax(ExpressionStatementSyntax syntax)
         {
             var expr = BindExpression(syntax.Expression, true);
-            if (expr.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidStatement();
-
-            return new BoundExpressionStatement(expr);
+            return new BoundExpressionStatement(expr, isTreeValid);
         }
 
         private BoundStatement BindVariableDeclarationStatementSyntax(VariableDeclarationStatementSyntax syntax)
@@ -231,9 +241,6 @@ namespace Compiler.Binding
                 type = expr.ResultType;
             }
 
-            if (expr.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidStatement();
-
             bool isConst = syntax.VarKeyword.Kind == SyntaxTokenKind.ConstKeyword;
 
             VariableSymbol variable;
@@ -243,106 +250,69 @@ namespace Compiler.Binding
                 variable = new LocalVariableSymbol(syntax.Identifier.Value.ToString(), type, isConst ? VariableModifier.Constant : VariableModifier.None);
 
             if (!scope.TryDeclareVariable(variable))
-            {
-                diagnostics.ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, syntax.Identifier.Span, variable.Name);
-                return new BoundInvalidStatement();
-            }
-            return new BoundVariableDeclarationStatement(variable, expr);
+                ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, syntax.Identifier.Span, variable.Name);
+            return new BoundVariableDeclarationStatement(variable, expr, isTreeValid);
         }
 
         private BoundStatement BindIfStatementSyntax(IfStatementSyntax syntax)
         {
             var condition = CheckTypeAndConversion(TypeSymbol.Bool, syntax.Condition);
-
-            if (condition.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidStatement();
-
             var stmt = BindStatement(syntax.Body);
-
-            if (stmt.Kind == BoundNodeKind.BoundInvalidStatement)
-                return new BoundInvalidStatement();
-
             var elseStmt = syntax.ElseStatement == null ? null : BindStatement(syntax.ElseStatement.Body);
-
-            if (elseStmt != null && elseStmt.Kind == BoundNodeKind.BoundInvalidStatement)
-                return new BoundInvalidStatement();
-
-            return new BoundIfStatement(condition, stmt, elseStmt);
+            return new BoundIfStatement(condition, stmt, elseStmt, isTreeValid);
         }
 
         private BoundStatement BindWhileStatementSyntax(WhileStatementSyntax syntax)
         {
             var condition = CheckTypeAndConversion(TypeSymbol.Bool, syntax.Condition);
-            if (condition.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidStatement();
-
             var body = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
-
-            if (body.Kind == BoundNodeKind.BoundInvalidStatement)
-                return new BoundInvalidStatement();
-
-            return new BoundWhileStatement(condition, body, breakLabel, continueLabel);
+            return new BoundWhileStatement(condition, body, breakLabel, continueLabel, isTreeValid);
         }
 
         private BoundStatement BindForStatementSyntax(ForStatementSyntax syntax)
         {
             var variableDecl = BindStatement(syntax.VariableDeclaration);
-
-            if (variableDecl.Kind == BoundNodeKind.BoundInvalidStatement)
-                return new BoundInvalidStatement();
-
             var condition = CheckTypeAndConversion(TypeSymbol.Bool, syntax.Condition);
-
-            if (condition.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidStatement();
-
             var increment = BindExpression(syntax.Increment);
-
-            if (increment.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidStatement();
-
             var body = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
-
-            if (body.Kind == BoundNodeKind.BoundInvalidStatement)
-                return new BoundInvalidStatement();
-
-            return new BoundForStatement(variableDecl, condition, increment, body, breakLabel, continueLabel);
+            return new BoundForStatement(variableDecl, condition, increment, body, breakLabel, continueLabel, isTreeValid);
         }
 
         private BoundStatement BindDoWhileStatementSyntax(DoWhileStatementSyntax syntax)
         {
             var body = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
-            if (body.Kind == BoundNodeKind.BoundInvalidStatement)
-                return new BoundInvalidStatement();
-
             var condition = CheckTypeAndConversion(TypeSymbol.Bool, syntax.Condition);
-
-            if (condition.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidStatement();
-
-            return new BoundDoWhileStatement(body, condition, breakLabel, continueLabel);
+            return new BoundDoWhileStatement(body, condition, breakLabel, continueLabel, isTreeValid);
         }
 
         private BoundStatement BindBreakStatementSyntax(BreakStatementSyntax syntax)
         {
+            BoundLabel label;
+
             if (labelStack.Count == 0)
             {
-                diagnostics.ReportSyntaxError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "break");
-                return new BoundInvalidStatement();
+                ReportSyntaxError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "break");
+                label = new BoundLabel("Invalid break");
             }
+            else
+                label = labelStack.Peek().breakLabel;
 
-            return new BoundGotoStatement(labelStack.Peek().breakLabel);
+            return new BoundGotoStatement(label, isTreeValid);
         }
 
         private BoundStatement BindContinueStatementSyntax(ContinueStatementSyntax syntax)
         {
+            BoundLabel label;
+
             if (labelStack.Count == 0)
             {
-                diagnostics.ReportSyntaxError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "continue");
-                return new BoundInvalidStatement();
+                ReportSyntaxError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "continue");
+                label = new BoundLabel("Invalid continue");
             }
+            else
+                label = labelStack.Peek().continueLabel;
 
-            return new BoundGotoStatement(labelStack.Peek().continueLabel);
+            return new BoundGotoStatement(label, isTreeValid);
         }
 
         private BoundStatement BindLoopBody(StatementSyntax syntax, out BoundLabel breakLabel, out BoundLabel continueLabel)
@@ -361,17 +331,15 @@ namespace Compiler.Binding
         {
             var res = BindExpressionInternal(syntax);
             if (!canBeVoid && res.ResultType == TypeSymbol.Void)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.CannotBeVoid, syntax.Span);
-                return new BoundInvalidExpression();
-            }
+                ReportTypeError(ErrorMessage.CannotBeVoid, syntax.Span);
+            res.IsValid = false;
             return res;
         }
 
         private BoundExpression BindExpressionInternal(ExpressionSyntax syntax)
         {
             if (!syntax.IsValid)
-                return new BoundInvalidExpression();
+                isTreeValid = false;
 
             switch (syntax.Kind)
             {
@@ -399,57 +367,37 @@ namespace Compiler.Binding
         {
             var value = syntax.Literal.Value;
             var type = BindFacts.GetTypeSymbol(syntax.Literal.Kind);
-            return new BoundLiteralExpression(value, type);
+            return new BoundLiteralExpression(value, type, isTreeValid);
         }
 
         private BoundExpression BindVariableExpressionSyntax(VariableExpressionSyntax syntax)
         {
-            var identifier = (string)syntax.Name.Value;
+            var identifier = syntax.Name.Value.ToString();
             if (!scope.TryLookUpVariable(identifier, out VariableSymbol variable))
-            {
-                diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Name.Span, syntax.Name.Value);
-                return new BoundInvalidExpression();
-            }
-            return new BoundVariableExpression(variable);
+                ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Name.Span, syntax.Name.Value);
+            return new BoundVariableExpression(variable, isTreeValid);
         }
 
         private BoundExpression BindUnaryExpressionSyntax(UnaryExpressionSyntax syntax)
         {
             var right = BindExpression(syntax.Expression);
-            if (right.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidExpression();
-
             var boundOperator = BindUnaryOperator(syntax.Op.Kind);
-
             var resultType = BindFacts.ResolveUnaryType(boundOperator, right.ResultType);
-
-            if (boundOperator == null || resultType == null)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.UnsupportedUnaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), right.ResultType);
-                return new BoundInvalidExpression();
-            }
-
-            return new BoundUnaryExpression((BoundUnaryOperator)boundOperator, right, (TypeSymbol)resultType);
+            if (boundOperator == BoundUnaryOperator.Invalid || resultType == null)
+                ReportTypeError(ErrorMessage.UnsupportedUnaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), right.ResultType);
+            return new BoundUnaryExpression(boundOperator, right, resultType, isTreeValid);
         }
 
         private BoundExpression BindBinaryExpressionSyntax(BinaryExpressionSyntax syntax)
         {
             var left = BindExpression(syntax.Left);
             var right = BindExpression(syntax.Right);
-
-            if (left.Kind == BoundNodeKind.BoundInvalidExpression || right.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidExpression();
-
             var boundOperator = BindBinaryOperator(syntax.Op.Kind);
             var resultType = BindFacts.ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
 
-            if (boundOperator == null || resultType == null)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
-                return new BoundInvalidExpression();
-            }
-
-            return new BoundBinaryExpression((BoundBinaryOperator)boundOperator, left, right, (TypeSymbol)resultType);
+            if (boundOperator == BoundBinaryOperator.Invalid || resultType == null)
+                ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
+            return new BoundBinaryExpression(boundOperator, left, right, resultType, isTreeValid);
         }
 
         private BoundExpression BindCallExpressionSyntax(CallExpressionSyntax syntax)
@@ -458,123 +406,82 @@ namespace Compiler.Binding
                 return BindExplicitConversion(type, syntax.Arguments[0]);
 
             if (!scope.TryLookUpFunction(syntax.Identifier.Value.ToString(), out var symbol))
-            {
-                diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, syntax.Identifier.Value.ToString());
-                return new BoundInvalidExpression();
-            }
+                ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, syntax.Identifier.Value.ToString());
 
             if (syntax.Arguments.Length != symbol.Parameters.Length)
-            {
-                diagnostics.ReportSyntaxError(ErrorMessage.WrongAmountOfArguments, syntax.LeftParenthesis.Span + syntax.RightParenthesis.Span, symbol.Name, symbol.Parameters.Length, syntax.Arguments.Length);
-                return new BoundInvalidExpression();
-            }
+                ReportSyntaxError(ErrorMessage.WrongAmountOfArguments, syntax.LeftParenthesis.Span + syntax.RightParenthesis.Span, symbol.Name, symbol.Parameters.Length, syntax.Arguments.Length);
 
+            var len = Math.Min(syntax.Arguments.Length, symbol.Parameters.Length);
 
-            var argBuilder = ImmutableArray.CreateBuilder<BoundExpression>(symbol.Parameters.Length);
+            var argBuilder = ImmutableArray.CreateBuilder<BoundExpression>(len);
 
-            for (int i = 0; i < symbol.Parameters.Length; i++)
+            for (int i = 0; i < len; i++)
             {
                 var arg = syntax.Arguments[i];
                 var param = symbol.Parameters[i];
 
                 var boundArg = CheckTypeAndConversion(param.Type, arg);
-
-                if (boundArg.Kind == BoundNodeKind.BoundInvalidExpression)
-                    return new BoundInvalidExpression();
-
                 argBuilder.Add(boundArg);
             }
 
-            return new BoundCallExpression(symbol, argBuilder.MoveToImmutable());
+            return new BoundCallExpression(symbol, argBuilder.MoveToImmutable(), isTreeValid);
         }
 
         private BoundExpression BindAssignmentExpressionSyntax(AssignmentExpressionSyntax syntax)
         {
-            if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out var variable))
-            {
-                diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, (string)syntax.Identifier.Value);
-                return new BoundInvalidExpression();
-            }
+            if (!scope.TryLookUpVariable(syntax.Identifier.Value.ToString(), out var variable))
+                ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, syntax.Identifier.Value.ToString());
 
             if (variable.Modifiers == VariableModifier.Constant)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
-                return new BoundInvalidExpression();
-            }
+                ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
 
             var expr = CheckTypeAndConversion(variable.Type, syntax.Expression);
-
-            if (expr.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidExpression();
-
-            else return new BoundAssignementExpression(variable, expr);
-
+            return new BoundAssignementExpression(variable, expr, isTreeValid);
         }
 
         private BoundExpression BindAdditionalAssignmentExpressionSyntax(AdditionalAssignmentExpressionSyntax syntax)
         {
-            if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out VariableSymbol variable))
-            {
-                diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, (string)syntax.Identifier.Value);
-                return new BoundInvalidExpression();
-            }
+            if (!scope.TryLookUpVariable(syntax.Identifier.Value.ToString(), out VariableSymbol variable))
+                ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, syntax.Identifier.Value.ToString());
 
             if (variable.Modifiers == VariableModifier.Constant)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
-                return new BoundInvalidExpression();
-            }
+                ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
 
-            var left = new BoundVariableExpression(variable);
+
+            var left = new BoundVariableExpression(variable, isTreeValid);
             var right = BindExpression(syntax.Expression);
-
-            if (right is BoundInvalidExpression)
-                return new BoundInvalidExpression();
 
             var op = BindBinaryOperator(syntax.Op.Kind);
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
-            if (op == null || resultType == null)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
-                return new BoundInvalidExpression();
-            }
-            var binaryExpression = new BoundBinaryExpression((BoundBinaryOperator)op, left, right, (TypeSymbol)resultType);
-            return new BoundAssignementExpression(variable, binaryExpression);
+            if (op == BoundBinaryOperator.Invalid || resultType == null)
+                ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
+
+            var binaryExpression = new BoundBinaryExpression(op, left, right, resultType, isTreeValid);
+            return new BoundAssignementExpression(variable, binaryExpression, isTreeValid);
         }
 
         private BoundExpression BindPostIncDecExpressionSyntax(PostIncDecExpressionSyntax syntax)
         {
             if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out VariableSymbol variable))
-            {
-                diagnostics.ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, (string)syntax.Identifier.Value);
-                return new BoundInvalidExpression();
-            }
+                ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, (string)syntax.Identifier.Value);
 
             if (variable.Modifiers == VariableModifier.Constant)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
-                return new BoundInvalidExpression();
-            }
+                ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
 
-            var left = new BoundVariableExpression(variable);
-            var right = new BoundLiteralExpression(1, TypeSymbol.Int);
-
+            var left = new BoundVariableExpression(variable, isTreeValid);
+            var right = new BoundLiteralExpression(1, TypeSymbol.Int, isTreeValid);
             var op = BindBinaryOperator(syntax.Op.Kind);
-
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
-            if (op == null || resultType == null)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
-                return new BoundInvalidExpression();
-            }
+            if (op == BoundBinaryOperator.Invalid || resultType == null)
+                ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
 
-            var binaryExpression = new BoundBinaryExpression((BoundBinaryOperator)op, left, right, (TypeSymbol)resultType);
-            return new BoundAssignementExpression(variable, binaryExpression);
+            var binaryExpression = new BoundBinaryExpression(op, left, right, resultType, isTreeValid);
+            return new BoundAssignementExpression(variable, binaryExpression, isTreeValid);
         }
 
-        private BoundBinaryOperator? BindBinaryOperator(SyntaxTokenKind op)
+        private BoundBinaryOperator BindBinaryOperator(SyntaxTokenKind op)
         {
             switch (op)
             {
@@ -604,11 +511,11 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.PipeEqual: return BoundBinaryOperator.BitwiseOr;
                 case SyntaxTokenKind.PlusPlus: return BoundBinaryOperator.Addition;
                 case SyntaxTokenKind.MinusMinus: return BoundBinaryOperator.Subtraction;
-                default: return null;
+                default: return BoundBinaryOperator.Invalid;
             }
         }
 
-        private BoundUnaryOperator? BindUnaryOperator(SyntaxTokenKind op)
+        private BoundUnaryOperator BindUnaryOperator(SyntaxTokenKind op)
         {
             switch (op)
             {
@@ -616,49 +523,37 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.Minus: return BoundUnaryOperator.Negation;
                 case SyntaxTokenKind.Bang: return BoundUnaryOperator.LogicalNot;
                 case SyntaxTokenKind.Tilde: return BoundUnaryOperator.BitwiseNot;
-                default: return null;
+                default: return BoundUnaryOperator.Invalid;
             }
         }
 
         private BoundExpression CheckTypeAndConversion(TypeSymbol type, ExpressionSyntax expression)
         {
             var expr = BindExpression(expression);
-
-            if (expr.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidExpression();
-
             var conversionType = BindFacts.ClassifyConversion(expr.ResultType, type);
 
             if (conversionType == ConversionType.Identety)
                 return expr;
             else if (conversionType == ConversionType.Implicit)
-                return new BoundConversionExpression(type, expr);
+                return new BoundConversionExpression(type, expr, isTreeValid);
             else if (conversionType == ConversionType.Explicit)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.MissingExplicitConversion, expression.Span, type, expr.ResultType);
-                return new BoundInvalidExpression();
-            }
+                ReportTypeError(ErrorMessage.MissingExplicitConversion, expression.Span, type, expr.ResultType);
+            else
+                ReportTypeError(ErrorMessage.IncompatibleTypes, expression.Span, type, expr.ResultType);
 
-            diagnostics.ReportTypeError(ErrorMessage.IncompatibleTypes, expression.Span, type, expr.ResultType);
-            return new BoundInvalidExpression();
+            expr.IsValid = false;
+            return expr;
         }
 
         private BoundExpression BindExplicitConversion(TypeSymbol type, ExpressionSyntax syntax)
         {
             var expr = BindExpression(syntax);
-
-            if (expr.Kind == BoundNodeKind.BoundInvalidExpression)
-                return new BoundInvalidExpression();
-
             var conversion = BindFacts.ClassifyConversion(expr.ResultType, type);
 
             if (conversion == ConversionType.None)
-            {
-                diagnostics.ReportTypeError(ErrorMessage.CannotConvert, syntax.Span, expr.ResultType, type);
-                return new BoundInvalidExpression();
-            }
+                ReportTypeError(ErrorMessage.CannotConvert, syntax.Span, expr.ResultType, type);
 
-            return new BoundConversionExpression(type, expr);
+            return new BoundConversionExpression(type, expr, isTreeValid);
         }
 
     }

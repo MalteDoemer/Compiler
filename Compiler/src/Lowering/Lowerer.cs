@@ -16,11 +16,11 @@ namespace Compiler.Lowering
 
         private BoundLabel CreateLabel() => new BoundLabel($"Label{++labelCount}");
 
-        private static BoundBlockStatement Flatten(BoundStatement statement)
+        private static BoundBlockStatement Flatten(BoundStatement node)
         {
             var builder = ImmutableArray.CreateBuilder<BoundStatement>();
             var stack = new Stack<BoundStatement>();
-            stack.Push(statement);
+            stack.Push(node);
 
             while (stack.Count > 0)
             {
@@ -36,7 +36,7 @@ namespace Compiler.Lowering
                 }
             }
 
-            return new BoundBlockStatement(builder.ToImmutable());
+            return new BoundBlockStatement(builder.ToImmutable(), node.IsValid);
         }
 
         public static BoundBlockStatement Lower(BoundStatement statement)
@@ -52,9 +52,9 @@ namespace Compiler.Lowering
             if (node.ElseStatement == null)
             {
                 var endLabel = CreateLabel();
-                var gotoIfFalse = new BoundConditionalGotoStatement(endLabel, node.Condition, true);
-                var endLabelStmt = new BoundLabelStatement(endLabel);
-                var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(gotoIfFalse, node.Body, endLabelStmt));
+                var gotoIfFalse = new BoundConditionalGotoStatement(endLabel, node.Condition, jumpIfFalse: true, node.IsValid);
+                var endLabelStmt = new BoundLabelStatement(endLabel, node.IsValid);
+                var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(gotoIfFalse, node.Body, endLabelStmt), node.IsValid);
                 return RewriteStatement(res);
             }
             else
@@ -62,11 +62,11 @@ namespace Compiler.Lowering
                 var elseLabel = CreateLabel();
                 var endLabel = CreateLabel();
 
-                var gotoIfFalse = new BoundConditionalGotoStatement(elseLabel, node.Condition, true);
-                var gotoEnd = new BoundGotoStatement(endLabel);
+                var gotoIfFalse = new BoundConditionalGotoStatement(elseLabel, node.Condition, jumpIfFalse: true, node.IsValid);
+                var gotoEnd = new BoundGotoStatement(endLabel, node.IsValid);
 
-                var elseLabelStmt = new BoundLabelStatement(elseLabel);
-                var endLabelStmt = new BoundLabelStatement(endLabel);
+                var elseLabelStmt = new BoundLabelStatement(elseLabel, node.IsValid);
+                var endLabelStmt = new BoundLabelStatement(endLabel, node.IsValid);
 
                 var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                     gotoIfFalse,
@@ -75,7 +75,7 @@ namespace Compiler.Lowering
                     elseLabelStmt,
                     node.ElseStatement,
                     endLabelStmt
-                ));
+                ), node.IsValid);
                 return RewriteStatement(res);
             }
         }
@@ -92,13 +92,13 @@ namespace Compiler.Lowering
 
             var bodyLabel = CreateLabel();
 
-            var gotoContinue = new BoundGotoStatement(node.ContinueLabel);
-            var gotoBody = new BoundConditionalGotoStatement(bodyLabel, node.Condition, false);
+            var gotoContinue = new BoundGotoStatement(node.ContinueLabel, node.IsValid);
+            var gotoBody = new BoundConditionalGotoStatement(bodyLabel, node.Condition, jumpIfFalse: false, node.IsValid);
 
 
-            var continueLabelStmt = new BoundLabelStatement(node.ContinueLabel);
-            var bodyLabelStmt = new BoundLabelStatement(bodyLabel);
-            var breakLabelStmt = new BoundLabelStatement(node.BreakLabel);
+            var continueLabelStmt = new BoundLabelStatement(node.ContinueLabel, node.IsValid);
+            var bodyLabelStmt = new BoundLabelStatement(bodyLabel, node.IsValid);
+            var breakLabelStmt = new BoundLabelStatement(node.BreakLabel, node.IsValid);
 
 
             var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
@@ -108,24 +108,24 @@ namespace Compiler.Lowering
                 continueLabelStmt,
                 gotoBody,
                 breakLabelStmt
-            ));
+            ), node.IsValid);
 
             return RewriteStatement(res);
         }
 
         protected override BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
         {
-            var continueLabelStmt = new BoundLabelStatement(node.ContinueLabel);
-            var breakLabelStmt = new BoundLabelStatement(node.BreakLabel);
+            var continueLabelStmt = new BoundLabelStatement(node.ContinueLabel, node.IsValid);
+            var breakLabelStmt = new BoundLabelStatement(node.BreakLabel, node.IsValid);
 
-            var gotoContinue = new BoundConditionalGotoStatement(node.ContinueLabel, node.Condition, false);
+            var gotoContinue = new BoundConditionalGotoStatement(node.ContinueLabel, node.Condition, jumpIfFalse: false, node.IsValid);
 
             var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                 continueLabelStmt,
                 node.Body,
                 gotoContinue,
                 breakLabelStmt
-            ));
+            ), node.IsValid);
 
             return RewriteStatement(res);
         }
@@ -168,7 +168,7 @@ namespace Compiler.Lowering
 
 
             var decl = node.VariableDeclaration;
-            var increment = new BoundExpressionStatement(node.Increment);
+            var increment = new BoundExpressionStatement(node.Increment, node.IsValid);
             var body = node.Body;
             var condition = node.Condition;
 
@@ -177,14 +177,14 @@ namespace Compiler.Lowering
             var checkLabel = CreateLabel();
             var breakLabel = node.BreakLabel;
 
-            var bodyLabelStmt = new BoundLabelStatement(bodyLabel);
-            var continueLabelStmt = new BoundLabelStatement(continueLabel);
-            var checkLabelStmt = new BoundLabelStatement(checkLabel);
-            var breakLabelStmt = new BoundLabelStatement(breakLabel);
+            var bodyLabelStmt = new BoundLabelStatement(bodyLabel, node.IsValid);
+            var continueLabelStmt = new BoundLabelStatement(continueLabel, node.IsValid);
+            var checkLabelStmt = new BoundLabelStatement(checkLabel, node.IsValid);
+            var breakLabelStmt = new BoundLabelStatement(breakLabel, node.IsValid);
 
 
-            var gotoCheck = new BoundGotoStatement(checkLabel);
-            var gotoTrueBody = new BoundConditionalGotoStatement(bodyLabel, node.Condition, jumpIfFalse: false);
+            var gotoCheck = new BoundGotoStatement(checkLabel, node.IsValid);
+            var gotoTrueBody = new BoundConditionalGotoStatement(bodyLabel, node.Condition, jumpIfFalse: false, node.IsValid);
 
             var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
                 decl,
@@ -196,7 +196,7 @@ namespace Compiler.Lowering
                 checkLabelStmt,
                 gotoTrueBody,
                 breakLabelStmt
-            ));
+            ), node.IsValid);
             return RewriteStatement(res);
         }
     }
