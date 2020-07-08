@@ -99,25 +99,25 @@ namespace Compiler.Test
             AssertLastValue(text, 20L);
         }
 
-        [Fact]
-        public static void Test_While_True_Break()
-        {
-            var text = @"
-                var debug = 0
+        // [Fact]
+        // public static void Test_While_True_Break()
+        // {
+        //     var text = @"
+        //         var debug = 0
                 
-                while true {
-                    debug++
-                    if debug == 50
-                        break
-                }
+        //         while true {
+        //             debug++
+        //             if debug == 50
+        //                 break
+        //         }
 
-                debug
-            ";
+        //         debug
+        //     ";
 
-            text = AnnotatedText.Unindent(text);
+        //     text = AnnotatedText.Unindent(text);
 
-            AssertLastValue(text, 50L);
-        }
+        //     AssertLastValue(text, 50L);
+        // }
 
         private static void AssertLastValue(string text, object expected)
         {

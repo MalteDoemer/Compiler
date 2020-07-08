@@ -90,25 +90,24 @@ namespace Compiler.Lowering
             // gotoTrue <condition> body
             // break:
 
+            var bodyLabel = CreateLabel();
 
+            var gotoContinue = new BoundGotoStatement(node.ContinueLabel);
+            var gotoBody = new BoundConditionalGotoStatement(bodyLabel, node.Condition, false);
 
-            var checkLabel = CreateLabel();
-
-            var gotoCheck = new BoundGotoStatement(checkLabel);
-            var gotoContinue = new BoundConditionalGotoStatement(node.ContinueLabel, node.Condition, false);
 
             var continueLabelStmt = new BoundLabelStatement(node.ContinueLabel);
-            var checkLabelStmt = new BoundLabelStatement(checkLabel);
+            var bodyLabelStmt = new BoundLabelStatement(bodyLabel);
             var breakLabelStmt = new BoundLabelStatement(node.BreakLabel);
 
 
             var res = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
-                    gotoCheck,
-                    node.Body,
-                    continueLabelStmt,
-                    checkLabelStmt,
-                    gotoContinue,
-                    breakLabelStmt
+                gotoContinue,
+                bodyLabelStmt,
+                node.Body,
+                continueLabelStmt,
+                gotoBody,
+                breakLabelStmt
             ));
 
             return RewriteStatement(res);

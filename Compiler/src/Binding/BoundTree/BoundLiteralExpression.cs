@@ -13,5 +13,7 @@ namespace Compiler.Binding
         public override BoundNodeKind Kind => BoundNodeKind.BoundLiteralExpression;
         public object Value { get; }
         public override TypeSymbol ResultType { get; }
+
+        public override string ToString() => $"({Value})";
     }
 }

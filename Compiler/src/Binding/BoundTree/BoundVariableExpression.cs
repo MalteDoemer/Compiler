@@ -31,5 +31,7 @@ namespace Compiler.Binding
         public override BoundNodeKind Kind => BoundNodeKind.BoundVariableExpression;
         public VariableSymbol Variable { get; }
         public override TypeSymbol ResultType => Variable.Type;
+
+        public override string ToString() => $"({Variable})";
     }
 }

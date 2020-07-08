@@ -19,5 +19,7 @@ namespace Compiler.Binding
         public BoundExpression Right { get; }
 
         public override TypeSymbol ResultType { get; }
+
+        public override string ToString() => $"({Left} {Op} {Right})";
     }
 }

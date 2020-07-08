@@ -273,7 +273,6 @@ namespace Compiler.Binding
         private BoundStatement BindWhileStatementSyntax(WhileStatementSyntax syntax)
         {
             var condition = CheckTypeAndConversion(TypeSymbol.Bool, syntax.Condition);
-
             if (condition.Kind == BoundNodeKind.BoundInvalidExpression)
                 return new BoundInvalidStatement();
 
