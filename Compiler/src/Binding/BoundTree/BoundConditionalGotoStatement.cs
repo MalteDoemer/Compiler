@@ -11,7 +11,7 @@ namespace Compiler.Binding
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundConditionalGotoStatement;
-        public override bool IsValid { get; set; }
+        public override bool IsValid { get; }
         public BoundLabel Label { get; }
         public BoundExpression Condition { get; }
         public bool JumpIfFalse { get; }

@@ -147,6 +147,8 @@ namespace Compiler.Binding
                     return RewriteConversionExpression((BoundConversionExpression)expression);
                 case BoundNodeKind.BoundAssignmentExpression:
                     return RewriteAssignmentExpression((BoundAssignmentExpression)expression);
+                case BoundNodeKind.BoundInvalidExpression:
+                    return expression;
                 default: throw new Exception($"Unknown BoundExpression <{expression}>");
             }
         }

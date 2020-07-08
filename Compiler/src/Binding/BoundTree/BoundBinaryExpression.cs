@@ -16,7 +16,7 @@ namespace Compiler.Binding
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundBinaryExpression;
         public override TypeSymbol ResultType { get; }
-        public override bool IsValid { get; set; }
+        public override bool IsValid { get; }
         public BoundBinaryOperator Op { get; }
         public BoundExpression Left { get; }
         public BoundExpression Right { get; }

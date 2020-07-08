@@ -12,7 +12,7 @@ namespace Compiler.Binding
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundBlockStatement;
-        public override bool IsValid { get; set; }
+        public override bool IsValid { get; }
         public ImmutableArray<BoundStatement> Statements { get; }
     }
 }

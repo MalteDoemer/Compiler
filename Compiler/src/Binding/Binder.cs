@@ -331,8 +331,10 @@ namespace Compiler.Binding
         {
             var res = BindExpressionInternal(syntax);
             if (!canBeVoid && res.ResultType == TypeSymbol.Void)
+            {
                 ReportTypeError(ErrorMessage.CannotBeVoid, syntax.Span);
-            res.IsValid = false;
+                return new BoundInvalidExpression();
+            }
             return res;
         }
 
@@ -534,15 +536,12 @@ namespace Compiler.Binding
 
             if (conversionType == ConversionType.Identety)
                 return expr;
-            else if (conversionType == ConversionType.Implicit)
-                return new BoundConversionExpression(type, expr, isTreeValid);
             else if (conversionType == ConversionType.Explicit)
                 ReportTypeError(ErrorMessage.MissingExplicitConversion, expression.Span, type, expr.ResultType);
-            else
+            else if (conversionType == ConversionType.None)
                 ReportTypeError(ErrorMessage.IncompatibleTypes, expression.Span, type, expr.ResultType);
-
-            expr.IsValid = false;
-            return expr;
+                
+            return new BoundConversionExpression(type, expr, isTreeValid);
         }
 
         private BoundExpression BindExplicitConversion(TypeSymbol type, ExpressionSyntax syntax)

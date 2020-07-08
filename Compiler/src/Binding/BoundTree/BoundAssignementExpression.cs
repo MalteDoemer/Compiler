@@ -13,7 +13,7 @@ namespace Compiler.Binding
         }
         public override BoundNodeKind Kind => BoundNodeKind.BoundAssignmentExpression;
         public override TypeSymbol ResultType => Variable.Type;
-        public override bool IsValid { get; set; }
+        public override bool IsValid { get; }
         public VariableSymbol Variable { get; }
         public BoundExpression Expression { get; }
     }

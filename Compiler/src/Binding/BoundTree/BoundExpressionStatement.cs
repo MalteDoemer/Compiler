@@ -10,7 +10,7 @@ namespace Compiler.Binding
             IsValid = isValid;
         }
         public override BoundNodeKind Kind => BoundNodeKind.BoundExpressionStatement;
-        public override bool IsValid { get; set; }
+        public override bool IsValid { get; }
         public BoundExpression Expression { get; }
     }
 }

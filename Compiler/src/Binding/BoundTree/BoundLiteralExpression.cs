@@ -12,7 +12,7 @@ namespace Compiler.Binding
             IsValid = isValid;
         }
         public override BoundNodeKind Kind => BoundNodeKind.BoundLiteralExpression;
-        public override bool IsValid { get; set; }
+        public override bool IsValid { get; }
         public object Value { get; }
         public override TypeSymbol ResultType { get; }
 

@@ -11,7 +11,7 @@ namespace Compiler.Binding
             IsValid = isValid;
         }
         public override BoundNodeKind Kind => BoundNodeKind.BoundDoWhileStatement;
-        public override bool IsValid { get; set; }
+        public override bool IsValid { get; }
         public BoundStatement Body { get; }
         public BoundExpression Condition { get; }
         public BoundLabel BreakLabel { get; }

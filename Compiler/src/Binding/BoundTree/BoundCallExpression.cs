@@ -15,7 +15,7 @@ namespace Compiler.Binding
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundCallExpression;
         public override TypeSymbol ResultType => Symbol.ReturnType;
-        public override bool IsValid { get; set; }
+        public override bool IsValid { get; }
         public FunctionSymbol Symbol { get; }
         public ImmutableArray<BoundExpression> Arguments { get; }
     }

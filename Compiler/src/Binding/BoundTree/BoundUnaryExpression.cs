@@ -14,7 +14,7 @@ namespace Compiler.Binding
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundUnaryExpression;
         public override TypeSymbol ResultType { get; }
-        public override bool IsValid { get; set; }
+        public override bool IsValid { get; }
         public BoundUnaryOperator Op { get; }
         public BoundExpression Right { get; }
         public TextSpan OperatorSpan { get; }

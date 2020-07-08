@@ -19,7 +19,7 @@ namespace Compiler.Binding
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundProgram;
-        public override bool IsValid { get; set; }
+        public override bool IsValid { get; }
         public BoundProgram Previous { get; }
         public BoundBlockStatement GlobalStatements { get; }
         public ImmutableArray<VariableSymbol> GlobalVariables { get; }

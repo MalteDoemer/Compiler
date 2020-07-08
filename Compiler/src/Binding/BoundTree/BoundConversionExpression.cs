@@ -12,7 +12,7 @@ namespace Compiler.Binding
         }
         public override BoundNodeKind Kind => BoundNodeKind.BoundConversionExpression;
         public override TypeSymbol ResultType => Type;
-        public override bool IsValid { get; set; }
+        public override bool IsValid { get; }
         public TypeSymbol Type { get; }
         public BoundExpression Expression { get; }
     }
