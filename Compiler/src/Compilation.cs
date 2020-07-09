@@ -38,15 +38,15 @@ namespace Compiler
             builder.AddRange(parser.GetDiagnostics());
             builder.AddRange(program.Diagnostics);
 
-            Diagnostics = builder.ToImmutable();
+            Diagnostics = new DiagnosticReport(builder.ToImmutable());
         }
 
         public SourceText Text { get; }
-        public ImmutableArray<Diagnostic> Diagnostics { get; }
+        public DiagnosticReport Diagnostics { get; }
 
         public void Evaluate()
         {
-            if (!program.IsValid) return;
+            if (Diagnostics.HasErrors) return;
 
             var evaluator = new Evaluator(program, globals);
             evaluator.Evaluate();
@@ -54,7 +54,7 @@ namespace Compiler
 
         public object EvaluateExpression()
         {
-            if (!program.IsValid) return null;
+            if (Diagnostics.HasErrors) return null;
 
             var evaluator = new Evaluator(program, globals);
             return evaluator.Evaluate();

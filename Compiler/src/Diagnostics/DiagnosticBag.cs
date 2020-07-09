@@ -1,10 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
-using Compiler.Binding;
-using Compiler.Syntax;
 using Compiler.Text;
 
 namespace Compiler.Diagnostics
@@ -53,14 +50,7 @@ namespace Compiler.Diagnostics
         public void ReportTypeError(ErrorMessage message, TextSpan reportSpan, params object[] values) => ReportDiagnostic(message, reportSpan, ErrorKind.TypeError, ErrorLevel.Error, values);
         public void ReportIdentifierError(ErrorMessage message, TextSpan reportSpan, params object[] values) => ReportDiagnostic(message, reportSpan, ErrorKind.IdentifierError, ErrorLevel.Error, values);
 
-        public IEnumerator<Diagnostic> GetEnumerator()
-        {
-            return builder.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return builder.GetEnumerator();
-        }
+        public IEnumerator<Diagnostic> GetEnumerator() => builder.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => builder.GetEnumerator();
     }
 }

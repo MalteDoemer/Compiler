@@ -109,7 +109,7 @@ namespace Compiler.Binding
             if (mainFunc != null && mainFunc.ReturnType != TypeSymbol.Void)
                 diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function must return void.", mainFunc.Syntax.ReturnType.Span));
 
-            return new BoundProgram(previous, globalBlockStatement, declaredVariables, mainFunc, functions.ToImmutable(), diagnostics.ToImmutable(), isProgramValid);
+            return new BoundProgram(previous, globalBlockStatement, declaredVariables, mainFunc, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
         }
 
         private static BoundScope CreateBoundScopes(BoundProgram previous)
