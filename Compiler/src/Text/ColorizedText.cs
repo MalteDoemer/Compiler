@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using Compiler.Binding;
 using Compiler.Syntax;
 
 namespace Compiler.Text
@@ -70,11 +71,156 @@ namespace Compiler.Text
 
             return new ColorizedText(text, builder.MoveToImmutable());
         }
+
+
+        internal static ColorizedText ColorizeBoundNode(BoundNode node)
+        {
+            switch (node.Kind)
+            {
+                case BoundNodeKind.BoundProgram:
+                    return ColorizeBoundProgram((BoundProgram)node);
+                case BoundNodeKind.BoundLiteralExpression:
+                    return ColorizeBoundLiteralExpression((BoundLiteralExpression)node);
+                case BoundNodeKind.BoundVariableExpression:
+                    return ColorizeBoundVariableExpression((BoundVariableExpression)node);
+                case BoundNodeKind.BoundUnaryExpression:
+                    return ColorizeBoundUnaryExpression((BoundUnaryExpression)node);
+                case BoundNodeKind.BoundBinaryExpression:
+                    return ColorizeBoundBinaryExpression((BoundBinaryExpression)node);
+                case BoundNodeKind.BoundCallExpression:
+                    return ColorizeBoundCallExpression((BoundCallExpression)node);
+                case BoundNodeKind.BoundConversionExpression:
+                    return ColorizeBoundConversionExpression((BoundConversionExpression)node);
+                case BoundNodeKind.BoundAssignmentExpression:
+                    return ColorizeBoundAssignmentExpression((BoundAssignmentExpression)node);
+                case BoundNodeKind.BoundBlockStatement:
+                    return ColorizeBoundBlockStatement((BoundBlockStatement)node);
+                case BoundNodeKind.BoundExpressionStatement:
+                    return ColorizeBoundExpressionStatement((BoundExpressionStatement)node);
+                case BoundNodeKind.BoundVariableDeclarationStatement:
+                    return ColorizeBoundVariableDeclarationStatement((BoundVariableDeclarationStatement)node);
+                case BoundNodeKind.BoundIfStatement:
+                    return ColorizeBoundIfStatement((BoundIfStatement)node);
+                case BoundNodeKind.BoundForStatement:
+                    return ColorizeBoundForStatement((BoundForStatement)node);
+                case BoundNodeKind.BoundWhileStatement:
+                    return ColorizeBoundWhileStatement((BoundWhileStatement)node);
+                case BoundNodeKind.BoundDoWhileStatement:
+                    return ColorizeBoundDoWhileStatement((BoundDoWhileStatement)node);
+                case BoundNodeKind.BoundConditionalGotoStatement:
+                    return ColorizeBoundConditionalGotoStatement((BoundConditionalGotoStatement)node);
+                case BoundNodeKind.BoundGotoStatement:
+                    return ColorizeBoundGotoStatement((BoundGotoStatement)node);
+                case BoundNodeKind.BoundLabelStatement:
+                    return ColorizeBoundLabelStatement((BoundLabelStatement)node);
+                case BoundNodeKind.BoundInvalidExpression:
+                    return ColorizeBoundInvalidExpression((BoundInvalidExpression)node);
+                case BoundNodeKind.BoundReturnStatement:
+                    return ColorizeBoundReturnStatement((BoundReturnStatement)node);
+                default: throw new Exception("Unexpected kind");
+            }
+        }
+
+        private static ColorizedText ColorizeBoundProgram(BoundProgram node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundLiteralExpression(BoundLiteralExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundVariableExpression(BoundVariableExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundUnaryExpression(BoundUnaryExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundBinaryExpression(BoundBinaryExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundCallExpression(BoundCallExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundConversionExpression(BoundConversionExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundAssignmentExpression(BoundAssignmentExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundBlockStatement(BoundBlockStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundExpressionStatement(BoundExpressionStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundVariableDeclarationStatement(BoundVariableDeclarationStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundIfStatement(BoundIfStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundForStatement(BoundForStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundWhileStatement(BoundWhileStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundDoWhileStatement(BoundDoWhileStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundConditionalGotoStatement(BoundConditionalGotoStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundGotoStatement(BoundGotoStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundLabelStatement(BoundLabelStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundInvalidExpression(BoundInvalidExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static ColorizedText ColorizeBoundReturnStatement(BoundReturnStatement node)
+        {
+            throw new NotImplementedException();
+        }
     }
-
-
-
-
 
     public sealed class ColorizedText : IEnumerable<ColorizedSpan>
     {
@@ -95,12 +241,19 @@ namespace Compiler.Text
         public string ToString(TextSpan span) => Text.ToString(span);
         public string ToString(int start, int len) => Text.ToString(start, len);
         public void WriteTo(TextWriter writer) => writer.WriteColorizedText(this);
+
+        public ColorizedText Concat(ColorizedText other)
+        {
+            var text = Text.Text + other.Text;
+            return Colorizer.ColorizeTokens(text);
+        }
+
     }
 
-    public abstract class ColorizedSpan
+    public class ColorizedSpan
     {
-        public abstract ConsoleColor Color { get; }
-        public abstract TextSpan Span { get; }
+        public virtual ConsoleColor Color { get; }
+        public virtual TextSpan Span { get; }
     }
 
     public sealed class ColorizedToken : ColorizedSpan
