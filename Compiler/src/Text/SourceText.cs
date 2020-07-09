@@ -52,6 +52,8 @@ namespace Compiler.Text
 
             return lower;
         }
+        
+        public int GetCharacterOffset(int pos) => pos - Lines[GetLineIndex(pos)].Span.Start;
 
         public override string ToString() => Text;
         public string ToString(TextSpan span) => ToString(span.Start, span.Length);

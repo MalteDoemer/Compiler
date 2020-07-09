@@ -22,7 +22,7 @@ namespace Compiler.Syntax
             Length = nodes.Length;
 
             if (nodes.IsEmpty)
-                Span = TextSpan.Invalid;
+                Span = TextSpan.Undefined;
             else if (nodes.Length == 1)
                 Span = nodes[0].Span;
             else 

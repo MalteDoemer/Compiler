@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Compiler.Diagnostics;
-using Compiler.Symbols;
 using Compiler.Syntax;
 using Compiler.Text;
-using static Compiler.Program;
 
 namespace Compiler
 {
@@ -22,7 +20,7 @@ namespace Compiler
             compilation = Compilation.CompileScript(text, compilation);
 
             if (compilation.Diagnostics.Length > 0)
-                ReportDiagnostics(compilation);
+                Program.ReportDiagnostics(compilation);
             else
                 compilation.Evaluate();
         }
@@ -37,10 +35,9 @@ namespace Compiler
                 return null;
             }
 
-            var colorText = new ColorizedText(srcText);
+            var colorizedText = Colorizer.ColorizeTokens(srcText);
 
-            foreach (var t in colorText.Tokens)
-                ColorWrite(srcText.ToString(t.Span), t.Color);
+            colorizedText.WriteTo(Console.Out);
 
             return null;
         }

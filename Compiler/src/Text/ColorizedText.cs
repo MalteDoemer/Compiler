@@ -1,25 +1,19 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using Compiler.Syntax;
 
 namespace Compiler.Text
 {
-    public sealed class ColorizedText
+    public sealed class Colorizer
     {
-        public ColorizedText(SourceText text)
-        {
-            Tokens = ParseTokens(text);
-            Text = text;
-        }
-
-        public ImmutableArray<ColorizedToken> Tokens { get; }
-        public SourceText Text { get; }
-
-        private static ImmutableArray<ColorizedToken> ParseTokens(SourceText text)
+        public static ColorizedText ColorizeTokens(SourceText text)
         {
             var lexer = new Lexer(text, true);
             var tokens = lexer.Tokenize(verbose: true).ToImmutableArray();
-            var builder = ImmutableArray.CreateBuilder<ColorizedToken>(tokens.Length);
+            var builder = ImmutableArray.CreateBuilder<ColorizedSpan>(tokens.Length);
 
             for (int i = 0; i < tokens.Length; i++)
             {
@@ -74,22 +68,51 @@ namespace Compiler.Text
                 }
             }
 
-            return builder.MoveToImmutable();
+            return new ColorizedText(text, builder.MoveToImmutable());
         }
     }
 
-    public sealed class ColorizedToken
-    {
-        private SyntaxToken token;
 
+
+
+
+    public sealed class ColorizedText : IEnumerable<ColorizedSpan>
+    {
+        public ColorizedText(SourceText text, ImmutableArray<ColorizedSpan> spans)
+        {
+            Text = text;
+            Spans = spans;
+        }
+
+        public SourceText Text { get; }
+        public ImmutableArray<ColorizedSpan> Spans { get; }
+
+        public ColorizedSpan this[int i] { get => Spans[i]; }
+        public IEnumerator<ColorizedSpan> GetEnumerator() { foreach (var span in Spans) yield return span; }
+        IEnumerator IEnumerable.GetEnumerator() { foreach (var span in Spans) yield return span; }
+
+        public override string ToString() => Text.ToString();
+        public string ToString(TextSpan span) => Text.ToString(span);
+        public string ToString(int start, int len) => Text.ToString(start, len);
+        public void WriteTo(TextWriter writer) => writer.WriteColorizedText(this);
+    }
+
+    public abstract class ColorizedSpan
+    {
+        public abstract ConsoleColor Color { get; }
+        public abstract TextSpan Span { get; }
+    }
+
+    public sealed class ColorizedToken : ColorizedSpan
+    {
         public ColorizedToken(SyntaxToken token, ConsoleColor color)
         {
-            this.token = token;
+            Token = token;
             Color = color;
         }
 
-        public ConsoleColor Color { get; }
-        public TextSpan Span => token.Span;
-        public SyntaxTokenKind kind => token.Kind;
+        public override ConsoleColor Color { get; }
+        public override TextSpan Span => Token.Span;
+        public SyntaxToken Token { get; }
     }
 }

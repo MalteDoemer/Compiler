@@ -15,7 +15,7 @@ namespace Compiler.Diagnostics
         public string Message { get; }
         public ErrorKind Kind { get; }
         public ErrorLevel Level { get; }
-        public bool HasPositon => Span != TextSpan.Invalid;
+        public bool HasPositon => Span != TextSpan.Undefined;
 
         public Diagnostic(ErrorKind kind, string message, TextSpan span, ErrorLevel level = ErrorLevel.Error)
         {
