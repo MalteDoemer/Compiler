@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using Compiler.Diagnostics;
 using Compiler.Lowering;
 using Compiler.Symbols;
@@ -107,11 +106,10 @@ namespace Compiler.Binding
                 isProgramValid = false;
             }
 
-            // TODO Check for right signature in main function
-            // if (mainFunc != null && mainFunc.Parameters.Length > 0)
-            //     diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function cannot have arguments.", mainFunc.Syntax.Parameters.Span, ErrorLevel.Error));
-            // if (mainFunc != null && mainFunc.ReturnType != TypeSymbol.Void)
-            //     diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function must return void.", mainFunc.Syntax.ReturnType.Span, ErrorLevel.Error));
+            if (mainFunc != null && mainFunc.Parameters.Length > 0)
+                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function cannot have arguments.", new TextLocation(unit.Text, mainFunc.Syntax.Parameters.Span), ErrorLevel.Error));
+            if (mainFunc != null && mainFunc.ReturnType != TypeSymbol.Void)
+                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function must return void.", new TextLocation(unit.Text, mainFunc.Syntax.ReturnType.Span), ErrorLevel.Error));
 
             return new BoundProgram(previous, globalBlockStatement, declaredVariables, mainFunc, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
         }
