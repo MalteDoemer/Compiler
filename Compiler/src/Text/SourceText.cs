@@ -112,5 +112,11 @@ namespace Compiler.Text
             if (c == '\r' || c == '\n') return 1;
             return 0;
         }
+
+        public override bool Equals(object obj) => obj is SourceText text && Text == text.Text;
+        public override int GetHashCode() => HashCode.Combine(Lines, Text, Length);
+
+        public static bool operator ==(SourceText l, SourceText r) => l.Text == r.Text;
+        public static bool operator !=(SourceText l, SourceText r) => l.Text != r.Text;
     }
 }

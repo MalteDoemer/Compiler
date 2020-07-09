@@ -44,14 +44,14 @@ namespace Compiler.Binding
             isTreeValid = false;
         }
 
-        private Binder(BoundScope parentScope, bool isScript, FunctionSymbol function)
+        private Binder(SourceText source, BoundScope parentScope, bool isScript, FunctionSymbol function)
         {
             this.isScript = isScript;
             this.function = function;
             this.isTreeValid = true;
             this.labelStack = new Stack<(BoundLabel breakLabel, BoundLabel continueLabel)>();
             this.scope = new BoundScope(parentScope);
-            this.diagnostics = new DiagnosticBag();
+            this.diagnostics = new DiagnosticBag(source);
 
             if (function != null)
                 foreach (var param in function.Parameters)
@@ -64,7 +64,7 @@ namespace Compiler.Binding
             var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
             var functionSyntax = unit.Members.OfType<FunctionDeclarationSyntax>();
             var statementSyntax = unit.Members.OfType<GlobalStatementSynatx>();
-            var globalBinder = new Binder(parentScope, isScript, function: null);
+            var globalBinder = new Binder(unit.Text, parentScope, isScript, function: null);
             var isProgramValid = true;
 
             foreach (var func in functionSyntax)
@@ -89,7 +89,7 @@ namespace Compiler.Binding
 
             foreach (var symbol in declaredFunctions)
             {
-                var binder = new Binder(currentScope, isScript, symbol);
+                var binder = new Binder(unit.Text, currentScope, isScript, symbol);
                 var body = binder.BindBlockStatmentSyntax(symbol.Syntax.Body);
                 var loweredBody = Lowerer.Lower(body);
                 functions.Add(symbol, loweredBody);
@@ -100,14 +100,18 @@ namespace Compiler.Binding
 
             FunctionSymbol mainFunc = null;
 
+
             if (!isScript && !globalBinder.scope.TryLookUpFunction("main", out mainFunc))
-                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Program doesn't define main fuction.", TextSpan.Undefined));
+            {
+                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Program doesn't define main fuction.", TextLocation.Undefined, ErrorLevel.Error));
+                isProgramValid = false;
+            }
 
-            if (mainFunc != null && mainFunc.Parameters.Length > 0)
-                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function cannot have arguments.", mainFunc.Syntax.Parameters.Span));
-
-            if (mainFunc != null && mainFunc.ReturnType != TypeSymbol.Void)
-                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function must return void.", mainFunc.Syntax.ReturnType.Span));
+            // TODO Check for right signature in main function
+            // if (mainFunc != null && mainFunc.Parameters.Length > 0)
+            //     diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function cannot have arguments.", mainFunc.Syntax.Parameters.Span, ErrorLevel.Error));
+            // if (mainFunc != null && mainFunc.ReturnType != TypeSymbol.Void)
+            //     diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function must return void.", mainFunc.Syntax.ReturnType.Span, ErrorLevel.Error));
 
             return new BoundProgram(previous, globalBlockStatement, declaredVariables, mainFunc, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
         }

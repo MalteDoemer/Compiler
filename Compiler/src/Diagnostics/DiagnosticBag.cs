@@ -35,16 +35,18 @@ namespace Compiler.Diagnostics
         };
 
         private readonly List<Diagnostic> builder;
+        private readonly SourceText text;
 
-        public DiagnosticBag()
+        public DiagnosticBag(SourceText text)
         {
             builder = new List<Diagnostic>();
+            this.text = text;
         }
 
         public void ReportDiagnostic(ErrorMessage message, TextSpan reportSpan, ErrorKind kind, ErrorLevel level, params object[] values)
         {
             var text = String.Format(ErrorFormats[(int)message], values);
-            builder.Add(new Diagnostic(kind, text, reportSpan, level));
+            builder.Add(new Diagnostic(kind, text, new TextLocation(text, reportSpan), level));
         }
         public void ReportSyntaxError(ErrorMessage message, TextSpan reportSpan, params object[] values) => ReportDiagnostic(message, reportSpan, ErrorKind.SyntaxError, ErrorLevel.Error, values);
         public void ReportTypeError(ErrorMessage message, TextSpan reportSpan, params object[] values) => ReportDiagnostic(message, reportSpan, ErrorKind.TypeError, ErrorLevel.Error, values);

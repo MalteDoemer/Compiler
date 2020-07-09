@@ -1,19 +1,30 @@
+using System;
+using System.Collections.Generic;
+
 namespace Compiler.Text
 {
     public struct TextLocation
     {
+        public static readonly TextLocation Undefined = new TextLocation(string.Empty, TextSpan.Undefined);
+
         public TextLocation(SourceText text, TextSpan span)
         {
-            this.text = text;
-            this.span = span;
+            Text = text;
+            Span = span;
         }
 
-        public SourceText text { get; }
-        public TextSpan span { get; }
+        public SourceText Text { get; }
+        public TextSpan Span { get; }
 
-        public int StartLine { get => text.GetLineNumber(span.Start); }
-        public int EndLine { get => text.GetLineNumber(span.End); }
-        public int StartCharacter { get => text.GetCharacterOffset(span.Start); }
-        public int EndCharacter { get => text.GetCharacterOffset(span.End); }
+        public int StartLine { get => Text.GetLineNumber(Span.Start); }
+        public int EndLine { get => Text.GetLineNumber(Span.End); }
+        public int StartCharacter { get => Text.GetCharacterOffset(Span.Start); }
+        public int EndCharacter { get => Text.GetCharacterOffset(Span.End); }
+
+        public override bool Equals(object obj) => obj is TextLocation location && Text == location.Text && Span == location.Span;
+        public override int GetHashCode() => HashCode.Combine(Text, Span, StartLine, EndLine, StartCharacter, EndCharacter);
+
+        public static bool operator==(TextLocation l, TextLocation r) => l.Text == r.Text && l.Span == r.Span;
+        public static bool operator!=(TextLocation l, TextLocation r) => l.Text != r.Text || r.Span != r.Span;
     }
 }

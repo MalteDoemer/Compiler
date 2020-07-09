@@ -11,17 +11,19 @@ namespace Compiler.Diagnostics
 
     public class Diagnostic
     {
-        public TextSpan Span { get; }
         public string Message { get; }
         public ErrorKind Kind { get; }
         public ErrorLevel Level { get; }
+        
+        public TextLocation Location { get; }
+        public TextSpan Span => Location.Span;
         public bool HasPositon => Span != TextSpan.Undefined;
 
-        public Diagnostic(ErrorKind kind, string message, TextSpan span, ErrorLevel level = ErrorLevel.Error)
+        public Diagnostic(ErrorKind kind, string message, TextLocation location, ErrorLevel level)
         {
             Kind = kind;
             Message = message;
-            Span = span;
+            Location = location;
             Level = level;
         }
     }

@@ -24,7 +24,7 @@ namespace Compiler.Syntax
             this.source = source;
             this.tokens = tokens;
             this.isScript = isScript;
-            diagnostics = new DiagnosticBag();
+            diagnostics = new DiagnosticBag(source);
         }
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
@@ -67,7 +67,7 @@ namespace Compiler.Syntax
         public CompilationUnitSyntax ParseCompilationUnit()
         {
             var members = ParseMembers();
-            return new CompilationUnitSyntax(TextSpan.FromBounds(0, source.Length), members, isTreeValid);
+            return new CompilationUnitSyntax(source, members, isTreeValid);
         }
 
         private ImmutableArray<MemberSyntax> ParseMembers()

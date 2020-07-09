@@ -18,7 +18,7 @@ namespace Compiler.Syntax
         {
             this.text = text;
             this.isScript = isScript;
-            diagnostics = new DiagnosticBag();
+            diagnostics = new DiagnosticBag(text);
         }
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
