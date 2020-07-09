@@ -71,155 +71,6 @@ namespace Compiler.Text
 
             return new ColorizedText(text, builder.MoveToImmutable());
         }
-
-
-        internal static ColorizedText ColorizeBoundNode(BoundNode node)
-        {
-            switch (node.Kind)
-            {
-                case BoundNodeKind.BoundProgram:
-                    return ColorizeBoundProgram((BoundProgram)node);
-                case BoundNodeKind.BoundLiteralExpression:
-                    return ColorizeBoundLiteralExpression((BoundLiteralExpression)node);
-                case BoundNodeKind.BoundVariableExpression:
-                    return ColorizeBoundVariableExpression((BoundVariableExpression)node);
-                case BoundNodeKind.BoundUnaryExpression:
-                    return ColorizeBoundUnaryExpression((BoundUnaryExpression)node);
-                case BoundNodeKind.BoundBinaryExpression:
-                    return ColorizeBoundBinaryExpression((BoundBinaryExpression)node);
-                case BoundNodeKind.BoundCallExpression:
-                    return ColorizeBoundCallExpression((BoundCallExpression)node);
-                case BoundNodeKind.BoundConversionExpression:
-                    return ColorizeBoundConversionExpression((BoundConversionExpression)node);
-                case BoundNodeKind.BoundAssignmentExpression:
-                    return ColorizeBoundAssignmentExpression((BoundAssignmentExpression)node);
-                case BoundNodeKind.BoundBlockStatement:
-                    return ColorizeBoundBlockStatement((BoundBlockStatement)node);
-                case BoundNodeKind.BoundExpressionStatement:
-                    return ColorizeBoundExpressionStatement((BoundExpressionStatement)node);
-                case BoundNodeKind.BoundVariableDeclarationStatement:
-                    return ColorizeBoundVariableDeclarationStatement((BoundVariableDeclarationStatement)node);
-                case BoundNodeKind.BoundIfStatement:
-                    return ColorizeBoundIfStatement((BoundIfStatement)node);
-                case BoundNodeKind.BoundForStatement:
-                    return ColorizeBoundForStatement((BoundForStatement)node);
-                case BoundNodeKind.BoundWhileStatement:
-                    return ColorizeBoundWhileStatement((BoundWhileStatement)node);
-                case BoundNodeKind.BoundDoWhileStatement:
-                    return ColorizeBoundDoWhileStatement((BoundDoWhileStatement)node);
-                case BoundNodeKind.BoundConditionalGotoStatement:
-                    return ColorizeBoundConditionalGotoStatement((BoundConditionalGotoStatement)node);
-                case BoundNodeKind.BoundGotoStatement:
-                    return ColorizeBoundGotoStatement((BoundGotoStatement)node);
-                case BoundNodeKind.BoundLabelStatement:
-                    return ColorizeBoundLabelStatement((BoundLabelStatement)node);
-                case BoundNodeKind.BoundInvalidExpression:
-                    return ColorizeBoundInvalidExpression((BoundInvalidExpression)node);
-                case BoundNodeKind.BoundReturnStatement:
-                    return ColorizeBoundReturnStatement((BoundReturnStatement)node);
-                default: throw new Exception("Unexpected kind");
-            }
-        }
-
-        private static ColorizedText ColorizeBoundProgram(BoundProgram node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundLiteralExpression(BoundLiteralExpression node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundVariableExpression(BoundVariableExpression node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundUnaryExpression(BoundUnaryExpression node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundBinaryExpression(BoundBinaryExpression node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundCallExpression(BoundCallExpression node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundConversionExpression(BoundConversionExpression node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundAssignmentExpression(BoundAssignmentExpression node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundBlockStatement(BoundBlockStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundExpressionStatement(BoundExpressionStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundVariableDeclarationStatement(BoundVariableDeclarationStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundIfStatement(BoundIfStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundForStatement(BoundForStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundWhileStatement(BoundWhileStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundDoWhileStatement(BoundDoWhileStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundConditionalGotoStatement(BoundConditionalGotoStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundGotoStatement(BoundGotoStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundLabelStatement(BoundLabelStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundInvalidExpression(BoundInvalidExpression node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static ColorizedText ColorizeBoundReturnStatement(BoundReturnStatement node)
-        {
-            throw new NotImplementedException();
-        }
     }
 
     public sealed class ColorizedText : IEnumerable<ColorizedSpan>
@@ -244,16 +95,43 @@ namespace Compiler.Text
 
         public ColorizedText Concat(ColorizedText other)
         {
-            var text = Text.Text + other.Text;
-            return Colorizer.ColorizeTokens(text);
+            var text = new SourceText(Text.Text + other.Text.Text);
+            var builder = ImmutableArray.CreateBuilder<ColorizedSpan>(Spans.Length + other.Spans.Length);
+
+            builder.AddRange(Spans);
+
+            var off = text.Length;
+
+            foreach (var span in other.Spans)
+                builder.Add(new ColorizedSpan(span.Span.Start + off, span.Span.Length, span.Color));
+
+            return new ColorizedText(text, builder.MoveToImmutable());
         }
 
     }
 
     public class ColorizedSpan
     {
-        public virtual ConsoleColor Color { get; }
+        public ColorizedSpan()
+        {
+            Span = TextSpan.Undefined;
+            Color = ConsoleColor.Gray;
+        }
+
+        public ColorizedSpan(TextSpan span, ConsoleColor color)
+        {
+            Span = span;
+            Color = color;
+        }
+
+        public ColorizedSpan(int start, int len, ConsoleColor color)
+        {
+            Span = TextSpan.FromLength(start, len);
+            Color = color;
+        }
+
         public virtual TextSpan Span { get; }
+        public virtual ConsoleColor Color { get; }
     }
 
     public sealed class ColorizedToken : ColorizedSpan

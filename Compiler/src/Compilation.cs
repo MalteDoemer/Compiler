@@ -4,7 +4,7 @@ using Compiler.Text;
 using Compiler.Binding;
 using System.Collections.Generic;
 using Compiler.Diagnostics;
-using Compiler.Lowering;
+using System.IO;
 
 namespace Compiler
 {
@@ -40,6 +40,8 @@ namespace Compiler
 
             Diagnostics = new DiagnosticReport(builder.ToImmutable());
         }
+
+        public void WriteProgram(TextWriter writer) => writer.WriteBoundNode(program);
 
         public SourceText Text { get; }
         public DiagnosticReport Diagnostics { get; }

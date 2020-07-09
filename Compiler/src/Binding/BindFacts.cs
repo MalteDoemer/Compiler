@@ -135,7 +135,7 @@ namespace Compiler.Binding
         {
             if (from == null || to == null) return ConversionType.None;
 
-                if (from == to) return ConversionType.Identety;
+            if (from == to) return ConversionType.Identety;
 
             if (to == TypeSymbol.Any || from == TypeSymbol.Any) return ConversionType.Implicit;
 
@@ -149,5 +149,67 @@ namespace Compiler.Binding
                 default: return ConversionType.None;
             }
         }
+
+        public static string GetText(this BoundUnaryOperator op)
+        {
+            switch (op)
+            {
+                case BoundUnaryOperator.Identety:
+                    return "+";
+                case BoundUnaryOperator.Negation:
+                    return "-";
+                case BoundUnaryOperator.LogicalNot:
+                    return "!";
+                case BoundUnaryOperator.BitwiseNot:
+                    return "~";
+                default: return string.Empty;
+            }
+        }
+
+        public static string GetText(this BoundBinaryOperator op)
+        {
+            switch (op)
+            {
+                case BoundBinaryOperator.Addition:
+                    return "+";
+                case BoundBinaryOperator.Subtraction:
+                    return "-";
+                case BoundBinaryOperator.Multiplication:
+                    return "*";
+                case BoundBinaryOperator.Division:
+                    return "/";
+                case BoundBinaryOperator.Power:
+                    return "**";
+                case BoundBinaryOperator.Root:
+                    return "//";
+                case BoundBinaryOperator.Modulo:
+                    return "%";
+                case BoundBinaryOperator.EqualEqual:
+                    return "==";
+                case BoundBinaryOperator.NotEqual:
+                    return "!=";
+                case BoundBinaryOperator.LessThan:
+                    return "<";
+                case BoundBinaryOperator.GreaterThan:
+                    return ">";
+                case BoundBinaryOperator.LessEqual:
+                    return "<=";
+                case BoundBinaryOperator.GreaterEqual:
+                    return ">=";
+                case BoundBinaryOperator.LogicalAnd:
+                    return "&&";
+                case BoundBinaryOperator.LogicalOr:
+                    return "||";
+                case BoundBinaryOperator.BitwiseAnd:
+                    return "&";
+                case BoundBinaryOperator.BitwiseOr:
+                    return "|";
+                case BoundBinaryOperator.BitwiseXor:
+                    return "^";
+                default: return string.Empty;
+            }
+        }
+
     }
+
 }

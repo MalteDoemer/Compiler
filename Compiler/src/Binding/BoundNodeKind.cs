@@ -3,7 +3,6 @@ namespace Compiler.Binding
     internal enum BoundNodeKind
     {
         BoundProgram,
-
         BoundLiteralExpression,
         BoundVariableExpression,
         BoundUnaryExpression,
@@ -11,7 +10,6 @@ namespace Compiler.Binding
         BoundCallExpression,
         BoundConversionExpression,
         BoundAssignmentExpression,
-
         BoundBlockStatement,
         BoundExpressionStatement,
         BoundVariableDeclarationStatement,

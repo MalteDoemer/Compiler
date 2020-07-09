@@ -10,6 +10,7 @@ namespace Compiler
     public sealed class GSharpRepl : ReplBase
     {
         private Compilation compilation;
+        private bool showProgram;
 
         public GSharpRepl() : base()
         {
@@ -22,7 +23,11 @@ namespace Compiler
             if (compilation.Diagnostics.HasErrors)
                 compilation.Diagnostics.WriteTo(Console.Out);
             else
+            {
+                if (showProgram)
+                    compilation.WriteProgram(Console.Out);
                 compilation.Evaluate();
+            }
         }
 
         protected override object RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
@@ -73,6 +78,13 @@ namespace Compiler
         private void EvaluateCls()
         {
             Console.Clear();
+        }
+
+        [MetaCommand("showProgram", "shows/hides the bound tree")]
+        private void EvaluateShowProgram()
+        {
+            Console.WriteLine(!showProgram ? "showing program" : "not showing program");
+            showProgram = !showProgram;
         }
     }
 }
