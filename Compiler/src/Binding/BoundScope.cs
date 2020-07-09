@@ -23,7 +23,7 @@ namespace Compiler.Binding
         {
             if (variables.TryGetValue(identifier, out value))
                 return true;
-            if (Parent == null) {
+            else if (Parent == null) {
                 value = VariableSymbol.Invalid;
                 return false;
             }
@@ -42,7 +42,7 @@ namespace Compiler.Binding
         {
             if (functions.TryGetValue(identifier, out value))
                 return true;
-            if (Parent == null) {
+            else if (Parent == null) {
                 value = FunctionSymbol.Invalid;
                 return false;
             }
@@ -57,14 +57,7 @@ namespace Compiler.Binding
             return true;
         }
 
-        public ImmutableArray<VariableSymbol> GetDeclaredVariables()
-        {
-            return variables.Values.ToImmutableArray();
-        }
-
-        public ImmutableArray<FunctionSymbol> GetDeclaredFunctions()
-        {
-            return functions.Values.ToImmutableArray();
-        }
+        public ImmutableArray<VariableSymbol> GetDeclaredVariables() => variables.Values.ToImmutableArray();
+        public ImmutableArray<FunctionSymbol> GetDeclaredFunctions() => functions.Values.ToImmutableArray();
     }
 }

@@ -123,12 +123,12 @@ namespace Compiler.Binding
 
             while (previous != null)
             {
-                if (previous.IsValid) // TODO is this right?
+                if (previous.IsValid)
                     stack.Push(previous);
                 previous = previous.Previous;
             }
 
-            BoundScope current = CreateRootScope();
+            var current = CreateRootScope();
 
             while (stack.Count > 0)
             {
@@ -137,8 +137,8 @@ namespace Compiler.Binding
                 foreach (var variable in global.GlobalVariables)
                     scope.TryDeclareVariable(variable);
 
-                foreach (var function in global.Functions.Keys)
-                    scope.TryDeclareFunction(function);
+                foreach (var function in global.Functions)
+                    scope.TryDeclareFunction(function.Key);
 
                 current = scope;
             }
@@ -163,6 +163,7 @@ namespace Compiler.Binding
             {
                 var type = BindFacts.GetTypeSymbol(parameterSyntax.TypeClause.TypeToken.Kind);
                 var name = parameterSyntax.Identifier.Value.ToString();
+
                 if (!seenParameters.Add(name))
                     diagnostics.ReportIdentifierError(ErrorMessage.DuplicatedParameters, parameterSyntax.Span, name);
                 else parameters.Add(new ParameterSymbol(name, type));

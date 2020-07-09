@@ -3,6 +3,9 @@ using System.IO;
 using System.Linq;
 using Compiler.Text;
 using Compiler.Diagnostics;
+using System.Collections.Immutable;
+using System.Collections.Generic;
+using Compiler.Symbols;
 
 namespace Compiler
 {

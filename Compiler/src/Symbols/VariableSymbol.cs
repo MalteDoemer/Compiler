@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Compiler.Symbols
 {
     public abstract class VariableSymbol : Symbol
@@ -12,25 +15,8 @@ namespace Compiler.Symbols
 
         public TypeSymbol Type { get; }
         public VariableModifier Modifiers { get; }
-    }
 
-    public enum VariableModifier
-    {
-        None,
-        Constant,
-    }
-
-    public sealed class GlobalVariableSymbol : VariableSymbol
-    {
-        public GlobalVariableSymbol(string name, TypeSymbol type, VariableModifier modifier = VariableModifier.None) : base(name, type, modifier)
-        {
-        }
-    }
-
-    public sealed class LocalVariableSymbol : VariableSymbol
-    {
-        public LocalVariableSymbol(string name, TypeSymbol type, VariableModifier modifier = VariableModifier.None) : base(name, type, modifier)
-        {
-        }
+        public override bool Equals(object obj) => obj is VariableSymbol symbol && Name == symbol.Name && Type == symbol.Type && Modifiers == symbol.Modifiers;
+        public override int GetHashCode() => HashCode.Combine(Name, Type, Modifiers);
     }
 }
