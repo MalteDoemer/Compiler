@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
+using Compiler.Text;
 
 namespace Compiler.Diagnostics
 {
@@ -29,5 +31,7 @@ namespace Compiler.Diagnostics
 
         public IEnumerator<Diagnostic> GetEnumerator() { foreach (var d in Diagnostics) yield return d; }
         IEnumerator IEnumerable.GetEnumerator() { foreach (var d in Diagnostics) yield return d; }
+
+        public void WriteTo(TextWriter writer) => writer.WriteDiagnosticReport(this);
     }
 }

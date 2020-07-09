@@ -19,8 +19,8 @@ namespace Compiler
         {
             compilation = Compilation.CompileScript(text, compilation);
 
-            if (compilation.Diagnostics.Length > 0)
-                Program.ReportDiagnostics(compilation);
+            if (compilation.Diagnostics.HasErrors)
+                compilation.Diagnostics.WriteTo(Console.Out);
             else
                 compilation.Evaluate();
         }
@@ -62,7 +62,7 @@ namespace Compiler
 
             return true;
         }
-    
+
         [MetaCommand("exit", "Exits the REPL")]
         private void EvaluateExit()
         {

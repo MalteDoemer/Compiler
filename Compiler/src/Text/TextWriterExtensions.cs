@@ -50,5 +50,33 @@ namespace Compiler.Text
             writer.ResetColor();
         }
 
+        public static void WriteDiagnostic(this TextWriter writer, Diagnostic diagnostic)
+        {
+            var reportColor = diagnostic.Level == ErrorLevel.Error ? ConsoleColor.Red : ConsoleColor.Yellow;
+            if (diagnostic.HasPositon)
+            {
+                var src = diagnostic.Location.Text;
+                var prefix = src.ToString(0, diagnostic.Span.Start);
+                var errorText = src.ToString(diagnostic.Span);
+                var postfix = src.ToString(diagnostic.Span.End, src.Length - diagnostic.Span.End);
+
+                var linenum = diagnostic.Location.StartLine;
+                var charOff = diagnostic.Location.StartCharacter;
+
+
+                writer.ColorWrite($"\n\n{diagnostic.Kind} in line {linenum} at character {charOff}\n\n");
+                writer.ColorWrite(prefix);
+                writer.ColorWrite(errorText, ConsoleColor.Red);
+                writer.ColorWrite(postfix);
+                writer.ColorWrite($"\n\n{diagnostic.Message}\n\n");
+            }
+            else writer.ColorWrite($"\n\n{diagnostic.Kind}: {diagnostic.Message}\n\n", ConsoleColor.Red);
+        }
+
+        public static void WriteDiagnosticReport(this TextWriter writer, DiagnosticReport report)
+        {
+            foreach (var d in report)
+                writer.WriteDiagnostic(d);
+        }
     }
 }
