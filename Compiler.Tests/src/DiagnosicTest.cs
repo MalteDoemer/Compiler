@@ -83,7 +83,23 @@ namespace Compiler.Test
             AssertDiagnostic(text, ErrorMessage.CannotAssignToConst, "c");
         }
 
-
+        [Fact]
+        public static void Report_Not_All_Paths_Return()
+        {
+            var text = @"
+                def [test](n: int) : int {
+                    while true{
+                        if n == 36 
+                            break
+                        else if n == 1 
+                            return 1
+                        else 
+                            n = 1
+                    }
+                }
+            ";
+            AssertDiagnostic(text, ErrorMessage.AllPathsMustReturn);
+        }
 
         [Fact]
         public static void Report_Never_Closed_String()
