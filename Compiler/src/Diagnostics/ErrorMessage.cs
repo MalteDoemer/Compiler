@@ -24,5 +24,6 @@ namespace Compiler.Diagnostics
         CannotAssignToConst,
         InvalidBreakOrContinue,
         ReturnOnlyInFunction,
+        AllPathsMustReturn,
     }
 }

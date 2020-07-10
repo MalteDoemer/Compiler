@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.IO;
 using Compiler.Binding;
 using Compiler.Diagnostics;
+using Compiler.Syntax;
 
 namespace Compiler.Text
 {
@@ -81,6 +82,11 @@ namespace Compiler.Text
                 writer.WriteDiagnostic(d);
         }
 
+        internal static void WriteControlFlowGraph(this TextWriter writer, ControlFlowGraph graph)
+        {
+            graph.WriteTo(writer);
+        }
+
         internal static void WriteBoundNode(this TextWriter writer, BoundNode node)
         {
             switch (node.Kind)
@@ -156,17 +162,21 @@ namespace Compiler.Text
 
         private static void WriteBoundUnaryExpression(this TextWriter writer, BoundUnaryExpression node)
         {
+            writer.ColorWrite("(");
             writer.Write(node.Op.GetText());
             writer.WriteBoundNode(node.Right);
+            writer.ColorWrite(")");
         }
 
         private static void WriteBoundBinaryExpression(this TextWriter writer, BoundBinaryExpression node)
         {
+            writer.ColorWrite("(");
             writer.WriteBoundNode(node.Left);
             writer.WriteSpace();
             writer.ColorWrite(node.Op.GetText());
             writer.WriteSpace();
             writer.WriteBoundNode(node.Right);
+            writer.ColorWrite(")");
         }
 
         private static void WriteBoundCallExpression(this TextWriter writer, BoundCallExpression node)
@@ -298,6 +308,13 @@ namespace Compiler.Text
                 iw.Indent -= 4;
                 iw.ColorWrite(node.Label.Identifier + ":", ConsoleColor.DarkGray);
                 iw.Indent += 4;
+            } 
+            else 
+            {
+                var iw2 = new IndentedTextWriter(writer);
+                iw2.Indent -= 4;
+                iw2.ColorWrite(node.Label.Identifier + ":", ConsoleColor.DarkGray);
+                iw2.Indent += 4;
             }
         }
 
@@ -308,7 +325,11 @@ namespace Compiler.Text
 
         private static void WriteBoundReturnStatement(this TextWriter writer, BoundReturnStatement node)
         {
-            throw new NotImplementedException();
+            writer.WriteMagentaKeyword("return");
+            writer.WriteSpace();
+            if (node.Expression == null)
+                writer.WriteBlueKeyword("void");
+            else writer.WriteBoundNode(node.Expression);
         }
 
         private static void WriteNumber(this TextWriter writer, object val) => writer.ColorWrite(val, ConsoleColor.DarkGreen);
@@ -319,4 +340,4 @@ namespace Compiler.Text
         private static void WriteBlueKeyword(this TextWriter writer, string keyword) => writer.ColorWrite(keyword, ConsoleColor.Blue);
         private static void WriteSpace(this TextWriter writer, int len = 1) => writer.Write(new string(' ', len));
     }
-}
+} 

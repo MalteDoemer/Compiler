@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using Compiler.Diagnostics;
@@ -34,17 +35,20 @@ namespace Compiler.Binding
             else
                 return Previous.GetFunctionBody(symbol);
         }
-    }
 
-
-    internal static class BoundTreePrinter
-    {
-        public static void WriteTo(this BoundNode node, TextWriter writer)
+        public IEnumerable<FunctionSymbol> GetFunctionSymbols()
         {
+            foreach (var func in Functions.Keys)
+                yield return func;
 
+            var pre = Previous;
+
+            while (pre != null)
+            {
+                foreach (var func in pre.Functions.Keys)
+                    yield return func;
+                pre = pre.Previous;
+            }
         }
-
-
-
     }
 }

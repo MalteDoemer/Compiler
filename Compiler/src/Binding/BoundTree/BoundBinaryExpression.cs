@@ -20,8 +20,5 @@ namespace Compiler.Binding
         public BoundBinaryOperator Op { get; }
         public BoundExpression Left { get; }
         public BoundExpression Right { get; }
-
-
-        public override string ToString() => $"({Left} {Op} {Right})";
     }
 }

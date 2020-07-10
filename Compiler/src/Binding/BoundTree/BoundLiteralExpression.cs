@@ -15,7 +15,5 @@ namespace Compiler.Binding
         public override bool IsValid { get; }
         public object Value { get; }
         public override TypeSymbol ResultType { get; }
-
-        public override string ToString() => $"({Value})";
     }
 }

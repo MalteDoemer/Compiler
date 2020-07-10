@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Compiler.Diagnostics;
 using Compiler.Syntax;
@@ -10,7 +11,6 @@ namespace Compiler
     public sealed class GSharpRepl : ReplBase
     {
         private Compilation compilation;
-        private bool showProgram;
 
         public GSharpRepl() : base()
         {
@@ -23,11 +23,7 @@ namespace Compiler
             if (compilation.Diagnostics.HasErrors)
                 compilation.Diagnostics.WriteTo(Console.Out);
             else
-            {
-                if (showProgram)
-                    compilation.WriteProgram(Console.Out);
                 compilation.Evaluate();
-            }
         }
 
         protected override object RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
@@ -80,11 +76,35 @@ namespace Compiler
             Console.Clear();
         }
 
-        [MetaCommand("showProgram", "shows/hides the bound tree")]
-        private void EvaluateShowProgram()
+        [MetaCommand("showBoundTree", "shows the lowered bound tree of the function")]
+        private void EvaluateShowBoundTree(string function)
         {
-            Console.WriteLine(!showProgram ? "showing program" : "not showing program");
-            showProgram = !showProgram;
+            if (compilation != null)
+            {
+                if (function == "$global")
+                    compilation.WriteBoundTree(Console.Out, null);
+                else compilation.WriteBoundTree(Console.Out, function);
+            }
         }
+
+        [MetaCommand("graph", "Emits the ControlFlowGraph for the function")]
+        private void EvaluateGraph(string function)
+        {
+            var appPath = Environment.GetCommandLineArgs()[0];
+            var appDir = Path.GetDirectoryName(appPath);
+            var cfgPath = Path.Combine(appDir, "cfg.dot");
+
+            using (var writer = new StreamWriter(cfgPath))
+            {
+
+                if (compilation != null)
+                {
+                    if (function == "$global")
+                        compilation.WriteControlFlowGraph(writer, null);
+                    else compilation.WriteControlFlowGraph(writer, function);
+                }
+            }
+        }
+
     }
 }

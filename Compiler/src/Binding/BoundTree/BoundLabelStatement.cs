@@ -11,5 +11,4 @@ namespace Compiler.Binding
         public override bool IsValid { get; }
         public BoundLabel Label { get; }
     }
-
 }

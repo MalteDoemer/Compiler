@@ -11,6 +11,7 @@ namespace Compiler.Binding
             Expression = expression;
             IsValid = isValid;
         }
+        
         public override BoundNodeKind Kind => BoundNodeKind.BoundAssignmentExpression;
         public override TypeSymbol ResultType => Variable.Type;
         public override bool IsValid { get; }

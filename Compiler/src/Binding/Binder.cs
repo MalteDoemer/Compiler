@@ -91,6 +91,10 @@ namespace Compiler.Binding
                 var binder = new Binder(unit.Text, currentScope, isScript, symbol);
                 var body = binder.BindBlockStatmentSyntax(symbol.Syntax.Body);
                 var loweredBody = Lowerer.Lower(body);
+
+                if (!ControlFlowGraph.AllPathsReturn(symbol, loweredBody))
+                    binder.ReportSyntaxError(ErrorMessage.AllPathsMustReturn, symbol.Syntax.Identifier.Span);
+
                 functions.Add(symbol, loweredBody);
                 diagnostics.AddRange(binder.GetDiagnostics());
                 isProgramValid = isProgramValid && binder.isTreeValid;
@@ -99,17 +103,21 @@ namespace Compiler.Binding
 
             FunctionSymbol mainFunc = null;
 
-
             if (!isScript && !globalBinder.scope.TryLookUpFunction("main", out mainFunc))
             {
                 diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Program doesn't define main fuction.", TextLocation.Undefined, ErrorLevel.Error));
                 isProgramValid = false;
             }
-
             if (mainFunc != null && mainFunc.Parameters.Length > 0)
+            {
                 diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function cannot have arguments.", new TextLocation(unit.Text, mainFunc.Syntax.Parameters.Span), ErrorLevel.Error));
+                isProgramValid = false;
+            }
             if (mainFunc != null && mainFunc.ReturnType != TypeSymbol.Void)
+            {
                 diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function must return void.", new TextLocation(unit.Text, mainFunc.Syntax.ReturnType.Span), ErrorLevel.Error));
+                isProgramValid = false;
+            }
 
             return new BoundProgram(previous, globalBlockStatement, declaredVariables, mainFunc, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
         }
@@ -500,7 +508,7 @@ namespace Compiler.Binding
                 ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
 
             var left = new BoundVariableExpression(variable, isTreeValid);
-            var right = new BoundLiteralExpression(1, TypeSymbol.Int, isTreeValid);
+            var right = new BoundLiteralExpression(1L, TypeSymbol.Int, isTreeValid);
             var op = BindBinaryOperator(syntax.Op.Kind);
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 

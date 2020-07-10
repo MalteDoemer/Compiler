@@ -5,6 +5,9 @@ using Compiler.Binding;
 using System.Collections.Generic;
 using Compiler.Diagnostics;
 using System.IO;
+using Compiler.Symbols;
+using System;
+using System.Linq;
 
 namespace Compiler
 {
@@ -41,10 +44,9 @@ namespace Compiler
             Diagnostics = new DiagnosticReport(builder.ToImmutable());
         }
 
-        public void WriteProgram(TextWriter writer) => writer.WriteBoundNode(program);
-
         public SourceText Text { get; }
         public DiagnosticReport Diagnostics { get; }
+
 
         public void Evaluate()
         {
@@ -61,6 +63,45 @@ namespace Compiler
             var evaluator = new Evaluator(program, globals);
             return evaluator.Evaluate();
         }
+
+        public void WriteBoundTree(TextWriter writer, string functionName = null)
+        {
+            if (functionName == null)
+            {
+                writer.WriteBoundNode(program.GlobalStatements);
+                writer.WriteLine();
+            }
+            else
+            {
+                var symbols = program.GetFunctionSymbols().Where(s => s.Name == functionName);
+                if (!symbols.Any())
+                    writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);
+                else
+                {
+                    writer.WriteBoundNode(program.GetFunctionBody(symbols.First()));
+                    writer.WriteLine();
+                }
+            }
+
+        }
+
+        public void WriteControlFlowGraph(TextWriter writer, string functionName = null)
+        {
+            ControlFlowGraph cfg;
+
+            if (functionName == null)
+                cfg = ControlFlowGraph.Create(program.GlobalStatements);
+            else
+            {
+                var symbols = program.GetFunctionSymbols().Where(s => s.Name == functionName);
+                if (!symbols.Any())
+                    writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);
+                cfg = ControlFlowGraph.Create(program.GetFunctionBody(symbols.First()));
+            }
+
+            writer.WriteControlFlowGraph(cfg);
+        }
+
 
         public static Compilation Compile(SourceText text) => new Compilation(null, text, new Dictionary<string, object>(), false);
 
