@@ -1,3 +1,4 @@
+using Compiler.Text;
 using Xunit;
 
 namespace Compiler.Test
@@ -89,7 +90,7 @@ namespace Compiler.Test
         [InlineData("\"test\" != \"abc\"", true)]
         public static void Evaluate_Result(string text, object expceted)
         {
-            var compiltaion = Compilation.CompileScript(text);
+            var compiltaion = Compilation.CompileScript(new SourceText(text, null));
             var res = compiltaion.EvaluateExpression();
 
             Assert.Empty(compiltaion.Diagnostics);

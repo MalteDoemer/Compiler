@@ -184,9 +184,9 @@ namespace Compiler.Syntax
         {
             var forToken = MatchToken(SyntaxTokenKind.ForKeyword);
             var variableDeclaration = ParseVariableDeclaration();
-            var comma1 = MatchToken(SyntaxTokenKind.Comma);
+            //var comma1 = MatchToken(SyntaxTokenKind.Comma);
             var condition = ParseExpression();
-            var comma2 = MatchToken(SyntaxTokenKind.Comma);
+            //var comma2 = MatchToken(SyntaxTokenKind.Comma);
             var increment = ParseExpression();
             var body = ParseStatement();
             return new ForStatementSyntax(forToken, variableDeclaration, condition, increment, body, isTreeValid);

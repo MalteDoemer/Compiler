@@ -1,6 +1,7 @@
 ﻿using Xunit;
 using System;
 using Compiler;
+using Compiler.Text;
 
 namespace Compiler.Test
 {
@@ -19,9 +20,9 @@ namespace Compiler.Test
             var line2 = text;
             var line3 = variable;
 
-            var comp1 = Compilation.CompileScript(line1, null);
-            var comp2 = Compilation.CompileScript(line2, comp1);
-            var comp3 = Compilation.CompileScript(line3, comp2);
+            var comp1 = Compilation.CompileScript(new SourceText(line1, null), null);
+            var comp2 = Compilation.CompileScript(new SourceText(line2, null), comp1);
+            var comp3 = Compilation.CompileScript(new SourceText(line3, null), comp2);
 
             Assert.Empty(comp1.Diagnostics);
             Assert.Empty(comp2.Diagnostics);

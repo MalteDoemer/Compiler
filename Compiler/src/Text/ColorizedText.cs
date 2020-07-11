@@ -95,7 +95,7 @@ namespace Compiler.Text
 
         public ColorizedText Concat(ColorizedText other)
         {
-            var text = new SourceText(Text.Text + other.Text.Text);
+            var text = Text + other.Text;
             var builder = ImmutableArray.CreateBuilder<ColorizedSpan>(Spans.Length + other.Spans.Length);
 
             builder.AddRange(Spans);

@@ -18,7 +18,7 @@ namespace Compiler
 
         protected override void EvaluateSubmission(string text)
         {
-            compilation = Compilation.CompileScript(text, compilation);
+            compilation = Compilation.CompileScript(new SourceText(text, "<stdin>"), compilation);
 
             if (compilation.Diagnostics.HasErrors)
                 compilation.Diagnostics.WriteTo(Console.Out);
@@ -28,7 +28,7 @@ namespace Compiler
 
         protected override object RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
         {
-            var srcText = new SourceText(lines[lineIndex]);
+            var srcText = new SourceText(lines[lineIndex], null);
 
             if (srcText.ToString().StartsWith('@'))
             {
@@ -48,7 +48,7 @@ namespace Compiler
             if (string.IsNullOrEmpty(text))
                 return true;
 
-            compilation = Compilation.CompileScript(text, compilation);
+            compilation = Compilation.CompileScript(new SourceText(text, null), compilation);
 
             if (compilation.Diagnostics.Where(d =>
             {

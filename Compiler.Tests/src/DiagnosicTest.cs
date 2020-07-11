@@ -6,6 +6,7 @@ using Compiler.Diagnostics;
 using Compiler.Syntax;
 using Xunit;
 using Compiler.Symbols;
+using Compiler.Text;
 
 namespace Compiler.Test
 {
@@ -245,7 +246,7 @@ namespace Compiler.Test
         private static void AssertDiagnostic(string text, string expected)
         {
             var annotatedText = AnnotatedText.Parse(text);
-            var compilation = Compilation.CompileScript(annotatedText.Text);
+            var compilation = Compilation.CompileScript(new SourceText(annotatedText.Text, null));
             compilation.Evaluate();
             var diagnostics = AnnotatedText.UnindentLines(expected);
 

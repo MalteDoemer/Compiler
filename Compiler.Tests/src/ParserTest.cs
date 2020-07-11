@@ -3,6 +3,7 @@ using System;
 using Compiler;
 using System.Collections.Generic;
 using Compiler.Syntax;
+using Compiler.Text;
 
 namespace Compiler.Test
 {
@@ -25,7 +26,7 @@ namespace Compiler.Test
             Assert.NotEqual(0, precedence2);
 
             var text = $"a {text1} b {text2} c";
-            var res = Compilation.SyntaxTreeToString(text);
+            var res = Compilation.SyntaxTreeToString(new SourceText(text,null));
 
             if (precedence1 > precedence2)
             {
@@ -52,7 +53,7 @@ namespace Compiler.Test
             Assert.NotNull(text2);
 
             var text = $"a {text1} {text2}b";
-            var res = Compilation.SyntaxTreeToString(text);
+            var res = Compilation.SyntaxTreeToString(new SourceText(text, null));
             var expected = $"(a {text1} ({text2}b))\n";
             Assert.Equal(expected, res);
         }

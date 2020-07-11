@@ -5,7 +5,7 @@ namespace Compiler.Text
 {
     public struct TextLocation
     {
-        public static readonly TextLocation Undefined = new TextLocation(string.Empty, TextSpan.Undefined);
+        public static readonly TextLocation Undefined = new TextLocation(new SourceText(string.Empty, null), TextSpan.Undefined);
 
         public TextLocation(SourceText text, TextSpan span)
         {

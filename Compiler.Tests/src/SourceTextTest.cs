@@ -13,7 +13,7 @@ namespace Compiler.Text
         [InlineData("\r\r\r", 4)]
         public static void SourceTextLineNumbers(string text, int expected)
         {
-            var src = new SourceText(text);
+            var src = new SourceText(text, null);
             Assert.Equal(expected, src.Lines.Length);
         }
     }

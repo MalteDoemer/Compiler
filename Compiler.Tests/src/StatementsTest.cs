@@ -2,6 +2,7 @@ using System;
 using Xunit;
 using System.Collections.Generic;
 using System.Linq;
+using Compiler.Text;
 
 namespace Compiler.Test
 {
@@ -49,7 +50,7 @@ namespace Compiler.Test
             var text = @"
                 var debug = ''
                 
-                for var i : int = 0, i < 20, i++ {
+                for var i : int = 0 i < 20 i++ {
                     debug += 'f'
                 }
 
@@ -67,7 +68,7 @@ namespace Compiler.Test
             var text = @"
                 var debug = ''
                 
-                for var i = 1, i < 15, i++{
+                for var i = 1 i < 15 i++{
                     if i == 10 break
                     if i % 2 == 0 continue
                     debug += string(i)
@@ -121,7 +122,7 @@ namespace Compiler.Test
 
         private static void AssertLastValue(string text, object expected)
         {
-            var compilation = Compilation.CompileScript(text);
+            var compilation = Compilation.CompileScript(new SourceText(text, null));
             Assert.Empty(compilation.Diagnostics);
             var res = compilation.EvaluateExpression();
             Assert.Equal(expected, res);

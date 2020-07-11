@@ -5,15 +5,23 @@ namespace Compiler.Text
 {
     public sealed class SourceText
     {
-        public SourceText(string text)
+        // public SourceText(string text)
+        // {
+        //     Text = text;
+        //     Lines = ParseLines(this, text);
+        // }
+
+        public SourceText(string text, string file)
         {
             Text = text;
+            File = file;
             Lines = ParseLines(this, text);
         }
 
-        public static implicit operator SourceText(string text) => new SourceText(text);
+        //public static implicit operator SourceText(string text) => new SourceText(text, null);
 
         public ImmutableArray<SourceLine> Lines { get; }
+        public string File { get; }
         public string Text { get; }
         public int Length => Text.Length;
         public char this[int i] { get => Text[i]; }
@@ -52,7 +60,7 @@ namespace Compiler.Text
 
             return lower;
         }
-        
+
         public int GetCharacterOffset(int pos) => pos - Lines[GetLineIndex(pos)].Span.Start;
 
         public override string ToString() => Text;
@@ -118,5 +126,10 @@ namespace Compiler.Text
 
         public static bool operator ==(SourceText l, SourceText r) => l.Text == r.Text;
         public static bool operator !=(SourceText l, SourceText r) => l.Text != r.Text;
+        public static SourceText operator +(SourceText l, SourceText r)
+        {
+            if (l.File != r.File) return new SourceText(l.Text + r.Text, null);
+            return new SourceText(l.Text + r.Text, l.File);
+        }
     }
 }

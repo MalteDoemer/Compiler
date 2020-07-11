@@ -2,6 +2,7 @@
 using System.Linq;
 using System.IO;
 using Compiler;
+using Compiler.Text;
 
 namespace gsc
 {
@@ -18,7 +19,7 @@ namespace gsc
             if (File.Exists(path))
             {
                 var text = File.ReadAllText(path);
-                var compilation = Compilation.Compile(text);
+                var compilation = Compilation.Compile(new SourceText(text, path));
 
                 if (compilation.Diagnostics.Any()) compilation.Diagnostics.WriteTo(Console.Out);
                 else compilation.Evaluate();

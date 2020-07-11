@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Compiler.Syntax;
+using Compiler.Text;
 using Xunit;
 
 namespace Compiler.Test
@@ -13,7 +14,7 @@ namespace Compiler.Test
         [MemberData(nameof(GetAllTokenData))]
         public static void LexAllTokens(string text, SyntaxTokenKind kind)
         {
-            var tokens = Compilation.Tokenize(text);
+            var tokens = Compilation.Tokenize(new SourceText(text,null));
             Assert.Equal(2, tokens.Length);
             Assert.Equal(kind, tokens[0].Kind);
             Assert.Equal(SyntaxTokenKind.End, tokens[1].Kind);
@@ -24,7 +25,7 @@ namespace Compiler.Test
         public static void LexAllTokensWithSpace(string text1, SyntaxTokenKind kind1, string text2, SyntaxTokenKind kind2)
         {
             var text = text1 + " " + text2;
-            var tokens = Compilation.Tokenize(text);
+            var tokens = Compilation.Tokenize(new SourceText(text, null));
             Assert.Equal(3, tokens.Length);
             Assert.Equal(kind1, tokens[0].Kind);
             Assert.Equal(kind2, tokens[1].Kind);

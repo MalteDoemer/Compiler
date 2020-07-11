@@ -56,6 +56,8 @@ namespace Compiler.Text
         public static void WriteDiagnostic(this TextWriter writer, Diagnostic diagnostic)
         {
             var reportColor = diagnostic.Level == ErrorLevel.Error ? ConsoleColor.Red : ConsoleColor.Yellow;
+            var errType = diagnostic.Level == ErrorLevel.Error ? "Error" : "Warning";
+
             if (diagnostic.HasPositon)
             {
                 var src = diagnostic.Location.Text;
@@ -63,15 +65,21 @@ namespace Compiler.Text
                 var errorText = src.ToString(diagnostic.Span);
                 var postfix = src.ToString(diagnostic.Span.End, src.Length - diagnostic.Span.End);
 
-                var linenum = diagnostic.Location.StartLine;
-                var charOff = diagnostic.Location.StartCharacter;
+                var lineStart = diagnostic.Location.StartLine;
+                var lineEnd = diagnostic.Location.EndLine;
+                var columnStart = diagnostic.Location.StartCharacter + 1;
+                var columnEnd = diagnostic.Location.EndCharacter + 1;
 
+                var file = diagnostic.Location.Text.File ?? "<string>";
 
-                writer.ColorWrite($"\n\n{diagnostic.Kind} in line {linenum} at character {charOff}\n\n");
-                writer.ColorWrite(prefix);
-                writer.ColorWrite(errorText, ConsoleColor.Red);
-                writer.ColorWrite(postfix);
-                writer.ColorWrite($"\n\n{diagnostic.Message}\n\n");
+                writer.ColorWrite($"{errType} in {file} line [{lineStart},{lineEnd}] column [{columnStart},{columnEnd}]: {diagnostic.Message}\n ", reportColor);
+
+                // writer.ColorWrite($"\n\nError in {file} line {linenum} column {charOff}\n\n");
+                // writer.ColorWrite(prefix);
+                // writer.ColorWrite(errorText, ConsoleColor.Red);
+                // writer.ColorWrite(postfix);
+                // writer.ColorWrite($"\n\n{diagnostic.Message}\n\n");
+
             }
             else writer.ColorWrite($"\n\n{diagnostic.Kind}: {diagnostic.Message}\n\n", ConsoleColor.Red);
         }
