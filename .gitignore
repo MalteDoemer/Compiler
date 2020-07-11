@@ -9,3 +9,7 @@ build.cmd
 /Repl/bin
 /gsharp/obj
 /gsharp/bin
+/gsc/obj
+/gsc/bin
+/gsi/obj
+/gsi/bin
