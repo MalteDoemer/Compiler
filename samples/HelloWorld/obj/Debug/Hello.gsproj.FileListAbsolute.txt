@@ -1,0 +1,9 @@
+C:\Dev\vscode\c#\compiler\samples\HelloWorld\obj\Debug\Hello.gsprojAssemblyReference.cache
+C:\Dev\vscode\c#\compiler\samples\HelloWorld\obj\Debug\Hello.gsproj.CoreCompileInputs.cache
+C:\Dev\vscode\c#\compiler\samples\HelloWorld\bin\Debug\Hello.exe
+C:\Dev\vscode\c#\compiler\samples\HelloWorld\bin\Debug\Hello.deps.json
+C:\Dev\vscode\c#\compiler\samples\HelloWorld\bin\Debug\Hello.runtimeconfig.json
+C:\Dev\vscode\c#\compiler\samples\HelloWorld\bin\Debug\Hello.runtimeconfig.dev.json
+C:\Dev\vscode\c#\compiler\samples\HelloWorld\bin\Debug\Hello.dll
+C:\Dev\vscode\c#\compiler\samples\HelloWorld\obj\Debug\Hello.dll
+C:\Dev\vscode\c#\compiler\samples\HelloWorld\obj\Debug\Hello.genruntimeconfig.cache

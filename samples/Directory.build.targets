@@ -1,0 +1,25 @@
+<Project>
+
+  <Target Name="CreateManifestResourceNames" />
+
+  <Target Name="CoreCompile" DependsOnTargets="$(CoreCompileDependsOn)">
+    <ItemGroup>
+      <ReferencePath Remove="@(ReferencePath)"
+                     Condition="'%(FileName)' != 'System.Console' AND
+                                '%(FileName)' != 'System.Runtime' AND
+                                '%(FileName)' != 'System.Runtime.Extensions'" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <GSharpCompilerArgs>@(Compile->'"%(Identity)"', ' ')</GSharpCompilerArgs>
+      <GSharpCompilerArgs>$(GSharpCompilerArgs) /o "@(IntermediateAssembly)"</GSharpCompilerArgs>
+      <GSharpCompilerArgs>$(GSharpCompilerArgs) @(ReferencePath->'/r "%(Identity)"', ' ')</GSharpCompilerArgs>
+
+      <GSharpCompileCommand>dotnet run --project "C:\Dev\vscode\c#\compiler\gsc\gsc.csproj" -- $(GSharpCompilerArgs)</GSharpCompileCommand>
+    </PropertyGroup>
+
+    <Exec Command="$(GSharpCompileCommand)" />
+  </Target>
+
+</Project>
+
