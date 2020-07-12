@@ -4,13 +4,14 @@ namespace Compiler.Syntax
 {
     internal sealed class ExpressionStatementSyntax : StatementSyntax
     {
-        public ExpressionStatementSyntax(ExpressionSyntax expression, bool isValid = true)
+        public ExpressionStatementSyntax(ExpressionSyntax expression, bool isValid, TextLocation location)
         {
             Expression = expression;
             IsValid = isValid;
+            Location = location;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ExpressionStatementSyntax;
-        public override TextSpan Span => Expression.Span;
+        public override TextLocation Location { get; }
         public override bool IsValid { get; }
         public ExpressionSyntax Expression { get; }
 

@@ -7,7 +7,7 @@ namespace Compiler.Diagnostics
         NeverClosedCurlyBrackets,
         NeverClosedParenthesis,
         ExpectedToken,
-        UnExpectedToken,
+        UnexpectedToken,
         UnresolvedIdentifier,
         IncompatibleTypes,
         UnsupportedBinaryOperator,

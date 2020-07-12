@@ -12,6 +12,11 @@ namespace Compiler.Text
             Text = text;
             Span = span;
         }
+        public TextLocation(SourceText text, int start, int len)
+        {
+            Text = text;
+            Span = TextSpan.FromLength(start, len);
+        }
 
         public SourceText Text { get; }
         public TextSpan Span { get; }
@@ -24,7 +29,7 @@ namespace Compiler.Text
         public override bool Equals(object obj) => obj is TextLocation location && Text == location.Text && Span == location.Span;
         public override int GetHashCode() => HashCode.Combine(Text, Span, StartLine, EndLine, StartCharacter, EndCharacter);
 
-        public static bool operator==(TextLocation l, TextLocation r) => l.Text == r.Text && l.Span == r.Span;
-        public static bool operator!=(TextLocation l, TextLocation r) => l.Text != r.Text || r.Span != r.Span;
+        public static bool operator ==(TextLocation l, TextLocation r) => l.Text == r.Text && l.Span == r.Span;
+        public static bool operator !=(TextLocation l, TextLocation r) => l.Text != r.Text || r.Span != r.Span;
     }
 }

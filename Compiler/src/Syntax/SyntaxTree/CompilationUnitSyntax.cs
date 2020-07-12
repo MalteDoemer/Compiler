@@ -7,16 +7,15 @@ namespace Compiler.Syntax
 {
     internal sealed class CompilationUnitSyntax : SyntaxNode
     {
-        public CompilationUnitSyntax(SourceText text, ImmutableArray<MemberSyntax> members, bool isValid = true)
+        public CompilationUnitSyntax(ImmutableArray<MemberSyntax> members, bool isValid, TextLocation location)
         {
-            Text = text;
             Members = members;
             IsValid = isValid;
+            Location = location;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.CompilationUnitSyntax;
-        public override TextSpan Span => TextSpan.FromBounds(0, Text.Length);
+        public override TextLocation Location { get; }
         public override bool IsValid { get; }
-        public SourceText Text { get; }
         public ImmutableArray<MemberSyntax> Members { get; }
 
         public override string ToString()

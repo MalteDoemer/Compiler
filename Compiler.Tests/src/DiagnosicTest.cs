@@ -129,7 +129,7 @@ namespace Compiler.Test
         [InlineData("[else]", SyntaxTokenKind.ElseKeyword)]
         public static void Report_Unexpected_Token(string text, SyntaxTokenKind unExpectedKind)
         {
-            AssertDiagnostic(text, ErrorMessage.UnExpectedToken, unExpectedKind);
+            AssertDiagnostic(text, ErrorMessage.UnexpectedToken, unExpectedKind);
         }
 
 

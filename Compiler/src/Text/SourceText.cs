@@ -5,20 +5,12 @@ namespace Compiler.Text
 {
     public sealed class SourceText
     {
-        // public SourceText(string text)
-        // {
-        //     Text = text;
-        //     Lines = ParseLines(this, text);
-        // }
-
         public SourceText(string text, string file)
         {
             Text = text;
             File = file;
             Lines = ParseLines(this, text);
         }
-
-        //public static implicit operator SourceText(string text) => new SourceText(text, null);
 
         public ImmutableArray<SourceLine> Lines { get; }
         public string File { get; }
@@ -124,12 +116,7 @@ namespace Compiler.Text
         public override bool Equals(object obj) => obj is SourceText text && Text == text.Text;
         public override int GetHashCode() => HashCode.Combine(Lines, Text, Length);
 
-        public static bool operator ==(SourceText l, SourceText r) => l.Text == r.Text;
-        public static bool operator !=(SourceText l, SourceText r) => l.Text != r.Text;
-        public static SourceText operator +(SourceText l, SourceText r)
-        {
-            if (l.File != r.File) return new SourceText(l.Text + r.Text, null);
-            return new SourceText(l.Text + r.Text, l.File);
-        }
+        public static bool operator ==(SourceText l, SourceText r) => l.Text == r.Text && l.File == r.File;
+        public static bool operator !=(SourceText l, SourceText r) => l.Text != r.Text || l.File != r.File;
     }
 }

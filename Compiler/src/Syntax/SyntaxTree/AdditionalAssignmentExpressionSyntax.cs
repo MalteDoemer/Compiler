@@ -6,15 +6,16 @@ namespace Compiler.Syntax
 {
     internal sealed class AdditionalAssignmentExpressionSyntax : ExpressionSyntax
     {
-        public AdditionalAssignmentExpressionSyntax(SyntaxToken identifier, SyntaxToken op, ExpressionSyntax expression, bool isValid = true)
+        public AdditionalAssignmentExpressionSyntax(SyntaxToken identifier, SyntaxToken op, ExpressionSyntax expression, bool isValid, TextLocation location)
         {
             Identifier = identifier;
             Op = op;
             Expression = expression;
             IsValid = isValid;
+            Location = location;
         }
 
-        public override TextSpan Span => Identifier.Span + Expression.Span;
+        public override TextLocation Location { get; }
         public override bool IsValid { get; }
         public SyntaxToken Identifier { get; }
         public SyntaxToken Op { get; }

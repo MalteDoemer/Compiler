@@ -35,22 +35,19 @@ namespace Compiler.Diagnostics
         };
 
         private readonly List<Diagnostic> builder;
-        private readonly SourceText text;
-
-        public DiagnosticBag(SourceText text)
+        public DiagnosticBag()
         {
             builder = new List<Diagnostic>();
-            this.text = text;
         }
 
-        public void ReportDiagnostic(ErrorMessage message, TextSpan reportSpan, ErrorLevel level, params object[] values)
+        public void ReportDiagnostic(ErrorMessage message, TextLocation location, ErrorLevel level, params object[] values)
         {
             var text = String.Format(ErrorFormats[(int)message], values);
-            builder.Add(new Diagnostic(text, new TextLocation(this.text, reportSpan), level));
+            builder.Add(new Diagnostic(text, location, level));
         }
 
-        public void ReportError(ErrorMessage message, TextSpan span, params object[] values) => ReportDiagnostic(message, span, ErrorLevel.Error, values);
-        public void ReportWarning(ErrorMessage message, TextSpan span, params object[] values) => ReportDiagnostic(message, span, ErrorLevel.Warning, values);
+        public void ReportError(ErrorMessage message, TextLocation location, params object[] values) => ReportDiagnostic(message, location, ErrorLevel.Error, values);
+        public void ReportWarning(ErrorMessage message, TextLocation location, params object[] values) => ReportDiagnostic(message, location, ErrorLevel.Warning, values);
 
         public IEnumerator<Diagnostic> GetEnumerator() => builder.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => builder.GetEnumerator();

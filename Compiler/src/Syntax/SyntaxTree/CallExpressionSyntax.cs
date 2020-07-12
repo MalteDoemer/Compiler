@@ -6,16 +6,17 @@ namespace Compiler.Syntax
 {
     internal sealed class CallExpressionSyntax : ExpressionSyntax
     {
-        public CallExpressionSyntax(SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ExpressionSyntax> arguments, SyntaxToken rightParenthesis, bool isValid = true)
+        public CallExpressionSyntax(SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ExpressionSyntax> arguments, SyntaxToken rightParenthesis, bool isValid, TextLocation location)
         {
             Identifier = identifier;
             LeftParenthesis = leftParenthesis;
             Arguments = arguments;
             RightParenthesis = rightParenthesis;
             IsValid = isValid;
+            Location = location;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.CallExpressionSyntax;
-        public override TextSpan Span => Identifier.Span + RightParenthesis.Span;
+        public override TextLocation Location { get; }
         public override bool IsValid { get; }
 
         public SyntaxToken Identifier { get; }

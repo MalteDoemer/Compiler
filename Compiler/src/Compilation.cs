@@ -34,7 +34,7 @@ namespace Compiler
             var unit = parser.ParseCompilationUnit();
 
             var previousProgram = previous == null ? null : previous.program;
-            program = Binder.BindProgram(previousProgram, isScript, unit);
+            program = Binder.BindProgram(previousProgram, isScript, new[] { unit });
 
             var builder = ImmutableArray.CreateBuilder<Diagnostic>();
             builder.AddRange(lexer.GetDiagnostics());

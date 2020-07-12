@@ -6,16 +6,17 @@ namespace Compiler.Syntax
 {
     internal sealed class ReturnStatementSyntax : StatementSyntax
     {
-        public ReturnStatementSyntax(SyntaxToken returnToken, ExpressionSyntax returnExpression, SyntaxToken voidToken, bool isValid)
+        public ReturnStatementSyntax(SyntaxToken returnToken, ExpressionSyntax returnExpression, SyntaxToken voidToken, bool isValid, TextLocation location)
         {
             IsValid = isValid;
+            Location = location;
             ReturnToken = returnToken;
             ReturnExpression = returnExpression;
             VoidToken = voidToken;
         }
 
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ReturnStatementSyntax;
-        public override TextSpan Span => ReturnToken.Span + (ReturnExpression == null ? VoidToken.Span : ReturnExpression.Span);
+        public override TextLocation Location { get; }
         public override bool IsValid { get; }
         public SyntaxToken ReturnToken { get; }
         public ExpressionSyntax ReturnExpression { get; }

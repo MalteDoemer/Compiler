@@ -92,22 +92,6 @@ namespace Compiler.Text
         public string ToString(TextSpan span) => Text.ToString(span);
         public string ToString(int start, int len) => Text.ToString(start, len);
         public void WriteTo(TextWriter writer) => writer.WriteColorizedText(this);
-
-        public ColorizedText Concat(ColorizedText other)
-        {
-            var text = Text + other.Text;
-            var builder = ImmutableArray.CreateBuilder<ColorizedSpan>(Spans.Length + other.Spans.Length);
-
-            builder.AddRange(Spans);
-
-            var off = text.Length;
-
-            foreach (var span in other.Spans)
-                builder.Add(new ColorizedSpan(span.Span.Start + off, span.Span.Length, span.Color));
-
-            return new ColorizedText(text, builder.MoveToImmutable());
-        }
-
     }
 
     public class ColorizedSpan
@@ -143,7 +127,7 @@ namespace Compiler.Text
         }
 
         public override ConsoleColor Color { get; }
-        public override TextSpan Span => Token.Span;
+        public override TextSpan Span => Token.Location.Span;
         public SyntaxToken Token { get; }
     }
 }

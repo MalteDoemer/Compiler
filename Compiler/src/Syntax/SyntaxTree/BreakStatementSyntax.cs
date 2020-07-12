@@ -6,13 +6,14 @@ namespace Compiler.Syntax
 {
     internal sealed class BreakStatementSyntax : StatementSyntax
     {
-        public BreakStatementSyntax(SyntaxToken breakToken, bool isValid)
+        public BreakStatementSyntax(SyntaxToken breakToken, bool isValid, TextLocation location)
         {
             BreakToken = breakToken;
             IsValid = isValid;
+            Location = location;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.BreakStatementSyntax;
-        public override TextSpan Span => BreakToken.Span;
+        public override TextLocation Location { get; }
         public override bool IsValid { get; }
         public SyntaxToken BreakToken { get; }
         

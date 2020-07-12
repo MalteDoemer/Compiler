@@ -18,7 +18,7 @@ namespace Compiler.Syntax
         {
             this.text = text;
             this.isScript = isScript;
-            diagnostics = new DiagnosticBag(text);
+            diagnostics = new DiagnosticBag();
         }
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
@@ -43,7 +43,7 @@ namespace Compiler.Syntax
 
             var space = text.ToString(start, pos - start);
 
-            return new SyntaxToken(SyntaxTokenKind.Space, start, pos - start, space);
+            return new SyntaxToken(SyntaxTokenKind.Space, new TextLocation(text, start, pos - start), space);
         }
 
         private SyntaxToken LexNumber()
@@ -64,7 +64,7 @@ namespace Compiler.Syntax
                 double fnum = num;
                 long weight = 1;
 
-                if (!char.IsDigit(current)) diagnostics.ReportError(ErrorMessage.InvalidDecimalPoint, TextSpan.FromLength(pos - 1, 1));
+                if (!char.IsDigit(current)) diagnostics.ReportError(ErrorMessage.InvalidDecimalPoint, new TextLocation(text, pos - 1, 1));
 
                 while (char.IsDigit(current))
                 {
@@ -72,9 +72,9 @@ namespace Compiler.Syntax
                     fnum += (double)(current - '0') / (double)weight;
                     pos++;
                 }
-                return new SyntaxToken(SyntaxTokenKind.Float, start, pos - start, fnum);
+                return new SyntaxToken(SyntaxTokenKind.Float, new TextLocation(text, start, pos - start), fnum);
             }
-            else return new SyntaxToken(SyntaxTokenKind.Int, start, pos - start, num);
+            else return new SyntaxToken(SyntaxTokenKind.Int, new TextLocation(text, start, pos - start), num);
 
         }
 
@@ -87,8 +87,8 @@ namespace Compiler.Syntax
             var isKeyword = SyntaxFacts.IsKeyWord(tokenText);
 
             if (isKeyword != null)
-                return new SyntaxToken((SyntaxTokenKind)isKeyword, start, pos - start, SyntaxFacts.GetKeywordValue(tokenText));
-            else return new SyntaxToken(SyntaxTokenKind.Identifier, start, pos - start, tokenText);
+                return new SyntaxToken((SyntaxTokenKind)isKeyword, new TextLocation(text, start, pos - start), SyntaxFacts.GetKeywordValue(tokenText));
+            else return new SyntaxToken(SyntaxTokenKind.Identifier, new TextLocation(text, start, pos - start), tokenText);
         }
 
         private SyntaxToken LexString()
@@ -106,9 +106,9 @@ namespace Compiler.Syntax
                     case '\0':
                     case '\r':
                     case '\n':
-                        diagnostics.ReportError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(quoteStart, pos));
+                        diagnostics.ReportError(ErrorMessage.NeverClosedStringLiteral, new TextLocation(text, TextSpan.FromBounds(quoteStart, pos)));
                         var t1 = text.ToString(textStart, pos - textStart);
-                        return new SyntaxToken(SyntaxTokenKind.String, quoteStart, pos - quoteStart, t1, false);
+                        return new SyntaxToken(SyntaxTokenKind.String, new TextLocation(text, quoteStart, pos - quoteStart), t1, false);
                     default:
                         if (current == quote) done = true;
 
@@ -117,7 +117,7 @@ namespace Compiler.Syntax
                 }
             }
             var t = text.ToString(textStart, pos - textStart - 1);
-            return new SyntaxToken(SyntaxTokenKind.String, quoteStart, pos - quoteStart, t);
+            return new SyntaxToken(SyntaxTokenKind.String, new TextLocation(text, quoteStart, pos - quoteStart), t);
         }
 
         private SyntaxToken LexSingleChar()
@@ -126,7 +126,7 @@ namespace Compiler.Syntax
             if (kind != null)
             {
 
-                return new SyntaxToken((SyntaxTokenKind)kind, pos, 1, Advance());
+                return new SyntaxToken((SyntaxTokenKind)kind, new TextLocation(text, pos, 1), Advance());
             }
             return null;
         }
@@ -135,7 +135,7 @@ namespace Compiler.Syntax
         {
             var kind = SyntaxFacts.IsDoubleCharacter(current, ahead);
             string value = "" + current + ahead;
-            if (kind != null) return new SyntaxToken((SyntaxTokenKind)kind, (pos += 2) - 2, 2, value);
+            if (kind != null) return new SyntaxToken((SyntaxTokenKind)kind, new TextLocation(text, (pos += 2) - 2, 2), value);
             return null;
         }
 
@@ -147,7 +147,7 @@ namespace Compiler.Syntax
 
             var comment = text.ToString(start, pos - start);
 
-            return new SyntaxToken(SyntaxTokenKind.Comment, start, pos - start, comment);
+            return new SyntaxToken(SyntaxTokenKind.Comment, new TextLocation(text, start, pos - start), comment);
         }
 
         private SyntaxToken NextToken()
@@ -158,13 +158,13 @@ namespace Compiler.Syntax
             var singleChar = LexSingleChar();
             if (singleChar != null) return singleChar;
 
-            if (current == '\0') return new SyntaxToken(SyntaxTokenKind.End, pos, 0, "End");
+            if (current == '\0') return new SyntaxToken(SyntaxTokenKind.End, new TextLocation(text, pos, 0), "End");
             else if (current == '"' || current == '\'') return LexString();
             else if (char.IsNumber(current)) return LexNumber();
             else if (char.IsWhiteSpace(current)) return LexSpace();
             else if (current == '#') return LexComment();
             else if (char.IsLetter(current) || current == '_') return LexIdentifierOrKeyword();
-            else return new SyntaxToken(SyntaxTokenKind.Invalid, pos, 1, Advance());
+            else return new SyntaxToken(SyntaxTokenKind.Invalid, new TextLocation(text, pos, 1), Advance());
         }
 
         public IEnumerable<SyntaxToken> Tokenize(bool verbose = false)

@@ -4,15 +4,16 @@ namespace Compiler.Syntax
 {
     internal sealed class BinaryExpressionSyntax : ExpressionSyntax
     {
-        public BinaryExpressionSyntax(SyntaxToken op, ExpressionSyntax left, ExpressionSyntax right, bool isValid = true)
+        public BinaryExpressionSyntax(SyntaxToken op, ExpressionSyntax left, ExpressionSyntax right, bool isValid, TextLocation location)
         {
             Op = op;
             Left = left;
             Right = right;
             IsValid = isValid;
+            Location = location;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.BinaryExpressionSyntax;
-        public override TextSpan Span => Left.Span + Right.Span;
+        public override TextLocation Location { get; }
         public override bool IsValid { get; }
         public SyntaxToken Op { get; }
         public ExpressionSyntax Left { get; }

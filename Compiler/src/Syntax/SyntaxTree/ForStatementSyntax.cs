@@ -6,7 +6,7 @@ namespace Compiler.Syntax
 {
     internal sealed class ForStatementSyntax : StatementSyntax
     {
-        public ForStatementSyntax(SyntaxToken forToken, StatementSyntax variableDacleration, ExpressionSyntax condition, ExpressionSyntax increment, StatementSyntax body, bool isValid = true)
+        public ForStatementSyntax(SyntaxToken forToken, StatementSyntax variableDacleration, ExpressionSyntax condition, ExpressionSyntax increment, StatementSyntax body, bool isValid, TextLocation location)
         {
             ForToken = forToken;
             VariableDeclaration = variableDacleration;
@@ -14,10 +14,11 @@ namespace Compiler.Syntax
             Increment = increment;
             Body = body;
             IsValid = isValid;
+            Location = location;
         }
 
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ForStatementSyntax;
-        public override TextSpan Span => ForToken.Span + Body.Span;
+        public override TextLocation Location { get; }
         public override bool IsValid { get; }
         public SyntaxToken ForToken { get; }
         public StatementSyntax VariableDeclaration { get; }
