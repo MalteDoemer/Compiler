@@ -15,7 +15,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.VariableDeclarationStatementSyntax;
-        public override TextSpan Location => VarKeyword.Span + Expression.Location;
+        public override TextSpan Span => VarKeyword.Span + Expression.Span;
         public override bool IsValid { get; }
         public SyntaxToken VarKeyword { get; }
         public SyntaxToken Identifier { get; }

@@ -11,7 +11,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ElseStatementSyntax;
-        public override TextSpan Location => ElseToken.Span + Body.Location;
+        public override TextSpan Span => ElseToken.Span + Body.Span;
         public override bool IsValid { get; }
         public SyntaxToken ElseToken { get; }
         public StatementSyntax Body { get; }

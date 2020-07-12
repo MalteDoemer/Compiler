@@ -14,7 +14,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.CompilationUnitSyntax;
-        public override TextSpan Location => TextSpan.FromBounds(0, Text.Length);
+        public override TextSpan Span => TextSpan.FromBounds(0, Text.Length);
         public override bool IsValid { get; }
         public SourceText Text { get; }
         public ImmutableArray<MemberSyntax> Members { get; }

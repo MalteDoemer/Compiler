@@ -14,7 +14,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
 
-        public override TextSpan Location => Identifier.Span + Expression.Location;
+        public override TextSpan Span => Identifier.Span + Expression.Span;
         public override bool IsValid { get; }
         public SyntaxToken Identifier { get; }
         public SyntaxToken Op { get; }

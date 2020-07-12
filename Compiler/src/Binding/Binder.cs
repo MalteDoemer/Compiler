@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using Compiler.Diagnostics;
 using Compiler.Lowering;
 using Compiler.Symbols;
@@ -47,13 +46,13 @@ namespace Compiler.Binding
                     scope.TryDeclareVariable(param);
         }
 
-        public static BoundProgram BindProgram(BoundProgram previous, bool isScript, IEnumerable<CompilationUnitSyntax> units)
+        public static BoundProgram BindProgram(BoundProgram previous, bool isScript, CompilationUnitSyntax unit)
         {
             var parentScope = CreateBoundScopes(previous);
             var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
-            var functionSyntax = units.SelectMany(u => u.Members.OfType<FunctionDeclarationSyntax>());
-            var statementSyntax = units.SelectMany(u => u.Members.OfType<GlobalStatementSynatx>());
-            var globalBinder = new Binder(units.Text, parentScope, isScript, function: null);
+            var functionSyntax = unit.Members.OfType<FunctionDeclarationSyntax>();
+            var statementSyntax = unit.Members.OfType<GlobalStatementSynatx>();
+            var globalBinder = new Binder(unit.Text, parentScope, isScript, function: null);
             var isProgramValid = true;
 
             foreach (var func in functionSyntax)
@@ -78,7 +77,7 @@ namespace Compiler.Binding
 
             foreach (var symbol in declaredFunctions)
             {
-                var binder = new Binder(units.Text, currentScope, isScript, symbol);
+                var binder = new Binder(unit.Text, currentScope, isScript, symbol);
                 var body = binder.BindBlockStatmentSyntax(symbol.Syntax.Body);
                 var loweredBody = Lowerer.Lower(body);
 
@@ -100,12 +99,12 @@ namespace Compiler.Binding
             }
             if (mainFunc != null && mainFunc.Parameters.Length > 0)
             {
-                diagnostics.Add(new Diagnostic("Main function cannot have arguments.", new TextLocation(units.Text, mainFunc.Syntax.Parameters.Span), ErrorLevel.Error));
+                diagnostics.Add(new Diagnostic("Main function cannot have arguments.", new TextLocation(unit.Text, mainFunc.Syntax.Parameters.Span), ErrorLevel.Error));
                 isProgramValid = false;
             }
             if (mainFunc != null && mainFunc.ReturnType != TypeSymbol.Void)
             {
-                diagnostics.Add(new Diagnostic("Main function must return void.", new TextLocation(units.Text, mainFunc.Syntax.ReturnType.Location), ErrorLevel.Error));
+                diagnostics.Add(new Diagnostic("Main function must return void.", new TextLocation(unit.Text, mainFunc.Syntax.ReturnType.Span), ErrorLevel.Error));
                 isProgramValid = false;
             }
 
@@ -161,7 +160,7 @@ namespace Compiler.Binding
                 var name = parameterSyntax.Identifier.Value.ToString();
 
                 if (!seenParameters.Add(name))
-                    diagnostics.ReportError(ErrorMessage.DuplicatedParameters, parameterSyntax.Location, name);
+                    diagnostics.ReportError(ErrorMessage.DuplicatedParameters, parameterSyntax.Span, name);
                 else parameters.Add(new ParameterSymbol(name, type));
             }
 
@@ -298,7 +297,7 @@ namespace Compiler.Binding
 
             if (labelStack.Count == 0)
             {
-                ReportError(ErrorMessage.InvalidBreakOrContinue, syntax.Location, "break");
+                ReportError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "break");
                 label = new BoundLabel("Invalid break");
             }
             else
@@ -313,7 +312,7 @@ namespace Compiler.Binding
 
             if (labelStack.Count == 0)
             {
-                ReportError(ErrorMessage.InvalidBreakOrContinue, syntax.Location, "continue");
+                ReportError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "continue");
                 label = new BoundLabel("Invalid continue");
             }
             else
@@ -328,7 +327,7 @@ namespace Compiler.Binding
 
             if (function == null)
             {
-                ReportError(ErrorMessage.ReturnOnlyInFunction, syntax.Location);
+                ReportError(ErrorMessage.ReturnOnlyInFunction, syntax.Span);
                 expr = null;
             }
             else if (syntax.ReturnExpression == null)
@@ -362,7 +361,7 @@ namespace Compiler.Binding
             var res = BindExpressionInternal(syntax);
             if (!canBeVoid && res.ResultType == TypeSymbol.Void)
             {
-                ReportError(ErrorMessage.CannotBeVoid, syntax.Location);
+                ReportError(ErrorMessage.CannotBeVoid, syntax.Span);
                 return new BoundInvalidExpression();
             }
             return res;
@@ -570,9 +569,9 @@ namespace Compiler.Binding
             if (conversionType == ConversionType.Identety)
                 return expr;
             else if (conversionType == ConversionType.Explicit)
-                ReportError(ErrorMessage.MissingExplicitConversion, expression.Location, type, expr.ResultType);
+                ReportError(ErrorMessage.MissingExplicitConversion, expression.Span, type, expr.ResultType);
             else if (conversionType == ConversionType.None)
-                ReportError(ErrorMessage.IncompatibleTypes, expression.Location, type, expr.ResultType);
+                ReportError(ErrorMessage.IncompatibleTypes, expression.Span, type, expr.ResultType);
 
             return new BoundConversionExpression(type, expr, isTreeValid);
         }
@@ -583,7 +582,7 @@ namespace Compiler.Binding
             var conversion = BindFacts.ClassifyConversion(expr.ResultType, type);
 
             if (conversion == ConversionType.None)
-                ReportError(ErrorMessage.CannotConvert, syntax.Location, expr.ResultType, type);
+                ReportError(ErrorMessage.CannotConvert, syntax.Span, expr.ResultType, type);
 
             return new BoundConversionExpression(type, expr, isTreeValid);
         }

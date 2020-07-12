@@ -10,7 +10,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ExpressionStatementSyntax;
-        public override TextSpan Location => Expression.Location;
+        public override TextSpan Span => Expression.Span;
         public override bool IsValid { get; }
         public ExpressionSyntax Expression { get; }
 
