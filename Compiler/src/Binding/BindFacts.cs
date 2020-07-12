@@ -143,9 +143,9 @@ namespace Compiler.Binding
             {
                 case ("int", "float"): return ConversionType.Implicit;
                 case ("float", "int"): return ConversionType.Explicit;
-                case ("float", "string"): return ConversionType.Explicit;
-                case ("int", "string"): return ConversionType.Explicit;
-                case ("bool", "string"): return ConversionType.Explicit;
+                case ("float", "str"): return ConversionType.Explicit;
+                case ("int", "str"): return ConversionType.Explicit;
+                case ("bool", "str"): return ConversionType.Explicit;
                 default: return ConversionType.None;
             }
         }

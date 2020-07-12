@@ -60,19 +60,20 @@ namespace Compiler.Text
 
             if (diagnostic.HasPositon)
             {
-                var src = diagnostic.Location.Text;
-                var prefix = src.ToString(0, diagnostic.Span.Start);
-                var errorText = src.ToString(diagnostic.Span);
-                var postfix = src.ToString(diagnostic.Span.End, src.Length - diagnostic.Span.End);
+                //var src = diagnostic.Location.Text;
+                //var prefix = src.ToString(0, diagnostic.Span.Start);
+                //var errorText = src.ToString(diagnostic.Span);
+                //var postfix = src.ToString(diagnostic.Span.End, src.Length - diagnostic.Span.End);
 
                 var lineStart = diagnostic.Location.StartLine;
                 var lineEnd = diagnostic.Location.EndLine;
                 var columnStart = diagnostic.Location.StartCharacter + 1;
                 var columnEnd = diagnostic.Location.EndCharacter + 1;
-
                 var file = diagnostic.Location.Text.File ?? "<string>";
 
-                writer.ColorWrite($"{errType} in {file} line [{lineStart},{lineEnd}] column [{columnStart},{columnEnd}]: {diagnostic.Message}\n ", reportColor);
+                writer.WriteLine();
+                writer.ColorWrite($"{errType} in {file} line [{lineStart},{lineEnd}] column [{columnStart},{columnEnd}]: {diagnostic.Message}", reportColor);
+                writer.WriteLine();
 
                 // writer.ColorWrite($"\n\nError in {file} line {linenum} column {charOff}\n\n");
                 // writer.ColorWrite(prefix);

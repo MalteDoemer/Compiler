@@ -16,6 +16,7 @@ namespace Compiler.Syntax
         private readonly bool isScript;
 
         private bool isTreeValid = true;
+        private bool isStatementValid = true;
         private SyntaxToken current { get => Peak(0); }
         private int pos;
 
@@ -32,8 +33,9 @@ namespace Compiler.Syntax
 
         private void ReportError(ErrorMessage message, TextSpan span, params object[] values)
         {
-            if (isTreeValid)
+            if (isStatementValid)
                 diagnostics.ReportError(message, span, values);
+            isStatementValid = false;
             isTreeValid = false;
         }
 
@@ -125,6 +127,7 @@ namespace Compiler.Syntax
 
         private StatementSyntax ParseStatement()
         {
+            isStatementValid = true;
             switch (current.Kind)
             {
                 case SyntaxTokenKind.LCurly:
@@ -184,9 +187,7 @@ namespace Compiler.Syntax
         {
             var forToken = MatchToken(SyntaxTokenKind.ForKeyword);
             var variableDeclaration = ParseVariableDeclaration();
-            //var comma1 = MatchToken(SyntaxTokenKind.Comma);
             var condition = ParseExpression();
-            //var comma2 = MatchToken(SyntaxTokenKind.Comma);
             var increment = ParseExpression();
             var body = ParseStatement();
             return new ForStatementSyntax(forToken, variableDeclaration, condition, increment, body, isTreeValid);
@@ -308,10 +309,7 @@ namespace Compiler.Syntax
             MatchToken(SyntaxTokenKind.LParen);
             var expr = ParseExpression();
             if (current.Kind != SyntaxTokenKind.RParen)
-            {
                 ReportError(ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, current.Span.End));
-                isTreeValid = false;
-            }
             MatchToken(SyntaxTokenKind.RParen);
             return expr;
         }

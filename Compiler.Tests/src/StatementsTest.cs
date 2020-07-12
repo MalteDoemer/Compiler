@@ -71,7 +71,7 @@ namespace Compiler.Test
                 for var i = 1 i < 15 i++{
                     if i == 10 break
                     if i % 2 == 0 continue
-                    debug += string(i)
+                    debug += str(i)
                 }
 
                 debug

@@ -118,7 +118,7 @@ namespace Compiler.Syntax
                 case "int": return SyntaxTokenKind.IntKeyword;
                 case "float": return SyntaxTokenKind.FloatKeyword;
                 case "bool": return SyntaxTokenKind.BoolKeyword;
-                case "string": return SyntaxTokenKind.StringKeyword;
+                case "str": return SyntaxTokenKind.StringKeyword;
                 case "void": return SyntaxTokenKind.VoidKeyword;
                 case "any": return SyntaxTokenKind.AnyKeyword;
                 case "var": return SyntaxTokenKind.VarKeyword;
@@ -212,7 +212,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.IntKeyword: return "int";
                 case SyntaxTokenKind.FloatKeyword: return "float";
                 case SyntaxTokenKind.BoolKeyword: return "bool";
-                case SyntaxTokenKind.StringKeyword: return "string";
+                case SyntaxTokenKind.StringKeyword: return "str";
                 case SyntaxTokenKind.IfKeyword: return "if";
                 case SyntaxTokenKind.ElseKeyword: return "else";
                 case SyntaxTokenKind.WhileKeyword: return "while";

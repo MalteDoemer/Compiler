@@ -17,6 +17,7 @@ namespace Compiler.Binding
         private readonly Stack<(BoundLabel breakLabel, BoundLabel continueLabel)> labelStack;
 
         private bool isTreeValid;
+        private bool isStatementValid;
         private int labelCounter;
         private BoundScope scope;
 
@@ -24,8 +25,9 @@ namespace Compiler.Binding
 
         private void ReportError(ErrorMessage message, TextSpan span, params object[] values)
         {
-            if (isTreeValid)
+            if (isStatementValid)
                 diagnostics.ReportError(message, span, values);
+            isStatementValid = false;
             isTreeValid = false;
         }
 
@@ -34,6 +36,7 @@ namespace Compiler.Binding
             this.isScript = isScript;
             this.function = function;
             this.isTreeValid = true;
+            this.isStatementValid = true;
             this.labelStack = new Stack<(BoundLabel breakLabel, BoundLabel continueLabel)>();
             this.scope = new BoundScope(parentScope);
             this.diagnostics = new DiagnosticBag(source);
@@ -176,8 +179,12 @@ namespace Compiler.Binding
 
         private BoundStatement BindStatement(StatementSyntax syntax)
         {
+            isStatementValid = true;
             if (!syntax.IsValid)
+            {
+                isStatementValid = false;
                 isTreeValid = false;
+            }
 
             switch (syntax.Kind)
             {
@@ -363,7 +370,10 @@ namespace Compiler.Binding
         private BoundExpression BindExpressionInternal(ExpressionSyntax syntax)
         {
             if (!syntax.IsValid)
+            {
+                isStatementValid = false;
                 isTreeValid = false;
+            }
 
             switch (syntax.Kind)
             {
