@@ -11,6 +11,8 @@ namespace Compiler.Syntax
     internal class Parser : IDiagnostable
     {
         private readonly DiagnosticBag diagnostics;
+        private readonly DiagnosticBag lexerDiagnosics;
+
         private readonly SourceText source;
         private readonly ImmutableArray<SyntaxToken> tokens;
         private readonly bool isScript;
@@ -20,15 +22,17 @@ namespace Compiler.Syntax
         private SyntaxToken current { get => Peak(0); }
         private int pos;
 
-        public Parser(SourceText source, ImmutableArray<SyntaxToken> tokens, bool isScript)
+        public Parser(SourceText source, bool isScript)
         {
             this.source = source;
-            this.tokens = tokens;
             this.isScript = isScript;
-            diagnostics = new DiagnosticBag();
+            this.diagnostics = new DiagnosticBag();
+            var lexer = new Lexer(source, isScript);
+            this.tokens = lexer.Tokenize().ToImmutableArray();
+            this.lexerDiagnosics = (DiagnosticBag)lexer.GetDiagnostics();
         }
 
-        public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
+        public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics.Concat(lexerDiagnosics);
 
 
         private void ReportError(ErrorMessage message, TextLocation location, params object[] values)
@@ -212,7 +216,9 @@ namespace Compiler.Syntax
             var condition = ParseExpression();
             var body = ParseStatement();
             var elseClause = ParseElseClause();
-            var span = TextSpan.FromBounds(ifToken.Location.Span.Start, elseClause.Location.Span.End);
+            var endStmt = elseClause ?? body;
+
+            var span = TextSpan.FromBounds(ifToken.Location.Span.Start, endStmt.Location.Span.End);
             return new IfStatementSyntax(ifToken, condition, body, elseClause, isTreeValid, new TextLocation(source, span));
         }
 

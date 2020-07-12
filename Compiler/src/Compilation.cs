@@ -20,33 +20,34 @@ namespace Compiler
         private Dictionary<string, object> globals;
         private bool isScript;
 
-        private Compilation(Compilation previous, SourceText text, Dictionary<string, object> globals, bool isScript)
+        private Compilation(Compilation previous, IEnumerable<SourceText> sourceTexts, Dictionary<string, object> globals, bool isScript)
         {
             this.globals = globals;
             this.isScript = isScript;
-            this.Text = text;
             this.previous = previous;
+            this.SourceTexts = sourceTexts;
 
-            var lexer = new Lexer(text, isScript);
-            var tokens = lexer.Tokenize().ToImmutableArray();
+            var diagnosticBuilder = ImmutableArray.CreateBuilder<Diagnostic>();
+            var units = new List<CompilationUnitSyntax>();
 
-            var parser = new Parser(text, tokens, isScript);
-            var unit = parser.ParseCompilationUnit();
+            foreach (var text in sourceTexts)
+            {
+                var parser = new Parser(text, isScript);
+                var unit = parser.ParseCompilationUnit();
+                diagnosticBuilder.AddRange(parser.GetDiagnostics());
+                units.Add(unit);
+            }
+
 
             var previousProgram = previous == null ? null : previous.program;
-            program = Binder.BindProgram(previousProgram, isScript, new[] { unit });
+            program = Binder.BindProgram(previousProgram, isScript, units);
+            diagnosticBuilder.AddRange(program.Diagnostics);
 
-            var builder = ImmutableArray.CreateBuilder<Diagnostic>();
-            builder.AddRange(lexer.GetDiagnostics());
-            builder.AddRange(parser.GetDiagnostics());
-            builder.AddRange(program.Diagnostics);
-
-            Diagnostics = new DiagnosticReport(builder.ToImmutable());
+            Diagnostics = new DiagnosticReport(diagnosticBuilder.ToImmutable());
         }
 
-        public SourceText Text { get; }
         public DiagnosticReport Diagnostics { get; }
-
+        public IEnumerable<SourceText> SourceTexts { get; }
 
         public void Evaluate()
         {
@@ -102,13 +103,12 @@ namespace Compiler
             writer.WriteControlFlowGraph(cfg);
         }
 
-
-        public static Compilation Compile(SourceText text) => new Compilation(null, text, new Dictionary<string, object>(), false);
+        public static Compilation Compile(params SourceText[] text) => new Compilation(null, text, new Dictionary<string, object>(), false);
 
         public static Compilation CompileScript(SourceText text, Compilation previous = null)
         {
             var env = previous == null ? new Dictionary<string, object>() : previous.globals;
-            return new Compilation(previous, text, env, true);
+            return new Compilation(previous, new[] { text }, env, true);
         }
 
         public static ImmutableArray<SyntaxToken> Tokenize(SourceText text)
@@ -119,9 +119,7 @@ namespace Compiler
 
         public static string SyntaxTreeToString(SourceText text)
         {
-            var lexer = new Lexer(text, true);
-            var tokens = lexer.Tokenize().ToImmutableArray();
-            var parser = new Parser(text, tokens, true);
+            var parser = new Parser(text, true);
             var root = parser.ParseCompilationUnit();
             return root.ToString();
         }
