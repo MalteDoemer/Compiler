@@ -95,7 +95,7 @@ namespace Compiler.Syntax
         {
             var stmt = ParseStatement();
             if (!SyntaxFacts.IsGlobalStatement(stmt, isScript))
-                ReportError(ErrorMessage.InvalidGlobalStatement, stmt.Span);
+                ReportError(ErrorMessage.InvalidGlobalStatement, stmt.Location);
 
             return new GlobalStatementSynatx(stmt, isTreeValid);
         }
@@ -214,7 +214,7 @@ namespace Compiler.Syntax
         {
             var expression = ParseExpression();
             if (!SyntaxFacts.IsExpressionStatement(expression, isScript))
-                ReportError(ErrorMessage.InvalidStatement, expression.Span);
+                ReportError(ErrorMessage.InvalidStatement, expression.Location);
             return new ExpressionStatementSyntax(expression, isTreeValid);
         }
 

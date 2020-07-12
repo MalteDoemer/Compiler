@@ -14,7 +14,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.IfStatementSyntax;
-        public override TextSpan Span => IfToken.Span + (ElseStatement == null ? Body.Span : ElseStatement.Span);
+        public override TextSpan Location => IfToken.Span + (ElseStatement == null ? Body.Location : ElseStatement.Location);
         public override bool IsValid { get; }
         public SyntaxToken IfToken { get; }
         public ExpressionSyntax Condition { get; }

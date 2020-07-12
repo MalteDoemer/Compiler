@@ -12,7 +12,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.BinaryExpressionSyntax;
-        public override TextSpan Span => Left.Span + Right.Span;
+        public override TextSpan Location => Left.Location + Right.Location;
         public override bool IsValid { get; }
         public SyntaxToken Op { get; }
         public ExpressionSyntax Left { get; }

@@ -16,7 +16,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.BlockStatmentSyntax;
-        public override TextSpan Span => OpenCurly.Span + CloseCurly.Span;
+        public override TextSpan Location => OpenCurly.Span + CloseCurly.Span;
         public override bool IsValid { get; }
         public SyntaxToken OpenCurly { get; }
         public ImmutableArray<StatementSyntax> Statements { get; }

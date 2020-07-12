@@ -11,7 +11,7 @@ namespace Compiler.Syntax
         }
 
         public override SyntaxNodeKind Kind => SyntaxNodeKind.LiteralExpressionSyntax;
-        public override TextSpan Span => Literal.Span;
+        public override TextSpan Location => Literal.Span;
         public override bool IsValid { get; }
         public SyntaxToken Literal { get; }
 

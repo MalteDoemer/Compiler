@@ -24,9 +24,9 @@ namespace Compiler.Syntax
             if (nodes.IsEmpty)
                 Span = TextSpan.Undefined;
             else if (nodes.Length == 1)
-                Span = nodes[0].Span;
+                Span = nodes[0].Location;
             else 
-                Span = nodes.First().Span + nodes.Last().Span;
+                Span = nodes.First().Location + nodes.Last().Location;
         }
 
         public bool IsValid { get; }

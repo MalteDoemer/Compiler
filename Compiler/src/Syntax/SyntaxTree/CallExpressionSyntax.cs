@@ -15,7 +15,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.CallExpressionSyntax;
-        public override TextSpan Span => Identifier.Span + RightParenthesis.Span;
+        public override TextSpan Location => Identifier.Span + RightParenthesis.Span;
         public override bool IsValid { get; }
 
         public SyntaxToken Identifier { get; }

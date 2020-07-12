@@ -15,7 +15,7 @@ namespace Compiler.Syntax
         }
 
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ReturnStatementSyntax;
-        public override TextSpan Span => ReturnToken.Span + (ReturnExpression == null ? VoidToken.Span : ReturnExpression.Span);
+        public override TextSpan Location => ReturnToken.Span + (ReturnExpression == null ? VoidToken.Span : ReturnExpression.Location);
         public override bool IsValid { get; }
         public SyntaxToken ReturnToken { get; }
         public ExpressionSyntax ReturnExpression { get; }

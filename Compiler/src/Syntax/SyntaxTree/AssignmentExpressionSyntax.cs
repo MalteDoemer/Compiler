@@ -12,7 +12,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.AssignmentExpressionSyntax;
-        public override TextSpan Span => Identifier.Span + Expression.Span;
+        public override TextSpan Location => Identifier.Span + Expression.Location;
         public override bool IsValid { get; }
         public SyntaxToken Identifier { get; }
         public SyntaxToken EqualToken { get; }

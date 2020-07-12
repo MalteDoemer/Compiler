@@ -12,7 +12,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.WhileStatementSyntax;
-        public override TextSpan Span => WhileToken.Span + Body.Span;
+        public override TextSpan Location => WhileToken.Span + Body.Location;
         public override bool IsValid { get; }
         public SyntaxToken WhileToken { get; }
         public ExpressionSyntax Condition { get; }

@@ -12,7 +12,7 @@ namespace Compiler.Syntax
             IsValid = isValid;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.TypeClauseSyntax;
-        public override TextSpan Span => TypeToken.Span;
+        public override TextSpan Location => TypeToken.Span;
         public override bool IsValid { get; }
         public bool IsExplicit { get; }
         public SyntaxToken ColonToken { get; }

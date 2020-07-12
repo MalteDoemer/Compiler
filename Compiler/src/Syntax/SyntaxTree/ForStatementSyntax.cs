@@ -17,7 +17,7 @@ namespace Compiler.Syntax
         }
 
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ForStatementSyntax;
-        public override TextSpan Span => ForToken.Span + Body.Span;
+        public override TextSpan Location => ForToken.Span + Body.Location;
         public override bool IsValid { get; }
         public SyntaxToken ForToken { get; }
         public StatementSyntax VariableDeclaration { get; }
