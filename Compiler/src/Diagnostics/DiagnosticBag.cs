@@ -35,9 +35,12 @@ namespace Compiler.Diagnostics
            "The reference '{0}' is not a valid .NET assembly.",
            "The required type {0} cannot be resolved in the given references.",
            "The required type {0} was found in multiple references: {1}",
+           "The required method {0} cannot be resolved in the given references.",
+           "The required method {0} was found in multiple references: {1}",
         };
 
         private readonly List<Diagnostic> builder;
+        
         public DiagnosticBag()
         {
             builder = new List<Diagnostic>();

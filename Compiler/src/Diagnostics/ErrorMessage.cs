@@ -28,5 +28,7 @@ namespace Compiler.Diagnostics
         InvalidReference,
         MissingRequiredType,
         AmbiguousRequiredType,
+        MissingRequiredMethod,
+        AmbiguousRequiredMethod,
     }
 }
