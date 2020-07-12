@@ -1,5 +1,6 @@
 run.cmd
 build.cmd
+samples.cmd
 /.vscode
 /Compiler/obj
 /Compiler/bin
@@ -13,3 +14,5 @@ build.cmd
 /gsc/bin
 /gsi/obj
 /gsi/bin
+/samples/HelloWorld/obj
+/samples/HelloWorld/bin

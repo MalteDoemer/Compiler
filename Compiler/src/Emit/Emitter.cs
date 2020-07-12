@@ -74,7 +74,7 @@ namespace Compiler.Emit
             var mainMethod = new MethodDefinition("Main", MethodAttributes.Static | MethodAttributes.Private, voidType);
 
             var ilProcesser = mainMethod.Body.GetILProcessor();
-            ilProcesser.Emit(OpCodes.Ldstr, "Fett");
+            ilProcesser.Emit(OpCodes.Ldstr, "gayy");
             ilProcesser.Emit(OpCodes.Call, consoleWriteLine);
             ilProcesser.Emit(OpCodes.Ret);
 
