@@ -32,6 +32,9 @@ namespace Compiler.Diagnostics
            "The keyword '{0}' can only be used inside a loop.",
            "The keyword 'return' can only be used inside a function.",
            "Not all paths return a value.",
+           "The reference '{0}' is not a valid .NET assembly.",
+           "The required type {0} cannot be resolved in the given references.",
+           "The required type {0} was found in multiple references: {1}",
         };
 
         private readonly List<Diagnostic> builder;

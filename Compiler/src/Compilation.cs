@@ -8,6 +8,7 @@ using System.IO;
 using Compiler.Symbols;
 using System;
 using System.Linq;
+using Compiler.Emit;
 
 namespace Compiler
 {
@@ -63,6 +64,16 @@ namespace Compiler
 
             var evaluator = new Evaluator(program, globals);
             return evaluator.Evaluate();
+        }
+
+        public DiagnosticReport Emit(string moduleName, string outputPath, string[] referencePaths)
+        {
+            if (Diagnostics.HasErrors)
+                return Diagnostics;
+
+            var emitter = new Emiter(program, moduleName, outputPath, referencePaths);
+            emitter.Emit(); 
+            return new DiagnosticReport(Diagnostics.Concat(emitter.GetDiagnostics()));
         }
 
         public void WriteBoundTree(TextWriter writer, string functionName = null)

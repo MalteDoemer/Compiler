@@ -25,5 +25,8 @@ namespace Compiler.Diagnostics
         InvalidBreakOrContinue,
         ReturnOnlyInFunction,
         AllPathsMustReturn,
+        InvalidReference,
+        MissingRequiredType,
+        AmbiguousRequiredType,
     }
 }
