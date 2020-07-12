@@ -22,24 +22,10 @@ namespace Compiler.Binding
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
-        private void ReportTypeError(ErrorMessage message, TextSpan span, params object[] values)
+        private void ReportError(ErrorMessage message, TextSpan span, params object[] values)
         {
             if (isTreeValid)
-                diagnostics.ReportTypeError(message, span, values);
-            isTreeValid = false;
-        }
-
-        private void ReportIdentifierError(ErrorMessage message, TextSpan span, params object[] values)
-        {
-            if (isTreeValid)
-                diagnostics.ReportIdentifierError(message, span, values);
-            isTreeValid = false;
-        }
-
-        private void ReportSyntaxError(ErrorMessage message, TextSpan span, params object[] values)
-        {
-            if (isTreeValid)
-                diagnostics.ReportSyntaxError(message, span, values);
+                diagnostics.ReportError(message, span, values);
             isTreeValid = false;
         }
 
@@ -93,7 +79,7 @@ namespace Compiler.Binding
                 var loweredBody = Lowerer.Lower(body);
 
                 if (!ControlFlowGraph.AllPathsReturn(symbol, loweredBody))
-                    binder.ReportSyntaxError(ErrorMessage.AllPathsMustReturn, symbol.Syntax.Identifier.Span);
+                    binder.ReportError(ErrorMessage.AllPathsMustReturn, symbol.Syntax.Identifier.Span);
 
                 functions.Add(symbol, loweredBody);
                 diagnostics.AddRange(binder.GetDiagnostics());
@@ -105,17 +91,17 @@ namespace Compiler.Binding
 
             if (!isScript && !globalBinder.scope.TryLookUpFunction("main", out mainFunc))
             {
-                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Program doesn't define main fuction.", TextLocation.Undefined, ErrorLevel.Error));
+                diagnostics.Add(new Diagnostic("Program doesn't define main fuction.", TextLocation.Undefined, ErrorLevel.Error));
                 isProgramValid = false;
             }
             if (mainFunc != null && mainFunc.Parameters.Length > 0)
             {
-                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function cannot have arguments.", new TextLocation(unit.Text, mainFunc.Syntax.Parameters.Span), ErrorLevel.Error));
+                diagnostics.Add(new Diagnostic("Main function cannot have arguments.", new TextLocation(unit.Text, mainFunc.Syntax.Parameters.Span), ErrorLevel.Error));
                 isProgramValid = false;
             }
             if (mainFunc != null && mainFunc.ReturnType != TypeSymbol.Void)
             {
-                diagnostics.Add(new Diagnostic(ErrorKind.IdentifierError, "Main function must return void.", new TextLocation(unit.Text, mainFunc.Syntax.ReturnType.Span), ErrorLevel.Error));
+                diagnostics.Add(new Diagnostic("Main function must return void.", new TextLocation(unit.Text, mainFunc.Syntax.ReturnType.Span), ErrorLevel.Error));
                 isProgramValid = false;
             }
 
@@ -171,7 +157,7 @@ namespace Compiler.Binding
                 var name = parameterSyntax.Identifier.Value.ToString();
 
                 if (!seenParameters.Add(name))
-                    diagnostics.ReportIdentifierError(ErrorMessage.DuplicatedParameters, parameterSyntax.Span, name);
+                    diagnostics.ReportError(ErrorMessage.DuplicatedParameters, parameterSyntax.Span, name);
                 else parameters.Add(new ParameterSymbol(name, type));
             }
 
@@ -185,7 +171,7 @@ namespace Compiler.Binding
             var symbol = new FunctionSymbol(func.Identifier.Value.ToString(), parameters.ToImmutable(), returnType, func);
 
             if (!scope.TryDeclareFunction(symbol))
-                diagnostics.ReportIdentifierError(ErrorMessage.FunctionAlreadyDeclared, func.Identifier.Span, func.Identifier.Value);
+                diagnostics.ReportError(ErrorMessage.FunctionAlreadyDeclared, func.Identifier.Span, func.Identifier.Value);
         }
 
         private BoundStatement BindStatement(StatementSyntax syntax)
@@ -263,7 +249,7 @@ namespace Compiler.Binding
                 variable = new LocalVariableSymbol(syntax.Identifier.Value.ToString(), type, isConst ? VariableModifier.Constant : VariableModifier.None);
 
             if (!scope.TryDeclareVariable(variable))
-                ReportIdentifierError(ErrorMessage.VariableAlreadyDeclared, syntax.Identifier.Span, variable.Name);
+                ReportError(ErrorMessage.VariableAlreadyDeclared, syntax.Identifier.Span, variable.Name);
             return new BoundVariableDeclarationStatement(variable, expr, isTreeValid);
         }
 
@@ -304,7 +290,7 @@ namespace Compiler.Binding
 
             if (labelStack.Count == 0)
             {
-                ReportSyntaxError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "break");
+                ReportError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "break");
                 label = new BoundLabel("Invalid break");
             }
             else
@@ -319,7 +305,7 @@ namespace Compiler.Binding
 
             if (labelStack.Count == 0)
             {
-                ReportSyntaxError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "continue");
+                ReportError(ErrorMessage.InvalidBreakOrContinue, syntax.Span, "continue");
                 label = new BoundLabel("Invalid continue");
             }
             else
@@ -334,14 +320,14 @@ namespace Compiler.Binding
 
             if (function == null)
             {
-                ReportSyntaxError(ErrorMessage.ReturnOnlyInFunction, syntax.Span);
+                ReportError(ErrorMessage.ReturnOnlyInFunction, syntax.Span);
                 expr = null;
             }
             else if (syntax.ReturnExpression == null)
             {
                 expr = null;
                 if (function.ReturnType != TypeSymbol.Void)
-                    ReportTypeError(ErrorMessage.IncompatibleTypes, syntax.VoidToken.Span, function.ReturnType, TypeSymbol.Void);
+                    ReportError(ErrorMessage.IncompatibleTypes, syntax.VoidToken.Span, function.ReturnType, TypeSymbol.Void);
             }
             else
             {
@@ -368,7 +354,7 @@ namespace Compiler.Binding
             var res = BindExpressionInternal(syntax);
             if (!canBeVoid && res.ResultType == TypeSymbol.Void)
             {
-                ReportTypeError(ErrorMessage.CannotBeVoid, syntax.Span);
+                ReportError(ErrorMessage.CannotBeVoid, syntax.Span);
                 return new BoundInvalidExpression();
             }
             return res;
@@ -412,7 +398,7 @@ namespace Compiler.Binding
         {
             var identifier = syntax.Name.Value.ToString();
             if (!scope.TryLookUpVariable(identifier, out VariableSymbol variable))
-                ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Name.Span, syntax.Name.Value);
+                ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Name.Span, syntax.Name.Value);
             return new BoundVariableExpression(variable, isTreeValid);
         }
 
@@ -422,7 +408,7 @@ namespace Compiler.Binding
             var boundOperator = BindUnaryOperator(syntax.Op.Kind);
             var resultType = BindFacts.ResolveUnaryType(boundOperator, right.ResultType);
             if (boundOperator == BoundUnaryOperator.Invalid || resultType == null)
-                ReportTypeError(ErrorMessage.UnsupportedUnaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), right.ResultType);
+                ReportError(ErrorMessage.UnsupportedUnaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), right.ResultType);
             return new BoundUnaryExpression(boundOperator, right, resultType, isTreeValid);
         }
 
@@ -434,7 +420,7 @@ namespace Compiler.Binding
             var resultType = BindFacts.ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
 
             if (boundOperator == BoundBinaryOperator.Invalid || resultType == null)
-                ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
+                ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
             return new BoundBinaryExpression(boundOperator, left, right, resultType, isTreeValid);
         }
 
@@ -444,10 +430,10 @@ namespace Compiler.Binding
                 return BindExplicitConversion(type, syntax.Arguments[0]);
 
             if (!scope.TryLookUpFunction(syntax.Identifier.Value.ToString(), out var symbol))
-                ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, syntax.Identifier.Value.ToString());
+                ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, syntax.Identifier.Value.ToString());
 
             if (syntax.Arguments.Length != symbol.Parameters.Length)
-                ReportSyntaxError(ErrorMessage.WrongAmountOfArguments, syntax.LeftParenthesis.Span + syntax.RightParenthesis.Span, symbol.Name, symbol.Parameters.Length, syntax.Arguments.Length);
+                ReportError(ErrorMessage.WrongAmountOfArguments, syntax.LeftParenthesis.Span + syntax.RightParenthesis.Span, symbol.Name, symbol.Parameters.Length, syntax.Arguments.Length);
 
             var len = Math.Min(syntax.Arguments.Length, symbol.Parameters.Length);
 
@@ -468,10 +454,10 @@ namespace Compiler.Binding
         private BoundExpression BindAssignmentExpressionSyntax(AssignmentExpressionSyntax syntax)
         {
             if (!scope.TryLookUpVariable(syntax.Identifier.Value.ToString(), out var variable))
-                ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, syntax.Identifier.Value.ToString());
+                ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, syntax.Identifier.Value.ToString());
 
             if (variable.Modifiers == VariableModifier.Constant)
-                ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
+                ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
 
             var expr = CheckTypeAndConversion(variable.Type, syntax.Expression);
             return new BoundAssignmentExpression(variable, expr, isTreeValid);
@@ -480,10 +466,10 @@ namespace Compiler.Binding
         private BoundExpression BindAdditionalAssignmentExpressionSyntax(AdditionalAssignmentExpressionSyntax syntax)
         {
             if (!scope.TryLookUpVariable(syntax.Identifier.Value.ToString(), out VariableSymbol variable))
-                ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, syntax.Identifier.Value.ToString());
+                ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, syntax.Identifier.Value.ToString());
 
             if (variable.Modifiers == VariableModifier.Constant)
-                ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
+                ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
 
 
             var left = new BoundVariableExpression(variable, isTreeValid);
@@ -493,7 +479,7 @@ namespace Compiler.Binding
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
             if (op == BoundBinaryOperator.Invalid || resultType == null)
-                ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
+                ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
 
             var binaryExpression = new BoundBinaryExpression(op, left, right, resultType, isTreeValid);
             return new BoundAssignmentExpression(variable, binaryExpression, isTreeValid);
@@ -502,10 +488,10 @@ namespace Compiler.Binding
         private BoundExpression BindPostIncDecExpressionSyntax(PostIncDecExpressionSyntax syntax)
         {
             if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out VariableSymbol variable))
-                ReportIdentifierError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, (string)syntax.Identifier.Value);
+                ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Span, (string)syntax.Identifier.Value);
 
             if (variable.Modifiers == VariableModifier.Constant)
-                ReportTypeError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
+                ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Span, syntax.Identifier.Value);
 
             var left = new BoundVariableExpression(variable, isTreeValid);
             var right = new BoundLiteralExpression(1L, TypeSymbol.Int, isTreeValid);
@@ -513,7 +499,7 @@ namespace Compiler.Binding
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
             if (op == BoundBinaryOperator.Invalid || resultType == null)
-                ReportTypeError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
+                ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Span, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
 
             var binaryExpression = new BoundBinaryExpression(op, left, right, resultType, isTreeValid);
             return new BoundAssignmentExpression(variable, binaryExpression, isTreeValid);
@@ -573,9 +559,9 @@ namespace Compiler.Binding
             if (conversionType == ConversionType.Identety)
                 return expr;
             else if (conversionType == ConversionType.Explicit)
-                ReportTypeError(ErrorMessage.MissingExplicitConversion, expression.Span, type, expr.ResultType);
+                ReportError(ErrorMessage.MissingExplicitConversion, expression.Span, type, expr.ResultType);
             else if (conversionType == ConversionType.None)
-                ReportTypeError(ErrorMessage.IncompatibleTypes, expression.Span, type, expr.ResultType);
+                ReportError(ErrorMessage.IncompatibleTypes, expression.Span, type, expr.ResultType);
 
             return new BoundConversionExpression(type, expr, isTreeValid);
         }
@@ -586,7 +572,7 @@ namespace Compiler.Binding
             var conversion = BindFacts.ClassifyConversion(expr.ResultType, type);
 
             if (conversion == ConversionType.None)
-                ReportTypeError(ErrorMessage.CannotConvert, syntax.Span, expr.ResultType, type);
+                ReportError(ErrorMessage.CannotConvert, syntax.Span, expr.ResultType, type);
 
             return new BoundConversionExpression(type, expr, isTreeValid);
         }

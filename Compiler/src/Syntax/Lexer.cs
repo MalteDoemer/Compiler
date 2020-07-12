@@ -64,7 +64,7 @@ namespace Compiler.Syntax
                 double fnum = num;
                 long weight = 1;
 
-                if (!char.IsDigit(current)) diagnostics.ReportSyntaxError(ErrorMessage.InvalidDecimalPoint, TextSpan.FromLength(pos - 1, 1));
+                if (!char.IsDigit(current)) diagnostics.ReportError(ErrorMessage.InvalidDecimalPoint, TextSpan.FromLength(pos - 1, 1));
 
                 while (char.IsDigit(current))
                 {
@@ -106,7 +106,7 @@ namespace Compiler.Syntax
                     case '\0':
                     case '\r':
                     case '\n':
-                        diagnostics.ReportSyntaxError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(quoteStart, pos));
+                        diagnostics.ReportError(ErrorMessage.NeverClosedStringLiteral, TextSpan.FromBounds(quoteStart, pos));
                         var t1 = text.ToString(textStart, pos - textStart);
                         return new SyntaxToken(SyntaxTokenKind.String, quoteStart, pos - quoteStart, t1, false);
                     default:

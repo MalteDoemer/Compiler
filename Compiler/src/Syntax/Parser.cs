@@ -30,10 +30,10 @@ namespace Compiler.Syntax
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
 
-        private void ReportError(ErrorKind kind, ErrorMessage message, TextSpan span, params object[] values)
+        private void ReportError(ErrorMessage message, TextSpan span, params object[] values)
         {
             if (isTreeValid)
-                diagnostics.ReportDiagnostic(message, span, kind, ErrorLevel.Error, values);
+                diagnostics.ReportError(message, span, values);
             isTreeValid = false;
         }
 
@@ -44,7 +44,7 @@ namespace Compiler.Syntax
             foreach (var kind2 in others)
                 if (current.Kind == kind2) return Advance();
 
-            ReportError(ErrorKind.SyntaxError, ErrorMessage.ExpectedToken, current.Span, kind);
+            ReportError(ErrorMessage.ExpectedToken, current.Span, kind);
             var res = new SyntaxToken(kind, current.Span.Start, current.Span.Length, current.Value, false);
             pos++;
             return res;
@@ -93,7 +93,7 @@ namespace Compiler.Syntax
         {
             var stmt = ParseStatement();
             if (!SyntaxFacts.IsGlobalStatement(stmt, isScript))
-                ReportError(ErrorKind.SyntaxError, ErrorMessage.InvalidGlobalStatement, stmt.Span);
+                ReportError(ErrorMessage.InvalidGlobalStatement, stmt.Span);
 
             return new GlobalStatementSynatx(stmt, isTreeValid);
         }
@@ -213,7 +213,7 @@ namespace Compiler.Syntax
         {
             var expression = ParseExpression();
             if (!SyntaxFacts.IsExpressionStatement(expression, isScript))
-                ReportError(ErrorKind.SyntaxError, ErrorMessage.InvalidStatement, expression.Span);
+                ReportError(ErrorMessage.InvalidStatement, expression.Span);
             return new ExpressionStatementSyntax(expression, isTreeValid);
         }
 
@@ -226,7 +226,7 @@ namespace Compiler.Syntax
             {
                 if (current.Kind == SyntaxTokenKind.End)
                 {
-                    ReportError(ErrorKind.SyntaxError, ErrorMessage.NeverClosedCurlyBrackets, TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start));
+                    ReportError(ErrorMessage.NeverClosedCurlyBrackets, TextSpan.FromBounds(lcurly.Span.Start, current.Span.Start));
                     break;
                 }
 
@@ -297,7 +297,7 @@ namespace Compiler.Syntax
                 return ParseFunctionCall(Advance());
             else
             {
-                ReportError(ErrorKind.SyntaxError, ErrorMessage.UnExpectedToken, current.Span, current.Kind);
+                ReportError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
                 return new LiteralExpressionSyntax(Advance(), false);
             }
         }
@@ -309,7 +309,7 @@ namespace Compiler.Syntax
             var expr = ParseExpression();
             if (current.Kind != SyntaxTokenKind.RParen)
             {
-                ReportError(ErrorKind.SyntaxError, ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, current.Span.End));
+                ReportError(ErrorMessage.NeverClosedParenthesis, TextSpan.FromBounds(start, current.Span.End));
                 isTreeValid = false;
             }
             MatchToken(SyntaxTokenKind.RParen);
@@ -380,7 +380,7 @@ namespace Compiler.Syntax
             {
                 if (current.Kind == SyntaxTokenKind.End)
                 {
-                    ReportError(ErrorKind.SyntaxError, ErrorMessage.UnExpectedToken, current.Span, current.Kind);
+                    ReportError(ErrorMessage.UnExpectedToken, current.Span, current.Kind);
                     break;
                 }
 

@@ -81,7 +81,7 @@ namespace Compiler.Text
                 // writer.ColorWrite($"\n\n{diagnostic.Message}\n\n");
 
             }
-            else writer.ColorWrite($"\n\n{diagnostic.Kind}: {diagnostic.Message}\n\n", ConsoleColor.Red);
+            else writer.ColorWrite($"\n\n{errType}: {diagnostic.Message}\n\n", ConsoleColor.Red);
         }
 
         public static void WriteDiagnosticReport(this TextWriter writer, DiagnosticReport report)

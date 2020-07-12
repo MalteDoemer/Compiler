@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Compiler.Text;
 
 namespace Compiler.Diagnostics
@@ -44,14 +43,14 @@ namespace Compiler.Diagnostics
             this.text = text;
         }
 
-        public void ReportDiagnostic(ErrorMessage message, TextSpan reportSpan, ErrorKind kind, ErrorLevel level, params object[] values)
+        public void ReportDiagnostic(ErrorMessage message, TextSpan reportSpan, ErrorLevel level, params object[] values)
         {
             var text = String.Format(ErrorFormats[(int)message], values);
-            builder.Add(new Diagnostic(kind, text, new TextLocation(this.text, reportSpan), level));
+            builder.Add(new Diagnostic(text, new TextLocation(this.text, reportSpan), level));
         }
-        public void ReportSyntaxError(ErrorMessage message, TextSpan reportSpan, params object[] values) => ReportDiagnostic(message, reportSpan, ErrorKind.SyntaxError, ErrorLevel.Error, values);
-        public void ReportTypeError(ErrorMessage message, TextSpan reportSpan, params object[] values) => ReportDiagnostic(message, reportSpan, ErrorKind.TypeError, ErrorLevel.Error, values);
-        public void ReportIdentifierError(ErrorMessage message, TextSpan reportSpan, params object[] values) => ReportDiagnostic(message, reportSpan, ErrorKind.IdentifierError, ErrorLevel.Error, values);
+
+        public void ReportError(ErrorMessage message, TextSpan span, params object[] values) => ReportDiagnostic(message, span, ErrorLevel.Error, values);
+        public void ReportWarning(ErrorMessage message, TextSpan span, params object[] values) => ReportDiagnostic(message, span, ErrorLevel.Warning, values);
 
         public IEnumerator<Diagnostic> GetEnumerator() => builder.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => builder.GetEnumerator();
