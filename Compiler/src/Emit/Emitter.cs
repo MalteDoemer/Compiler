@@ -21,9 +21,12 @@ namespace Compiler.Emit
         private readonly Dictionary<TypeSymbol, TypeReference> builtInTypes;
         private readonly Dictionary<FunctionSymbol, MethodDefinition> functions;
         private readonly Dictionary<GlobalVariableSymbol, FieldDefinition> globalVariables;
+
         private readonly TypeReference consoleType;
-        private readonly MethodReference consoleWriteLine;
-        private readonly MethodReference consoleReadLine;
+        private readonly MethodReference consoleWriteLineReference;
+        private readonly MethodReference cosnoleReadLineReference;
+        private readonly MethodReference stringConcatReference;
+
 
         private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
 
@@ -65,8 +68,9 @@ namespace Compiler.Emit
             consoleType = ResolveType("System.Console");
             if (consoleType == null)
                 return;
-            consoleWriteLine = ResolveMethod("System.Console", "WriteLine", "System.Void", "System.String");
-            consoleReadLine = ResolveMethod("System.Console", "ReadLine", "System.String");
+            consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", "System.Void", "System.String");
+            cosnoleReadLineReference = ResolveMethod("System.Console", "ReadLine", "System.String");
+            stringConcatReference = ResolveMethod("System.String", "Concat", "System.String", "System.String", "System.String");
         }
 
         public void Emit(string outputPath)
@@ -264,7 +268,29 @@ namespace Compiler.Emit
 
         private void EmitBinaryExpression(ILProcessor ilProcesser, BoundBinaryExpression node)
         {
-            throw new NotImplementedException();
+            EmitExpression(ilProcesser, node.Left);
+            EmitExpression(ilProcesser, node.Right);
+
+            switch (node.Op)
+            {
+                case BoundBinaryOperator.Addition:
+                    EmitAddition();
+                    break;
+
+                default: throw new Exception("Unexpected binary operator");
+            }
+
+            void EmitAddition()
+            {
+                switch (node.Left.ResultType.Name, node.Right.ResultType.Name)
+                {
+                    case ("str", "str"):
+                        ilProcesser.Emit(OpCodes.Call, stringConcatReference);
+                        break;
+
+                    default: throw new Exception("Unexpected types for addition");
+                }
+            }
         }
 
         private void EmitCallExpression(ILProcessor ilProcesser, BoundCallExpression node)
@@ -273,9 +299,9 @@ namespace Compiler.Emit
                 EmitExpression(ilProcesser, arg);
 
             if (node.Symbol == BuiltInFunctions.Print)
-                ilProcesser.Emit(OpCodes.Call, consoleWriteLine);
+                ilProcesser.Emit(OpCodes.Call, consoleWriteLineReference);
             else if (node.Symbol == BuiltInFunctions.Input)
-                ilProcesser.Emit(OpCodes.Call, consoleReadLine);
+                ilProcesser.Emit(OpCodes.Call, cosnoleReadLineReference);
             else if (node.Symbol == BuiltInFunctions.Len)
                 throw new NotImplementedException();
             else if (node.Symbol == BuiltInFunctions.Random)
