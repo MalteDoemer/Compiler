@@ -71,8 +71,8 @@ namespace Compiler
             if (Diagnostics.HasErrors)
                 return Diagnostics;
 
-            var emitter = new Emiter(program, moduleName, outputPath, referencePaths);
-            emitter.Emit(); 
+            var emitter = new Emiter(program, moduleName, referencePaths);
+            emitter.Emit(outputPath); 
             return new DiagnosticReport(Diagnostics.Concat(emitter.GetDiagnostics()));
         }
 

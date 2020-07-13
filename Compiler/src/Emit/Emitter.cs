@@ -15,8 +15,6 @@ namespace Compiler.Emit
     internal sealed class Emiter : IDiagnostable
     {
         private readonly BoundProgram program;
-        private readonly string outputPath;
-
         private readonly DiagnosticBag diagnostics;
         private readonly AssemblyDefinition mainAssebly;
         private readonly List<AssemblyDefinition> references;
@@ -27,10 +25,9 @@ namespace Compiler.Emit
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
-        public Emiter(BoundProgram program, string moduleName, string outputPath, string[] referencePaths)
+        public Emiter(BoundProgram program, string moduleName, string[] referencePaths)
         {
             this.program = program;
-            this.outputPath = outputPath;
             this.diagnostics = new DiagnosticBag();
 
             var assembylInfo = new AssemblyNameDefinition(moduleName, new Version(1, 0));
@@ -66,7 +63,7 @@ namespace Compiler.Emit
             consoleReadLine = ResolveMethod("System.Console", "ReadLine", "System.String");
         }
 
-        public void Emit()
+        public void Emit(string outputPath)
         {
             var voidType = builtInTypes[TypeSymbol.Void];
             var objectType = builtInTypes[TypeSymbol.Any];
