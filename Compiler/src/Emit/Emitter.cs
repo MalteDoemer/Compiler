@@ -15,8 +15,10 @@ namespace Compiler.Emit
         private readonly BoundProgram program;
         private readonly DiagnosticBag diagnostics;
         private readonly AssemblyDefinition mainAssebly;
+        private readonly TypeDefinition mainClass;
         private readonly List<AssemblyDefinition> references;
         private readonly Dictionary<TypeSymbol, TypeReference> builtInTypes;
+        private readonly Dictionary<FunctionSymbol, MethodDefinition> functions;
         private readonly TypeReference consoleType;
         private readonly MethodReference consoleWriteLine;
         private readonly MethodReference consoleReadLine;
@@ -27,10 +29,11 @@ namespace Compiler.Emit
         {
             this.program = program;
             this.diagnostics = new DiagnosticBag();
+            this.functions = new Dictionary<FunctionSymbol, MethodDefinition>();
+            this.builtInTypes = new Dictionary<TypeSymbol, TypeReference>();
 
             var assembylInfo = new AssemblyNameDefinition(moduleName, new Version(1, 0));
             mainAssebly = AssemblyDefinition.CreateAssembly(assembylInfo, moduleName, ModuleKind.Console);
-
             references = new List<AssemblyDefinition>();
             foreach (var reference in referencePaths)
             {
@@ -46,14 +49,13 @@ namespace Compiler.Emit
                 }
             }
 
-
-            builtInTypes = new Dictionary<TypeSymbol, TypeReference>();
             builtInTypes.Add(TypeSymbol.Any, ResolveType("System.Object"));
             builtInTypes.Add(TypeSymbol.Int, ResolveType("System.Int64"));
             builtInTypes.Add(TypeSymbol.Float, ResolveType("System.Double"));
             builtInTypes.Add(TypeSymbol.Bool, ResolveType("System.Boolean"));
             builtInTypes.Add(TypeSymbol.String, ResolveType("System.String"));
             builtInTypes.Add(TypeSymbol.Void, ResolveType("System.Void"));
+            mainClass = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.Public, builtInTypes[TypeSymbol.Any]);
             consoleType = ResolveType("System.Console");
             if (consoleType == null)
                 return;
@@ -65,18 +67,44 @@ namespace Compiler.Emit
         {
             var voidType = builtInTypes[TypeSymbol.Void];
             var objectType = builtInTypes[TypeSymbol.Any];
-            var programType = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.Public, objectType);
+
+
+
             var mainMethod = new MethodDefinition("Main", MethodAttributes.Static | MethodAttributes.Private, voidType);
+
 
             var ilProcesser = mainMethod.Body.GetILProcessor();
             ilProcesser.Emit(OpCodes.Ldstr, "gayy");
             ilProcesser.Emit(OpCodes.Call, consoleWriteLine);
             ilProcesser.Emit(OpCodes.Ret);
 
-            programType.Methods.Add(mainMethod);
-            mainAssebly.MainModule.Types.Add(programType);
+            mainClass.Methods.Add(mainMethod);
+            mainAssebly.MainModule.Types.Add(mainClass);
             mainAssebly.EntryPoint = mainMethod;
             mainAssebly.Write(outputPath);
+        }
+
+        private void EmitFunctionDecleration(FunctionSymbol symbol)
+        {
+            const MethodAttributes attrs = MethodAttributes.Static | MethodAttributes.Private;
+            var returnType = builtInTypes[symbol.ReturnType];
+            var function = new MethodDefinition(symbol.Name, attrs, returnType);
+            functions.Add(symbol, function);
+        }
+
+        private void EmitFunctionBody(FunctionSymbol symbol)
+        {
+            var function = functions[symbol];
+            var body = program.GetFunctionBody(symbol);
+            var ilProcesser = function.Body.GetILProcessor();
+
+            foreach (var statement in body.Statements)
+                EmitStatement(ilProcesser, statement);
+        }
+
+        private void EmitStatement(ILProcessor ilProcesser, BoundStatement statement)
+        {
+            throw new NotImplementedException();
         }
 
         private TypeReference ResolveType(string metadataName)

@@ -28,10 +28,6 @@ namespace Compiler
 
         public dynamic Evaluate()
         {
-
-            var globalStatements = program.GetFunctionBody(program.GlobalFunction);
-            EvaluateBlock(globalStatements);
-
             if (program.MainFunction != null)
             {
                 var locals = new Dictionary<string, object>();

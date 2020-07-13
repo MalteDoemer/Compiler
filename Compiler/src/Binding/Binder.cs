@@ -65,6 +65,7 @@ namespace Compiler.Binding
                 var boundStmt = globalBinder.BindStatement(stmt.Statement);
                 globalStatementBuilder.Add(boundStmt);
             }
+            var globalStatements = Lowerer.Lower(new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid));
 
             diagnostics.AddRange(globalBinder.GetDiagnostics());
             isProgramValid = isProgramValid && globalBinder.isTreeValid;
@@ -89,11 +90,6 @@ namespace Compiler.Binding
                 isProgramValid = isProgramValid && binder.isTreeValid;
             }
 
-            var globalFunction = new FunctionSymbol("$global", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
-            var globalFunctionBody = Lowerer.Lower(new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid));
-            functions.Add(globalFunction, globalFunctionBody);
-            declaredFunctions = declaredFunctions.Add(globalFunction);
-
             var mainFunction = (FunctionSymbol)null;
             if (!isScript && !globalBinder.scope.TryLookUpFunction("main", out mainFunction))
             {
@@ -111,7 +107,21 @@ namespace Compiler.Binding
                 isProgramValid = false;
             }
 
-            return new BoundProgram(previous, declaredVariables, mainFunction, globalFunction , functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
+            if (mainFunction == null)
+            {
+                mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
+                functions.Add(mainFunction, globalStatements);
+                declaredFunctions = declaredFunctions.Add(mainFunction);
+            }
+            else
+            {
+                var mainBody = functions[mainFunction];
+                var body = new BoundBlockStatement(mainBody.Statements.AddRange(globalStatements.Statements), isProgramValid);
+                var loweredBody = Lowerer.Lower(body); // TODO is this nesecrary
+                functions[mainFunction] = loweredBody;
+            }
+
+            return new BoundProgram(previous, declaredVariables, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
         }
 
         private static BoundScope CreateBoundScopes(BoundProgram previous)
