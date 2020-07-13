@@ -69,7 +69,7 @@ namespace Compiler.Binding
             diagnostics.AddRange(globalBinder.GetDiagnostics());
             isProgramValid = isProgramValid && globalBinder.isTreeValid;
 
-            var declaredVariables = globalBinder.scope.GetDeclaredVariables();
+            var declaredVariables = globalBinder.scope.GetDeclaredVariables().Cast<GlobalVariableSymbol>().ToImmutableArray();
             var declaredFunctions = globalBinder.scope.GetDeclaredFunctions();
 
             var currentScope = globalBinder.scope;
