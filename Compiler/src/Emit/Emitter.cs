@@ -65,22 +65,14 @@ namespace Compiler.Emit
 
         public void Emit(string outputPath)
         {
-            var voidType = builtInTypes[TypeSymbol.Void];
-            var objectType = builtInTypes[TypeSymbol.Any];
+            foreach (var func in program.Functions.Keys)
+                EmitFunctionDecleration(func);
 
+            foreach (var func in program.Functions)
+                EmitFunctionBody(func.Key, func.Value);
 
-
-            var mainMethod = new MethodDefinition("Main", MethodAttributes.Static | MethodAttributes.Private, voidType);
-
-
-            var ilProcesser = mainMethod.Body.GetILProcessor();
-            ilProcesser.Emit(OpCodes.Ldstr, "gayy");
-            ilProcesser.Emit(OpCodes.Call, consoleWriteLine);
-            ilProcesser.Emit(OpCodes.Ret);
-
-            mainClass.Methods.Add(mainMethod);
             mainAssebly.MainModule.Types.Add(mainClass);
-            mainAssebly.EntryPoint = mainMethod;
+            mainAssebly.EntryPoint = functions[program.MainFunction];
             mainAssebly.Write(outputPath);
         }
 
@@ -90,19 +82,177 @@ namespace Compiler.Emit
             var returnType = builtInTypes[symbol.ReturnType];
             var function = new MethodDefinition(symbol.Name, attrs, returnType);
             functions.Add(symbol, function);
+            mainClass.Methods.Add(function);
         }
 
-        private void EmitFunctionBody(FunctionSymbol symbol)
+        private void EmitFunctionBody(FunctionSymbol symbol, BoundBlockStatement body)
         {
             var function = functions[symbol];
-            var body = program.GetFunctionBody(symbol);
             var ilProcesser = function.Body.GetILProcessor();
 
             foreach (var statement in body.Statements)
                 EmitStatement(ilProcesser, statement);
+
+            ilProcesser.Emit(OpCodes.Ret);
         }
 
-        private void EmitStatement(ILProcessor ilProcesser, BoundStatement statement)
+        private void EmitStatement(ILProcessor ilProcesser, BoundStatement node)
+        {
+            switch (node.Kind)
+            {
+                case BoundNodeKind.BoundVariableDeclarationStatement:
+                    EmitVariableDeclarationStatement(ilProcesser, (BoundVariableDeclarationStatement)node);
+                    break;
+                case BoundNodeKind.BoundConditionalGotoStatement:
+                    EmitConditionalGotoStatement(ilProcesser, (BoundConditionalGotoStatement)node);
+                    break;
+                case BoundNodeKind.BoundGotoStatement:
+                    EmitGotoStatement(ilProcesser, (BoundGotoStatement)node);
+                    break;
+                case BoundNodeKind.BoundLabelStatement:
+                    EmitLabelStatement(ilProcesser, (BoundLabelStatement)node);
+                    break;
+                case BoundNodeKind.BoundReturnStatement:
+                    EmitReturnStatement(ilProcesser, (BoundReturnStatement)node);
+                    break;
+                case BoundNodeKind.BoundExpressionStatement:
+                    EmitExpressionStatement(ilProcesser, (BoundExpressionStatement)node);
+                    break;
+                default: throw new Exception("Unexpected kind");
+            }
+        }
+
+        private void EmitVariableDeclarationStatement(ILProcessor ilProcesser, BoundVariableDeclarationStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitConditionalGotoStatement(ILProcessor ilProcesser, BoundConditionalGotoStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitGotoStatement(ILProcessor ilProcesser, BoundGotoStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitLabelStatement(ILProcessor ilProcesser, BoundLabelStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitReturnStatement(ILProcessor ilProcesser, BoundReturnStatement node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitExpressionStatement(ILProcessor ilProcesser, BoundExpressionStatement node)
+        {
+            EmitExpression(ilProcesser, node.Expression);
+
+            if (node.Expression.ResultType != TypeSymbol.Void)
+                ilProcesser.Emit(OpCodes.Pop);
+        }
+
+        private void EmitExpression(ILProcessor ilProcesser, BoundExpression node)
+        {
+            switch (node.Kind)
+            {
+                case BoundNodeKind.BoundLiteralExpression:
+                    EmitLiteralExpression(ilProcesser, (BoundLiteralExpression)node);
+                    break;
+                case BoundNodeKind.BoundVariableExpression:
+                    EmitVariableExpression(ilProcesser, (BoundVariableExpression)node);
+                    break;
+                case BoundNodeKind.BoundUnaryExpression:
+                    EmitUnaryExpression(ilProcesser, (BoundUnaryExpression)node);
+                    break;
+                case BoundNodeKind.BoundBinaryExpression:
+                    EmitBinaryExpression(ilProcesser, (BoundBinaryExpression)node);
+                    break;
+                case BoundNodeKind.BoundCallExpression:
+                    EmitCallExpression(ilProcesser, (BoundCallExpression)node);
+                    break;
+                case BoundNodeKind.BoundConversionExpression:
+                    EmitConversionExpression(ilProcesser, (BoundConversionExpression)node);
+                    break;
+                case BoundNodeKind.BoundAssignmentExpression:
+                    EmitAssignmentExpression(ilProcesser, (BoundAssignmentExpression)node);
+                    break;
+            }
+        }
+
+        private void EmitLiteralExpression(ILProcessor ilProcesser, BoundLiteralExpression node)
+        {
+
+            if (node.ResultType == TypeSymbol.Bool)
+            {
+                var val = (bool)node.Value;
+                var opCode = val ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0;
+                ilProcesser.Emit(opCode);
+            }
+            else if (node.ResultType == TypeSymbol.Int)
+            {
+                var val = (long)node.Value;
+                ilProcesser.Emit(OpCodes.Ldc_I8, val);
+            }
+            else if (node.ResultType == TypeSymbol.String)
+            {
+                var val = (string)node.Value;
+                ilProcesser.Emit(OpCodes.Ldstr, val);
+            }
+            else throw new Exception("Unexpected literal type");
+        }
+
+        private void EmitVariableExpression(ILProcessor ilProcesser, BoundVariableExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitUnaryExpression(ILProcessor ilProcesser, BoundUnaryExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitBinaryExpression(ILProcessor ilProcesser, BoundBinaryExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitCallExpression(ILProcessor ilProcesser, BoundCallExpression node)
+        {
+            foreach (var arg in node.Arguments)
+                EmitExpression(ilProcesser, arg);
+
+            if (node.Symbol == BuiltInFunctions.Print)
+                ilProcesser.Emit(OpCodes.Call, consoleWriteLine);
+            else if (node.Symbol == BuiltInFunctions.Input)
+                ilProcesser.Emit(OpCodes.Call, consoleReadLine);
+            else if (node.Symbol == BuiltInFunctions.Len)
+                throw new NotImplementedException();
+            else if (node.Symbol == BuiltInFunctions.Random)
+                throw new NotImplementedException();
+            else if (node.Symbol == BuiltInFunctions.RandomFloat)
+                throw new NotImplementedException();
+            else if (node.Symbol == BuiltInFunctions.Clear)
+                throw new NotImplementedException();
+            else if (node.Symbol == BuiltInFunctions.Exit)
+                throw new NotImplementedException();
+            else
+            {
+                var function = functions[node.Symbol];
+                ilProcesser.Emit(OpCodes.Call, function);
+            }
+
+        }
+
+        private void EmitConversionExpression(ILProcessor ilProcesser, BoundConversionExpression node)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EmitAssignmentExpression(ILProcessor ilProcesser, BoundAssignmentExpression node)
         {
             throw new NotImplementedException();
         }

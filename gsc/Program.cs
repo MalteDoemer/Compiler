@@ -36,7 +36,7 @@ namespace gsc
             catch (OptionException e)
             {
                 WriteError(e.Message);
-                return -1;
+                return 5;
             }
 
             if (needsHelp)
@@ -46,11 +46,11 @@ namespace gsc
             }
 
             var paths = GetAllPaths(sourcePaths);
-            if (paths == null) return -1;
+            if (paths == null) return 5;
             if (paths.Length == 0)
             {
                 WriteError("No source files are provided.");
-                return -1;
+                return 5;
             }
 
             if (outputPath == null)
