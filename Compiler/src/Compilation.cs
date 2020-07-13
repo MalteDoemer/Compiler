@@ -72,45 +72,28 @@ namespace Compiler
                 return Diagnostics;
 
             var emitter = new Emiter(program, moduleName, referencePaths);
-            emitter.Emit(outputPath); 
+            emitter.Emit(outputPath);
             return new DiagnosticReport(Diagnostics.Concat(emitter.GetDiagnostics()));
         }
 
         public void WriteBoundTree(TextWriter writer, string functionName = null)
         {
-            if (functionName == null)
-            {
-                writer.WriteBoundNode(program.GlobalStatements);
-                writer.WriteLine();
-            }
+            var symbols = program.GetFunctionSymbols().Where(s => s.Name == functionName);
+            if (!symbols.Any())
+                writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);
             else
             {
-                var symbols = program.GetFunctionSymbols().Where(s => s.Name == functionName);
-                if (!symbols.Any())
-                    writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);
-                else
-                {
-                    writer.WriteBoundNode(program.GetFunctionBody(symbols.First()));
-                    writer.WriteLine();
-                }
+                writer.WriteBoundNode(program.GetFunctionBody(symbols.First()));
+                writer.WriteLine();
             }
-
         }
 
         public void WriteControlFlowGraph(TextWriter writer, string functionName = null)
         {
-            ControlFlowGraph cfg;
-
-            if (functionName == null)
-                cfg = ControlFlowGraph.Create(program.GlobalStatements);
-            else
-            {
-                var symbols = program.GetFunctionSymbols().Where(s => s.Name == functionName);
-                if (!symbols.Any())
-                    writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);
-                cfg = ControlFlowGraph.Create(program.GetFunctionBody(symbols.First()));
-            }
-
+            var symbols = program.GetFunctionSymbols().Where(s => s.Name == functionName);
+            if (!symbols.Any())
+                writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);
+            var cfg = ControlFlowGraph.Create(program.GetFunctionBody(symbols.First()));
             writer.WriteControlFlowGraph(cfg);
         }
 

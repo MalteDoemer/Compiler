@@ -8,8 +8,6 @@ using Compiler.Symbols;
 using Compiler.Text;
 using Mono.Cecil.Cil;
 
-// C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\mscorlib.dll
-
 namespace Compiler.Emit
 {
     internal sealed class Emiter : IDiagnostable

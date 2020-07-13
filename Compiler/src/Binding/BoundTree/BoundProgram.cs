@@ -8,12 +8,12 @@ namespace Compiler.Binding
 {
     internal class BoundProgram : BoundNode
     {
-        public BoundProgram(BoundProgram previous, BoundBlockStatement globalStatements, ImmutableArray<VariableSymbol> globalVariables, FunctionSymbol mainFunction, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, DiagnosticReport diagnostics, bool isValid)
+        public BoundProgram(BoundProgram previous, ImmutableArray<VariableSymbol> globalVariables, FunctionSymbol mainFunction, FunctionSymbol globalFunction, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, DiagnosticReport diagnostics, bool isValid)
         {
             Previous = previous;
-            GlobalStatements = globalStatements;
             GlobalVariables = globalVariables;
             MainFunction = mainFunction;
+            GlobalFunction = globalFunction;
             Functions = functions;
             Diagnostics = diagnostics;
             IsValid = isValid;
@@ -22,9 +22,9 @@ namespace Compiler.Binding
         public override BoundNodeKind Kind => BoundNodeKind.BoundProgram;
         public override bool IsValid { get; }
         public BoundProgram Previous { get; }
-        public BoundBlockStatement GlobalStatements { get; }
+        public FunctionSymbol MainFunction  { get; }
+        public FunctionSymbol GlobalFunction{ get; }
         public ImmutableArray<VariableSymbol> GlobalVariables { get; }
-        public FunctionSymbol MainFunction { get; }
         public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> Functions { get; }
         public DiagnosticReport Diagnostics { get; }
 

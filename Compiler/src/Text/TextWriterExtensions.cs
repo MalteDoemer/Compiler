@@ -146,8 +146,9 @@ namespace Compiler.Text
 
         private static void WriteBoundProgram(this TextWriter writer, BoundProgram node)
         {
-            writer.WriteBoundNode(node.GlobalStatements);
-            writer.WriteLine();
+            throw new NotImplementedException();
+            //writer.WriteBoundNode(node.GlobalStatements);
+            //writer.WriteLine();
         }
 
         private static void WriteBoundLiteralExpression(this TextWriter writer, BoundLiteralExpression node)

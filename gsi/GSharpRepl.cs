@@ -80,11 +80,7 @@ namespace Compiler
         private void EvaluateShowBoundTree(string function)
         {
             if (compilation != null)
-            {
-                if (function == "$global")
-                    compilation.WriteBoundTree(Console.Out, null);
-                else compilation.WriteBoundTree(Console.Out, function);
-            }
+                compilation.WriteBoundTree(Console.Out, function);
         }
 
         [MetaCommand("graph", "Emits the ControlFlowGraph for the function")]
@@ -95,15 +91,8 @@ namespace Compiler
             var cfgPath = Path.Combine(appDir, "cfg.dot");
 
             using (var writer = new StreamWriter(cfgPath))
-            {
-
                 if (compilation != null)
-                {
-                    if (function == "$global")
-                        compilation.WriteControlFlowGraph(writer, null);
-                    else compilation.WriteControlFlowGraph(writer, function);
-                }
-            }
+                    compilation.WriteControlFlowGraph(writer, function);
         }
 
     }
