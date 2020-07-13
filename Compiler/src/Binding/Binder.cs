@@ -116,7 +116,7 @@ namespace Compiler.Binding
             else
             {
                 var mainBody = functions[mainFunction];
-                var body = new BoundBlockStatement(mainBody.Statements.AddRange(globalStatements.Statements), isProgramValid);
+                var body = new BoundBlockStatement(globalStatements.Statements.AddRange(mainBody.Statements), isProgramValid);
                 var loweredBody = Lowerer.Lower(body); // TODO is this nesecrary
                 functions[mainFunction] = loweredBody;
             }

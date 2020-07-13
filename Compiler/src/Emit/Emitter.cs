@@ -7,6 +7,7 @@ using Compiler.Diagnostics;
 using Compiler.Symbols;
 using Compiler.Text;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Compiler.Emit
 {
@@ -19,9 +20,12 @@ namespace Compiler.Emit
         private readonly List<AssemblyDefinition> references;
         private readonly Dictionary<TypeSymbol, TypeReference> builtInTypes;
         private readonly Dictionary<FunctionSymbol, MethodDefinition> functions;
+        private readonly Dictionary<GlobalVariableSymbol, FieldDefinition> globalVariables;
         private readonly TypeReference consoleType;
         private readonly MethodReference consoleWriteLine;
         private readonly MethodReference consoleReadLine;
+
+        private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
@@ -31,6 +35,8 @@ namespace Compiler.Emit
             this.diagnostics = new DiagnosticBag();
             this.functions = new Dictionary<FunctionSymbol, MethodDefinition>();
             this.builtInTypes = new Dictionary<TypeSymbol, TypeReference>();
+            this.globalVariables = new Dictionary<GlobalVariableSymbol, FieldDefinition>();
+            this.locals = new Dictionary<LocalVariableSymbol, VariableDefinition>();
 
             var assembylInfo = new AssemblyNameDefinition(moduleName, new Version(1, 0));
             mainAssebly = AssemblyDefinition.CreateAssembly(assembylInfo, moduleName, ModuleKind.Console);
@@ -65,6 +71,9 @@ namespace Compiler.Emit
 
         public void Emit(string outputPath)
         {
+            foreach (var variable in program.GlobalVariables)
+                AddGlobalVariable(variable);
+
             foreach (var func in program.Functions.Keys)
                 EmitFunctionDecleration(func);
 
@@ -74,6 +83,15 @@ namespace Compiler.Emit
             mainAssebly.MainModule.Types.Add(mainClass);
             mainAssebly.EntryPoint = functions[program.MainFunction];
             mainAssebly.Write(outputPath);
+        }
+
+        private void AddGlobalVariable(GlobalVariableSymbol variable)
+        {
+            const FieldAttributes attrs = FieldAttributes.Static | FieldAttributes.Private;
+            var type = builtInTypes[variable.Type];
+            var field = new FieldDefinition(variable.Name, attrs, type);
+            globalVariables.Add(variable, field);
+            mainClass.Fields.Add(field);
         }
 
         private void EmitFunctionDecleration(FunctionSymbol symbol)
@@ -88,12 +106,15 @@ namespace Compiler.Emit
         private void EmitFunctionBody(FunctionSymbol symbol, BoundBlockStatement body)
         {
             var function = functions[symbol];
+            locals.Clear();
             var ilProcesser = function.Body.GetILProcessor();
 
             foreach (var statement in body.Statements)
                 EmitStatement(ilProcesser, statement);
 
             ilProcesser.Emit(OpCodes.Ret);
+
+            function.Body.Optimize();
         }
 
         private void EmitStatement(ILProcessor ilProcesser, BoundStatement node)
@@ -124,7 +145,23 @@ namespace Compiler.Emit
 
         private void EmitVariableDeclarationStatement(ILProcessor ilProcesser, BoundVariableDeclarationStatement node)
         {
-            throw new NotImplementedException();
+            if (node.Variable is GlobalVariableSymbol globalVariable)
+            {
+                var field = globalVariables[globalVariable];
+                EmitExpression(ilProcesser, node.Expression);
+                ilProcesser.Emit(OpCodes.Stsfld, field);
+            }
+            else if (node.Variable is LocalVariableSymbol localVariable)
+            {
+                var type = builtInTypes[localVariable.Type];
+                var variable = new VariableDefinition(type);
+                locals.Add(localVariable, variable);
+                ilProcesser.Body.Variables.Add(variable);
+
+                EmitExpression(ilProcesser, node.Expression);
+                ilProcesser.Emit(OpCodes.Stloc, variable);
+            }
+            else throw new Exception("Unexpected VariableSymbol");
         }
 
         private void EmitConditionalGotoStatement(ILProcessor ilProcesser, BoundConditionalGotoStatement node)
@@ -207,7 +244,17 @@ namespace Compiler.Emit
 
         private void EmitVariableExpression(ILProcessor ilProcesser, BoundVariableExpression node)
         {
-            throw new NotImplementedException();
+            if (node.Variable is GlobalVariableSymbol globalVariable)
+            {
+                var field = globalVariables[globalVariable];
+                ilProcesser.Emit(OpCodes.Ldsfld, field);
+            }
+            else if (node.Variable is LocalVariableSymbol localVariable)
+            {
+                var variable = locals[localVariable];
+                ilProcesser.Emit(OpCodes.Ldloc, variable.Index);
+            }
+            else throw new Exception("Unexpected VariableSymbol");
         }
 
         private void EmitUnaryExpression(ILProcessor ilProcesser, BoundUnaryExpression node)
@@ -254,7 +301,20 @@ namespace Compiler.Emit
 
         private void EmitAssignmentExpression(ILProcessor ilProcesser, BoundAssignmentExpression node)
         {
-            throw new NotImplementedException();
+            if (node.Variable is GlobalVariableSymbol globalVariable)
+            {
+                var field = globalVariables[globalVariable];
+                EmitExpression(ilProcesser, node.Expression);
+                ilProcesser.Emit(OpCodes.Stsfld, field);
+            }
+            else if (node.Variable is LocalVariableSymbol localVariable)
+            {
+                var variable = locals[localVariable];
+                EmitExpression(ilProcesser, node.Expression);
+                ilProcesser.Emit(OpCodes.Dup);
+                ilProcesser.Emit(OpCodes.Stloc, variable);
+            }
+            else throw new Exception("Unexpected VariableSymbol");
         }
 
         private TypeReference ResolveType(string metadataName)
