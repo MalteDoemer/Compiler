@@ -155,8 +155,8 @@ namespace Compiler.Text
         {
             switch (node.Value)
             {
-                case long l:
-                case double d:
+                case int i:
+                case float f:
                     writer.WriteNumber(node.Value); break;
                 case bool b:
                     writer.WriteBlueKeyword(b.ToString().ToLower()); break;

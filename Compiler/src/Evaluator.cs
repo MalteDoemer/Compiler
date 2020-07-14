@@ -192,17 +192,17 @@ namespace Compiler
             if (expr.Type == TypeSymbol.Bool)
                 return Convert.ToBoolean(val);
             else if (expr.Type == TypeSymbol.Int)
-                return Convert.ToInt64(val);
+                return Convert.ToInt32(val);
             else if (expr.Type == TypeSymbol.Float)
-                return Convert.ToDouble(val);
+                return Convert.ToSingle(val);
             else if (expr.Type == TypeSymbol.String)
                 return Convert.ToString(val);
             else if (expr.Type == TypeSymbol.Any)
             {
                 switch (val)
                 {
-                    case long l: return l;
-                    case double d: return d;
+                    case int i: return i;
+                    case float f: return f;
                     case bool b: return b;
                     case string s: return s;
                     default: return val;
@@ -250,13 +250,13 @@ namespace Compiler
             }
             else if (expr.Symbol == BuiltInFunctions.Random)
             {
-                long lowerBound = EvaluateExpression(expr.Arguments[0]);
-                long upperBound = EvaluateExpression(expr.Arguments[1]);
-                return random.Next((int)lowerBound, (int)upperBound);
+                int lowerBound = EvaluateExpression(expr.Arguments[0]);
+                int upperBound = EvaluateExpression(expr.Arguments[1]);
+                return random.Next(lowerBound, upperBound);
             }
             else if (expr.Symbol == BuiltInFunctions.RandomFloat)
             {
-                return random.NextDouble();
+                return (float)random.NextDouble();
             }
             else
             {

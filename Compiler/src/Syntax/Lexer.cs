@@ -49,7 +49,7 @@ namespace Compiler.Syntax
         private SyntaxToken LexNumber()
         {
             int start = pos;
-            long num = 0;
+            int num = 0;
 
             while (char.IsDigit(current))
             {
@@ -61,15 +61,15 @@ namespace Compiler.Syntax
             if (current == '.')
             {
                 pos++;
-                double fnum = num;
-                long weight = 1;
+                float fnum = num;
+                int weight = 1;
 
                 if (!char.IsDigit(current)) diagnostics.ReportError(ErrorMessage.InvalidDecimalPoint, new TextLocation(text, pos - 1, 1));
 
                 while (char.IsDigit(current))
                 {
                     weight *= 10;
-                    fnum += (double)(current - '0') / (double)weight;
+                    fnum += (float)(current - '0') / (float)weight;
                     pos++;
                 }
                 return new SyntaxToken(SyntaxTokenKind.Float, new TextLocation(text, start, pos - start), fnum);
