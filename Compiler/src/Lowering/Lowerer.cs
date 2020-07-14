@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Compiler.Binding;
+using Compiler.Symbols;
 
 namespace Compiler.Lowering
 {
@@ -198,6 +199,42 @@ namespace Compiler.Lowering
                 breakLabelStmt
             ), node.IsValid);
             return RewriteStatement(res);
+        }
+
+        protected override BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)
+        {
+            var leftType = node.Left.ResultType;
+            var rightType = node.Right.ResultType;
+
+            var left = RewriteExpression(node.Left);
+            var right = RewriteExpression(node.Right);
+
+            switch (node.Op, leftType.Name, rightType.Name)
+            {
+                case (BoundBinaryOperator.Addition, "float", "int"):
+                    right = new BoundConversionExpression(TypeSymbol.Float, right, right.IsValid);
+                    break;
+                case (BoundBinaryOperator.Addition, "int", "float"):
+                    left = new BoundConversionExpression(TypeSymbol.Float, left, left.IsValid);
+                    break;
+
+                case (BoundBinaryOperator.Addition, "int", "str"):
+                case (BoundBinaryOperator.Addition, "float", "str"):
+                case (BoundBinaryOperator.Addition, "bool", "str"):
+                case (BoundBinaryOperator.Addition, "any", "str"):
+                    left = new BoundConversionExpression(TypeSymbol.String, left, left.IsValid);
+                    break;
+                case (BoundBinaryOperator.Addition, "str", "int"):
+                case (BoundBinaryOperator.Addition, "str", "float"):
+                case (BoundBinaryOperator.Addition, "str", "bool"):
+                case (BoundBinaryOperator.Addition, "str", "any"):
+                    right = new BoundConversionExpression(TypeSymbol.String, right, right.IsValid);
+                    break;
+                default: return base.RewriteBinaryExpression(node);
+            }
+
+            return new BoundBinaryExpression(node.Op, left, right, node.ResultType, node.IsValid);
+
         }
     }
 }

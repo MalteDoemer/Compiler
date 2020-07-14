@@ -1,5 +1,9 @@
 def main() {
-    print("What's your name?")
-    var name: str = input()
-    print("Hello " + name + "!")
+    doSomething()
+}
+
+def doSomething() {
+    var b : any = false
+    var i = 1 + int(b)
+    print(i)
 }

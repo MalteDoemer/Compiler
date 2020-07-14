@@ -27,6 +27,7 @@ namespace Compiler.Emit
         private readonly MethodReference cosnoleReadLineReference;
         private readonly MethodReference stringConcatReference;
 
+        private readonly Dictionary<TypeSymbol, MethodReference> toStringReferences;
 
         private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
 
@@ -40,6 +41,7 @@ namespace Compiler.Emit
             this.builtInTypes = new Dictionary<TypeSymbol, TypeReference>();
             this.globalVariables = new Dictionary<GlobalVariableSymbol, FieldDefinition>();
             this.locals = new Dictionary<LocalVariableSymbol, VariableDefinition>();
+            this.toStringReferences = new Dictionary<TypeSymbol, MethodReference>();
 
             var assembylInfo = new AssemblyNameDefinition(moduleName, new Version(1, 0));
             mainAssebly = AssemblyDefinition.CreateAssembly(assembylInfo, moduleName, ModuleKind.Console);
@@ -68,13 +70,22 @@ namespace Compiler.Emit
             consoleType = ResolveType("System.Console");
             if (consoleType == null)
                 return;
-            consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", "System.Void", "System.String");
+            consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", "System.Void", "System.Object");
             cosnoleReadLineReference = ResolveMethod("System.Console", "ReadLine", "System.String");
             stringConcatReference = ResolveMethod("System.String", "Concat", "System.String", "System.String", "System.String");
+
+
+            toStringReferences.Add(TypeSymbol.Any, ResolveMethod("System.Object", "ToString", "System.String"));
+            toStringReferences.Add(TypeSymbol.Int, ResolveMethod("System.Int64", "ToString", "System.String"));
+            toStringReferences.Add(TypeSymbol.Float, ResolveMethod("System.Double", "ToString", "System.String"));
+            toStringReferences.Add(TypeSymbol.Bool, ResolveMethod("System.Boolean", "ToString", "System.String"));
         }
 
         public void Emit(string outputPath)
         {
+            if (diagnostics.Count(d => d.Level == ErrorLevel.Error) > 0)
+                return;
+
             foreach (var variable in program.GlobalVariables)
                 AddGlobalVariable(variable);
 
@@ -238,6 +249,11 @@ namespace Compiler.Emit
                 var val = (long)node.Value;
                 ilProcesser.Emit(OpCodes.Ldc_I8, val);
             }
+            else if (node.ResultType == TypeSymbol.Float)
+            {
+                var val = (double)node.Value;
+                ilProcesser.Emit(OpCodes.Ldc_R8, val);
+            }
             else if (node.ResultType == TypeSymbol.String)
             {
                 var val = (string)node.Value;
@@ -268,9 +284,6 @@ namespace Compiler.Emit
 
         private void EmitBinaryExpression(ILProcessor ilProcesser, BoundBinaryExpression node)
         {
-            EmitExpression(ilProcesser, node.Left);
-            EmitExpression(ilProcesser, node.Right);
-
             switch (node.Op)
             {
                 case BoundBinaryOperator.Addition:
@@ -282,12 +295,18 @@ namespace Compiler.Emit
 
             void EmitAddition()
             {
+                EmitExpression(ilProcesser, node.Left);
+                EmitExpression(ilProcesser, node.Right);
+
                 switch (node.Left.ResultType.Name, node.Right.ResultType.Name)
                 {
                     case ("str", "str"):
                         ilProcesser.Emit(OpCodes.Call, stringConcatReference);
                         break;
-
+                    case ("int", "int"):
+                    case ("float", "float"):
+                        ilProcesser.Emit(OpCodes.Add);
+                        break;
                     default: throw new Exception("Unexpected types for addition");
                 }
             }
@@ -322,7 +341,49 @@ namespace Compiler.Emit
 
         private void EmitConversionExpression(ILProcessor ilProcesser, BoundConversionExpression node)
         {
-            throw new NotImplementedException();
+            var from = node.Expression.ResultType.Name;
+            var to = node.Type.Name;
+
+            EmitExpression(ilProcesser, node.Expression);
+
+            switch (from, to)
+            {
+                case ("int", "float"):
+                    ilProcesser.Emit(OpCodes.Conv_R8);
+                    break;
+                case ("float", "int"):
+                    ilProcesser.Emit(OpCodes.Conv_I8);
+                    break;
+                case ("int", "str"):
+                case ("float", "str"):
+                case ("bool", "str"):
+                case ("any", "str"):
+                    var local = new VariableDefinition(builtInTypes[TypeSymbol.String]);
+                    ilProcesser.Body.Variables.Add(local);
+                    ilProcesser.Emit(OpCodes.Stloc, local);
+                    ilProcesser.Emit(OpCodes.Ldloca, local);
+                    var toStringReference = toStringReferences[node.Expression.ResultType];
+                    ilProcesser.Emit(OpCodes.Call, toStringReference);
+                    break;
+                case ("int", "any"):
+                case ("float", "any"):
+                case ("bool", "any"):
+                    var type1 = builtInTypes[node.Expression.ResultType];
+                    ilProcesser.Emit(OpCodes.Box, type1);
+                    break;
+                case ("str", "any"):
+                    break;
+                case ("any", "int"):
+                case ("any", "float"):
+                case ("any", "bool"):
+                    var type2 = builtInTypes[node.Type];
+                    ilProcesser.Emit(OpCodes.Unbox_Any, type2);
+                    break;
+
+
+
+                default: throw new Exception("Unexpected type");
+            }
         }
 
         private void EmitAssignmentExpression(ILProcessor ilProcesser, BoundAssignmentExpression node)
