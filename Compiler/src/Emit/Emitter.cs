@@ -20,7 +20,7 @@ namespace Compiler.Emit
         private readonly List<AssemblyDefinition> references;
         private readonly Dictionary<TypeSymbol, TypeReference> builtInTypes;
         private readonly Dictionary<FunctionSymbol, MethodDefinition> functions;
-        private readonly Dictionary<TypeSymbol, MethodReference> toStringReferences;
+
 
         private readonly TypeReference consoleType;
         private readonly MethodReference consoleWriteLineReference;
@@ -28,6 +28,7 @@ namespace Compiler.Emit
         private readonly MethodReference cosnoleClearReference;
         private readonly MethodReference stringConcatReference;
         private readonly MethodReference mathPowReference;
+        private readonly MethodReference convertToStringReference;
 
         private readonly Dictionary<GlobalVariableSymbol, FieldDefinition> globalVariables;
         private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
@@ -42,7 +43,6 @@ namespace Compiler.Emit
             this.builtInTypes = new Dictionary<TypeSymbol, TypeReference>();
             this.globalVariables = new Dictionary<GlobalVariableSymbol, FieldDefinition>();
             this.locals = new Dictionary<LocalVariableSymbol, VariableDefinition>();
-            this.toStringReferences = new Dictionary<TypeSymbol, MethodReference>();
 
             var assembylInfo = new AssemblyNameDefinition(moduleName, new Version(1, 0));
             mainAssebly = AssemblyDefinition.CreateAssembly(assembylInfo, moduleName, ModuleKind.Console);
@@ -76,11 +76,7 @@ namespace Compiler.Emit
             cosnoleClearReference = ResolveMethod("System.Console", "Clear", "System.Void");
             stringConcatReference = ResolveMethod("System.String", "Concat", "System.String", "System.String", "System.String");
             mathPowReference = ResolveMethod("System.Math", "Pow", "System.Double", "System.Double", "System.Double");
-
-            toStringReferences.Add(TypeSymbol.Any, ResolveMethod("System.Object", "ToString", "System.String"));
-            toStringReferences.Add(TypeSymbol.Int, ResolveMethod("System.Int64", "ToString", "System.String"));
-            toStringReferences.Add(TypeSymbol.Float, ResolveMethod("System.Double", "ToString", "System.String"));
-            toStringReferences.Add(TypeSymbol.Bool, ResolveMethod("System.Boolean", "ToString", "System.String"));
+            convertToStringReference = ResolveMethod("System.Convert", "ToString", "System.String", "System.Object");
         }
 
         public void Emit(string outputPath)
@@ -291,7 +287,7 @@ namespace Compiler.Emit
 
         private void EmitUnaryExpression(ILProcessor ilProcesser, BoundUnaryExpression node)
         {
-            throw new NotImplementedException();
+
         }
 
         private void EmitBinaryExpression(ILProcessor ilProcesser, BoundBinaryExpression node)
@@ -364,40 +360,37 @@ namespace Compiler.Emit
 
             switch (from, to)
             {
+
                 case ("int", "float"):
                     ilProcesser.Emit(OpCodes.Conv_R8);
                     break;
                 case ("float", "int"):
                     ilProcesser.Emit(OpCodes.Conv_I8);
                     break;
+                case ("any", "str"):
+                    ilProcesser.Emit(OpCodes.Call, convertToStringReference);
+                    break;
                 case ("int", "str"):
                 case ("float", "str"):
                 case ("bool", "str"):
-                case ("any", "str"):
-                    var local = new VariableDefinition(builtInTypes[TypeSymbol.String]);
-                    ilProcesser.Body.Variables.Add(local);
-                    ilProcesser.Emit(OpCodes.Stloc, local);
-                    ilProcesser.Emit(OpCodes.Ldloca, local);
-                    var toStringReference = toStringReferences[node.Expression.ResultType];
-                    ilProcesser.Emit(OpCodes.Call, toStringReference);
+                    var type1 = builtInTypes[node.Expression.ResultType];
+                    ilProcesser.Emit(OpCodes.Box, type1);
+                    ilProcesser.Emit(OpCodes.Call, convertToStringReference);
                     break;
                 case ("int", "any"):
                 case ("float", "any"):
                 case ("bool", "any"):
-                    var type1 = builtInTypes[node.Expression.ResultType];
-                    ilProcesser.Emit(OpCodes.Box, type1);
+                    var type2 = builtInTypes[node.Expression.ResultType];
+                    ilProcesser.Emit(OpCodes.Box, type2);
                     break;
                 case ("str", "any"):
                     break;
                 case ("any", "int"):
                 case ("any", "float"):
                 case ("any", "bool"):
-                    var type2 = builtInTypes[node.Type];
-                    ilProcesser.Emit(OpCodes.Unbox_Any, type2);
+                    var type3 = builtInTypes[node.Type];
+                    ilProcesser.Emit(OpCodes.Unbox_Any, type3);
                     break;
-
-
-
                 default: throw new Exception("Unexpected type");
             }
         }
