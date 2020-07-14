@@ -1,9 +1,9 @@
 def main() {
-    var name = prompt("What's your name?")
-    print("Hello " + name)
+    var res = calculate(2, 5)
+    print(res)
 }
 
-def prompt(message: str): str {
-    print(message)
-    return input()
+def calculate(a: float, b: float): float{
+    var res = a + b
+    return res ** a
 }

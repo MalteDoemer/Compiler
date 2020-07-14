@@ -209,6 +209,11 @@ namespace Compiler.Lowering
             var left = RewriteExpression(node.Left);
             var right = RewriteExpression(node.Right);
 
+            var oneLiteral = (BoundLiteralExpression)null;
+
+            if (node.Op == BoundBinaryOperator.Root)
+                oneLiteral = new BoundLiteralExpression(1.0d, TypeSymbol.Float, true);
+
             switch (node.Op, leftType.Name, rightType.Name)
             {
                 case (BoundBinaryOperator.Addition, "float", "int"):
@@ -227,18 +232,32 @@ namespace Compiler.Lowering
                     break;
 
 
-                // case (BoundBinaryOperator.Power, "int", "int"):
-                //     left = new BoundConversionExpression(TypeSymbol.Float, left, left.IsValid);
-                //     right = new BoundConversionExpression(TypeSymbol.Float, right, right.IsValid);
-                //     break;
+                case (BoundBinaryOperator.Power, "int", "int"):
+                    left = new BoundConversionExpression(TypeSymbol.Float, left, left.IsValid);
+                    right = new BoundConversionExpression(TypeSymbol.Float, right, right.IsValid);
+                    break;
 
-                // case (BoundBinaryOperator.Root, "int", "int"):
-                //     left = new BoundConversionExpression(TypeSymbol.Float, left, left.IsValid);
-                //     right = new BoundConversionExpression(TypeSymbol.Float, right, right.IsValid);
-                //     var literal = new BoundLiteralExpression(1.0d, TypeSymbol.Float, true);
-                //     right = new BoundBinaryExpression(BoundBinaryOperator.Division, literal, right, TypeSymbol.Float, right.IsValid);
-                //     return new BoundBinaryExpression(BoundBinaryOperator.Power, left, right, TypeSymbol.Float, node.IsValid);
-                    
+                case (BoundBinaryOperator.Root, "int", "int"):
+                    left = new BoundConversionExpression(TypeSymbol.Float, left, left.IsValid);
+                    right = new BoundConversionExpression(TypeSymbol.Float, right, right.IsValid);
+                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral, right, TypeSymbol.Float, right.IsValid);
+                    return new BoundBinaryExpression(BoundBinaryOperator.Power, left, right, TypeSymbol.Float, node.IsValid);
+
+                case (BoundBinaryOperator.Root, "float", "int"):
+                    right = new BoundConversionExpression(TypeSymbol.Float, right, right.IsValid);
+                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral, right, TypeSymbol.Float, right.IsValid);
+                    return new BoundBinaryExpression(BoundBinaryOperator.Power, left, right, TypeSymbol.Float, node.IsValid);
+
+                case (BoundBinaryOperator.Root, "int", "float"):
+                    left = new BoundConversionExpression(TypeSymbol.Float, left, left.IsValid);
+                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral, right, TypeSymbol.Float, right.IsValid);
+                    return new BoundBinaryExpression(BoundBinaryOperator.Power, left, right, TypeSymbol.Float, node.IsValid);
+
+                case (BoundBinaryOperator.Root, "float", "float"):
+                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral, right, TypeSymbol.Float, right.IsValid);
+                    return new BoundBinaryExpression(BoundBinaryOperator.Power, left, right, TypeSymbol.Float, node.IsValid);
+
+
                 case (BoundBinaryOperator.Addition, "int", "str"):
                 case (BoundBinaryOperator.Addition, "float", "str"):
                 case (BoundBinaryOperator.Addition, "bool", "str"):

@@ -419,6 +419,12 @@ namespace Compiler.Emit
                 ilProcesser.Emit(OpCodes.Dup);
                 ilProcesser.Emit(OpCodes.Stloc, variable);
             }
+            else if (node.Variable is ParameterSymbol parameter)
+            {
+                EmitExpression(ilProcesser, node.Expression);
+                ilProcesser.Emit(OpCodes.Dup);
+                ilProcesser.Emit(OpCodes.Starg, parameter.Index);
+            }
             else throw new Exception("Unexpected VariableSymbol");
         }
 

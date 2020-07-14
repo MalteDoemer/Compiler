@@ -1,7 +1,5 @@
 <Project>
-
   <Target Name="CreateManifestResourceNames" />
-
   <Target Name="CoreCompile" DependsOnTargets="$(CoreCompileDependsOn)">
     <ItemGroup>
       <ReferencePath Remove="@(ReferencePath)"
@@ -18,7 +16,7 @@
       <GSharpCompileCommand>dotnet run --project "C:\Dev\vscode\c#\compiler\gsc\gsc.csproj" -- $(GSharpCompilerArgs)</GSharpCompileCommand>
     </PropertyGroup>
 
-    <Exec Command="$(GSharpCompileCommand)" />
+    <Exec Command="$(GSharpCompileCommand)" ConsoleToMsBuild="true" />
   </Target>
 
 </Project>
