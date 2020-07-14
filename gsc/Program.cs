@@ -84,7 +84,10 @@ namespace gsc
             foreach (var path in paths)
             {
                 if (File.Exists(path))
-                    result.Add(path);
+                    if (Path.IsPathFullyQualified(path))
+                        result.Add(path);
+                    else 
+                        result.Add(Path.GetFullPath(path));
                 else
                 {
                     WriteError($"path {path} is not a file.");

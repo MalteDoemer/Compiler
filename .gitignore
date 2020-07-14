@@ -1,6 +1,3 @@
-run.cmd
-build.cmd
-samples.cmd
 /.vscode
 /Compiler/obj
 /Compiler/bin

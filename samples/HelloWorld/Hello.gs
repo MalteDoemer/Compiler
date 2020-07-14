@@ -1,8 +1,7 @@
 def main() {
-    #print("fasdöifhaödsfiasjdföasd")
-    #clear()
-    var res = calculate(2, 5)
+    var res = calculate(2, 8)
     print(res)
+    input()
 }
 
 def calculate(a: float, b: float): float{

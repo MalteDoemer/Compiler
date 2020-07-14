@@ -1,5 +1,7 @@
 <Project>
+
   <Target Name="CreateManifestResourceNames" />
+
   <Target Name="CoreCompile" DependsOnTargets="$(CoreCompileDependsOn)">
     <ItemGroup>
       <ReferencePath Remove="@(ReferencePath)"
@@ -13,11 +15,11 @@
       <GSharpCompilerArgs>$(GSharpCompilerArgs) /o "@(IntermediateAssembly)"</GSharpCompilerArgs>
       <GSharpCompilerArgs>$(GSharpCompilerArgs) @(ReferencePath->'/r "%(Identity)"', ' ')</GSharpCompilerArgs>
 
-      <GSharpCompileCommand>dotnet run --project "C:\Dev\vscode\c#\compiler\gsc\gsc.csproj" -- $(GSharpCompilerArgs)</GSharpCompileCommand>
+      <GSharpCompilerScript>gsc.cmd</GSharpCompilerScript>
+      <GSharpCompileCommand>"$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\', '$(GSharpCompilerScript)'))" $(GSharpCompilerArgs)</GSharpCompileCommand>
     </PropertyGroup>
 
-    <Exec Command="$(GSharpCompileCommand)" ConsoleToMsBuild="true" />
+    <Exec Command="$(GSharpCompileCommand)" />
   </Target>
 
 </Project>
-
