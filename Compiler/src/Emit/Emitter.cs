@@ -136,10 +136,6 @@ namespace Compiler.Emit
 
             foreach (var statement in body.Statements)
                 EmitStatement(ilProcesser, statement);
-
-            ilProcesser.Emit(OpCodes.Ret);
-
-            //function.Body.Optimize();
         }
 
         private void EmitStatement(ILProcessor ilProcesser, BoundStatement node)

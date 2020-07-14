@@ -65,7 +65,6 @@ namespace Compiler.Binding
                 var boundStmt = globalBinder.BindStatement(stmt.Statement);
                 globalStatementBuilder.Add(boundStmt);
             }
-            var globalStatements = Lowerer.Lower(new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid));
 
             diagnostics.AddRange(globalBinder.GetDiagnostics());
             isProgramValid = isProgramValid && globalBinder.isTreeValid;
@@ -80,7 +79,7 @@ namespace Compiler.Binding
             {
                 var binder = new Binder(currentScope, isScript, symbol);
                 var body = binder.BindBlockStatmentSyntax(symbol.Syntax.Body);
-                var loweredBody = Lowerer.Lower(body);
+                var loweredBody = Lowerer.Lower(symbol, body);
 
                 if (!ControlFlowGraph.AllPathsReturn(symbol, loweredBody))
                     binder.ReportError(ErrorMessage.AllPathsMustReturn, symbol.Syntax.Identifier.Location);
@@ -106,18 +105,20 @@ namespace Compiler.Binding
                 diagnostics.Add(new Diagnostic("Main function must return void.", mainFunction.Syntax.ReturnType.Location, ErrorLevel.Error));
                 isProgramValid = false;
             }
-
+            var globalStatements = new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid);
             if (mainFunction == null)
             {
                 mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
+                globalStatements = Lowerer.Lower(mainFunction, globalStatements);
                 functions.Add(mainFunction, globalStatements);
                 declaredFunctions = declaredFunctions.Add(mainFunction);
             }
             else
             {
+                globalStatements = Lowerer.Lower(null, globalStatements);
                 var mainBody = functions[mainFunction];
                 var body = new BoundBlockStatement(globalStatements.Statements.AddRange(mainBody.Statements), isProgramValid);
-                var loweredBody = Lowerer.Lower(body); // TODO is this nesecrary
+                var loweredBody = Lowerer.Lower(mainFunction, body);
                 functions[mainFunction] = loweredBody;
             }
 

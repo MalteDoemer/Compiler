@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -8,6 +9,7 @@ namespace Compiler.Lowering
 {
     internal sealed class Lowerer : BoundTreeRewriter
     {
+
         private int labelCount;
 
         private Lowerer()
@@ -17,7 +19,14 @@ namespace Compiler.Lowering
 
         private BoundLabel CreateLabel() => new BoundLabel($"Label{++labelCount}");
 
-        private static BoundBlockStatement Flatten(BoundStatement node)
+        public static BoundBlockStatement Lower(FunctionSymbol function, BoundStatement body)
+        {
+            var lowerer = new Lowerer();
+            var res = lowerer.RewriteStatement(body);
+            return Flatten(function, res);
+        }
+
+        private static BoundBlockStatement Flatten(FunctionSymbol function, BoundStatement node)
         {
             var builder = ImmutableArray.CreateBuilder<BoundStatement>();
             var stack = new Stack<BoundStatement>();
@@ -36,17 +45,17 @@ namespace Compiler.Lowering
                     builder.Add(current);
                 }
             }
+            if (function != null && function.ReturnType == TypeSymbol.Void)
+                if (builder.Count == 0 || CanFallThrough(builder.Last()))
+                    builder.Add(new BoundReturnStatement(null, true));
 
             return new BoundBlockStatement(builder.ToImmutable(), node.IsValid);
         }
 
-        public static BoundBlockStatement Lower(BoundStatement statement)
+        private static bool CanFallThrough(BoundStatement boundStatement)
         {
-            var lowerer = new Lowerer();
-            var res = lowerer.RewriteStatement(statement);
-            return Flatten(res);
+            return boundStatement.Kind != BoundNodeKind.BoundReturnStatement && boundStatement.Kind != BoundNodeKind.BoundGotoStatement;
         }
-
 
         protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
         {
