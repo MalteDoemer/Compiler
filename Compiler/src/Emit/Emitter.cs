@@ -25,6 +25,7 @@ namespace Compiler.Emit
         private readonly TypeReference consoleType;
         private readonly MethodReference consoleWriteLineReference;
         private readonly MethodReference cosnoleReadLineReference;
+        private readonly MethodReference cosnoleClearReference;
         private readonly MethodReference stringConcatReference;
         private readonly MethodReference mathPowReference;
 
@@ -72,6 +73,7 @@ namespace Compiler.Emit
                 return;
             consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", "System.Void", "System.Object");
             cosnoleReadLineReference = ResolveMethod("System.Console", "ReadLine", "System.String");
+            cosnoleClearReference = ResolveMethod("System.Console", "Clear", "System.Void");
             stringConcatReference = ResolveMethod("System.String", "Concat", "System.String", "System.String", "System.String");
             mathPowReference = ResolveMethod("System.Math", "Pow", "System.Double", "System.Double", "System.Double");
 
@@ -137,7 +139,7 @@ namespace Compiler.Emit
 
             ilProcesser.Emit(OpCodes.Ret);
 
-            function.Body.Optimize();
+            //function.Body.Optimize();
         }
 
         private void EmitStatement(ILProcessor ilProcesser, BoundStatement node)
@@ -346,7 +348,7 @@ namespace Compiler.Emit
             else if (node.Symbol == BuiltInFunctions.RandomFloat)
                 throw new NotImplementedException();
             else if (node.Symbol == BuiltInFunctions.Clear)
-                throw new NotImplementedException();
+                ilProcesser.Emit(OpCodes.Call, cosnoleClearReference);
             else if (node.Symbol == BuiltInFunctions.Exit)
                 throw new NotImplementedException();
             else

@@ -2,13 +2,14 @@ namespace Compiler.Binding
 {
     public enum BoundBinaryOperator
     {
-        Addition,
+        Addition, 
         Subtraction,
         Multiplication,
         Division,
         Power,
         Root,
         Modulo,
+        
         EqualEqual,
         NotEqual,
         LessThan,

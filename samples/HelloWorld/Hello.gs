@@ -1,4 +1,6 @@
 def main() {
+    #print("fasdöifhaödsfiasjdföasd")
+    #clear()
     var res = calculate(2, 5)
     print(res)
 }
