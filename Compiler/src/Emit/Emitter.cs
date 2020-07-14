@@ -115,6 +115,14 @@ namespace Compiler.Emit
             const MethodAttributes attrs = MethodAttributes.Static | MethodAttributes.Private;
             var returnType = builtInTypes[symbol.ReturnType];
             var function = new MethodDefinition(symbol.Name, attrs, returnType);
+
+            foreach (var parameter in symbol.Parameters)
+            {
+                var type = builtInTypes[parameter.Type];
+                var parameterDefinition = new ParameterDefinition(parameter.Name, ParameterAttributes.None, type);
+                function.Parameters.Add(parameterDefinition);
+            }
+
             functions.Add(symbol, function);
             mainClass.Methods.Add(function);
         }
@@ -197,7 +205,9 @@ namespace Compiler.Emit
 
         private void EmitReturnStatement(ILProcessor ilProcesser, BoundReturnStatement node)
         {
-            throw new NotImplementedException();
+            if (node.Expression != null)
+                EmitExpression(ilProcesser, node.Expression);
+            ilProcesser.Emit(OpCodes.Ret);
         }
 
         private void EmitExpressionStatement(ILProcessor ilProcesser, BoundExpressionStatement node)

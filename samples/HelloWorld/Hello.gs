@@ -1,9 +1,9 @@
 def main() {
-    doSomething()
+    var name = getName(true)   
+    print(name + ", you are gayy!")
 }
 
-def doSomething() {
-    var i : any = 1
-    var j : any = 2
-    print(i + j)
+def getName(fett: bool): str {
+    print("Enter your name")
+    return input()
 }
