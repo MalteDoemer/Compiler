@@ -3,7 +3,7 @@ def main() {
 }
 
 def doSomething() {
-    var b : any = false
-    var i = 1 + int(b)
-    print(i)
+    var i : any = 1
+    var j : any = 2
+    print(i + j)
 }

@@ -212,12 +212,33 @@ namespace Compiler.Lowering
             switch (node.Op, leftType.Name, rightType.Name)
             {
                 case (BoundBinaryOperator.Addition, "float", "int"):
+                case (BoundBinaryOperator.Subtraction, "float", "int"):
+                case (BoundBinaryOperator.Multiplication, "float", "int"):
+                case (BoundBinaryOperator.Division, "float", "int"):
+                case (BoundBinaryOperator.Power, "float", "int"):
                     right = new BoundConversionExpression(TypeSymbol.Float, right, right.IsValid);
                     break;
                 case (BoundBinaryOperator.Addition, "int", "float"):
+                case (BoundBinaryOperator.Subtraction, "int", "float"):
+                case (BoundBinaryOperator.Multiplication, "int", "float"):
+                case (BoundBinaryOperator.Division, "int", "float"):
+                case (BoundBinaryOperator.Power, "int", "float"):
                     left = new BoundConversionExpression(TypeSymbol.Float, left, left.IsValid);
                     break;
 
+
+                // case (BoundBinaryOperator.Power, "int", "int"):
+                //     left = new BoundConversionExpression(TypeSymbol.Float, left, left.IsValid);
+                //     right = new BoundConversionExpression(TypeSymbol.Float, right, right.IsValid);
+                //     break;
+
+                // case (BoundBinaryOperator.Root, "int", "int"):
+                //     left = new BoundConversionExpression(TypeSymbol.Float, left, left.IsValid);
+                //     right = new BoundConversionExpression(TypeSymbol.Float, right, right.IsValid);
+                //     var literal = new BoundLiteralExpression(1.0d, TypeSymbol.Float, true);
+                //     right = new BoundBinaryExpression(BoundBinaryOperator.Division, literal, right, TypeSymbol.Float, right.IsValid);
+                //     return new BoundBinaryExpression(BoundBinaryOperator.Power, left, right, TypeSymbol.Float, node.IsValid);
+                    
                 case (BoundBinaryOperator.Addition, "int", "str"):
                 case (BoundBinaryOperator.Addition, "float", "str"):
                 case (BoundBinaryOperator.Addition, "bool", "str"):
@@ -230,11 +251,11 @@ namespace Compiler.Lowering
                 case (BoundBinaryOperator.Addition, "str", "any"):
                     right = new BoundConversionExpression(TypeSymbol.String, right, right.IsValid);
                     break;
+
                 default: return base.RewriteBinaryExpression(node);
             }
 
             return new BoundBinaryExpression(node.Op, left, right, node.ResultType, node.IsValid);
-
         }
     }
 }

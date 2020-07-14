@@ -26,6 +26,7 @@ namespace Compiler.Emit
         private readonly MethodReference consoleWriteLineReference;
         private readonly MethodReference cosnoleReadLineReference;
         private readonly MethodReference stringConcatReference;
+        private readonly MethodReference mathPowReference;
 
         private readonly Dictionary<TypeSymbol, MethodReference> toStringReferences;
 
@@ -73,7 +74,7 @@ namespace Compiler.Emit
             consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", "System.Void", "System.Object");
             cosnoleReadLineReference = ResolveMethod("System.Console", "ReadLine", "System.String");
             stringConcatReference = ResolveMethod("System.String", "Concat", "System.String", "System.String", "System.String");
-
+            mathPowReference = ResolveMethod("System.Math", "Pow", "System.Double", "System.Double", "System.Double");
 
             toStringReferences.Add(TypeSymbol.Any, ResolveMethod("System.Object", "ToString", "System.String"));
             toStringReferences.Add(TypeSymbol.Int, ResolveMethod("System.Int64", "ToString", "System.String"));
@@ -284,31 +285,35 @@ namespace Compiler.Emit
 
         private void EmitBinaryExpression(ILProcessor ilProcesser, BoundBinaryExpression node)
         {
+            var leftType = node.Left.ResultType;
+            var rightType = node.Right.ResultType;
+
+            EmitExpression(ilProcesser, node.Left);
+            EmitExpression(ilProcesser, node.Right);
+
             switch (node.Op)
             {
                 case BoundBinaryOperator.Addition:
-                    EmitAddition();
+                    if (leftType == TypeSymbol.String) ilProcesser.Emit(OpCodes.Call, stringConcatReference);
+                    else ilProcesser.Emit(OpCodes.Add);
+                    break;
+                case BoundBinaryOperator.Subtraction:
+                    ilProcesser.Emit(OpCodes.Sub);
+                    break;
+                case BoundBinaryOperator.Multiplication:
+                    ilProcesser.Emit(OpCodes.Mul);
+                    break;
+                case BoundBinaryOperator.Division:
+                    ilProcesser.Emit(OpCodes.Div);
+                    break;
+                case BoundBinaryOperator.Modulo:
+                    ilProcesser.Emit(OpCodes.Rem);
+                    break;
+                case BoundBinaryOperator.Power:
+                    ilProcesser.Emit(OpCodes.Call, mathPowReference);
                     break;
 
                 default: throw new Exception("Unexpected binary operator");
-            }
-
-            void EmitAddition()
-            {
-                EmitExpression(ilProcesser, node.Left);
-                EmitExpression(ilProcesser, node.Right);
-
-                switch (node.Left.ResultType.Name, node.Right.ResultType.Name)
-                {
-                    case ("str", "str"):
-                        ilProcesser.Emit(OpCodes.Call, stringConcatReference);
-                        break;
-                    case ("int", "int"):
-                    case ("float", "float"):
-                        ilProcesser.Emit(OpCodes.Add);
-                        break;
-                    default: throw new Exception("Unexpected types for addition");
-                }
             }
         }
 
