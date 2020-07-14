@@ -95,7 +95,6 @@ namespace Compiler.Binding
         public static TypeSymbol ResolveUnaryType(BoundUnaryOperator? op, TypeSymbol type)
         {
             if (op == null) return null;
-            if (type == TypeSymbol.Any) return TypeSymbol.Any;
 
             foreach (var pair in UnaryResultTypes)
                 if (pair.Key.Item2 == op && pair.Key.Item1 == type) return pair.Value;
@@ -105,7 +104,6 @@ namespace Compiler.Binding
         public static TypeSymbol ResolveBinaryType(BoundBinaryOperator? op, TypeSymbol left, TypeSymbol right)
         {
             if (op == null) return null;
-            if (left == TypeSymbol.Any || right == TypeSymbol.Any) return TypeSymbol.Any;
 
             foreach (var pair in BinaryResultTypes)
                 if (((pair.Key.Item1 == left && pair.Key.Item2 == right) || (pair.Key.Item2 == left && pair.Key.Item1 == right)) && pair.Key.Item3 == op) return pair.Value;
@@ -211,5 +209,4 @@ namespace Compiler.Binding
         }
 
     }
-
 }
