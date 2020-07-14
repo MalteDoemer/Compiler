@@ -167,14 +167,15 @@ namespace Compiler.Binding
             var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
             var seenParameters = new HashSet<string>();
 
-            foreach (var parameterSyntax in func.Parameters)
+            for (var i = 0; i < func.Parameters.Length; i++)
             {
+                var parameterSyntax = func.Parameters[i];
                 var type = BindFacts.GetTypeSymbol(parameterSyntax.TypeClause.TypeToken.Kind);
                 var name = parameterSyntax.Identifier.Value.ToString();
 
                 if (!seenParameters.Add(name))
                     diagnostics.ReportError(ErrorMessage.DuplicatedParameters, parameterSyntax.Location, name);
-                else parameters.Add(new ParameterSymbol(name, type));
+                else parameters.Add(new ParameterSymbol(name, i, type));
             }
 
             TypeSymbol returnType;

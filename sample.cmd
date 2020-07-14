@@ -1,4 +1,7 @@
 @echo off
 set sln=%~dp0
-dotnet run --project %sln%\samples\HelloWorld\Hello.gsproj 
+set proj=%sln%\samples\HelloWorld
+pushd %proj%
+dotnet run 
+popd
 exit /b

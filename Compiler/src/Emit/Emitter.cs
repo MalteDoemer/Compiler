@@ -20,7 +20,7 @@ namespace Compiler.Emit
         private readonly List<AssemblyDefinition> references;
         private readonly Dictionary<TypeSymbol, TypeReference> builtInTypes;
         private readonly Dictionary<FunctionSymbol, MethodDefinition> functions;
-        private readonly Dictionary<GlobalVariableSymbol, FieldDefinition> globalVariables;
+        private readonly Dictionary<TypeSymbol, MethodReference> toStringReferences;
 
         private readonly TypeReference consoleType;
         private readonly MethodReference consoleWriteLineReference;
@@ -28,8 +28,7 @@ namespace Compiler.Emit
         private readonly MethodReference stringConcatReference;
         private readonly MethodReference mathPowReference;
 
-        private readonly Dictionary<TypeSymbol, MethodReference> toStringReferences;
-
+        private readonly Dictionary<GlobalVariableSymbol, FieldDefinition> globalVariables;
         private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
@@ -283,7 +282,11 @@ namespace Compiler.Emit
             else if (node.Variable is LocalVariableSymbol localVariable)
             {
                 var variable = locals[localVariable];
-                ilProcesser.Emit(OpCodes.Ldloc, variable.Index);
+                ilProcesser.Emit(OpCodes.Ldloc, variable);
+            }
+            else if (node.Variable is ParameterSymbol parameter)
+            {
+                ilProcesser.Emit(OpCodes.Ldarg, parameter.Index);
             }
             else throw new Exception("Unexpected VariableSymbol");
         }
@@ -304,7 +307,7 @@ namespace Compiler.Emit
             switch (node.Op)
             {
                 case BoundBinaryOperator.Addition:
-                    if (leftType == TypeSymbol.String) ilProcesser.Emit(OpCodes.Call, stringConcatReference);
+                    if (leftType == TypeSymbol.String && rightType == TypeSymbol.String) ilProcesser.Emit(OpCodes.Call, stringConcatReference);
                     else ilProcesser.Emit(OpCodes.Add);
                     break;
                 case BoundBinaryOperator.Subtraction:

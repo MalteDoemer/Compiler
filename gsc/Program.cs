@@ -45,7 +45,7 @@ namespace gsc
                 return 0;
             }
 
-            var paths = GetAllPaths(sourcePaths);
+            var paths = ValidatePaths(sourcePaths);
             if (paths == null) return 5;
             if (paths.Length == 0)
             {
@@ -77,7 +77,7 @@ namespace gsc
             Console.Error.WriteLine();
         }
 
-        private static string[] GetAllPaths(IEnumerable<string> paths)
+        private static string[] ValidatePaths(IEnumerable<string> paths)
         {
             var result = new List<string>(paths.Count());
 
@@ -87,7 +87,7 @@ namespace gsc
                     result.Add(path);
                 else
                 {
-                    WriteError($"path {path} is not a file or directory.");
+                    WriteError($"path {path} is not a file.");
                     return null;
                 }
             }

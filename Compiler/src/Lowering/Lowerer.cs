@@ -242,13 +242,11 @@ namespace Compiler.Lowering
                 case (BoundBinaryOperator.Addition, "int", "str"):
                 case (BoundBinaryOperator.Addition, "float", "str"):
                 case (BoundBinaryOperator.Addition, "bool", "str"):
-                case (BoundBinaryOperator.Addition, "any", "str"):
                     left = new BoundConversionExpression(TypeSymbol.String, left, left.IsValid);
                     break;
                 case (BoundBinaryOperator.Addition, "str", "int"):
                 case (BoundBinaryOperator.Addition, "str", "float"):
                 case (BoundBinaryOperator.Addition, "str", "bool"):
-                case (BoundBinaryOperator.Addition, "str", "any"):
                     right = new BoundConversionExpression(TypeSymbol.String, right, right.IsValid);
                     break;
 
