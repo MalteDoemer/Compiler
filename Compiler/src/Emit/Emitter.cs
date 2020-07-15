@@ -33,6 +33,7 @@ namespace Compiler.Emit
         private readonly MethodReference convertToStringReference;
         private readonly MethodReference stringEqualsReference;
         private readonly MethodReference objectEqualsReference;
+        private readonly MethodReference environmentExitReference;
 
         private readonly Dictionary<GlobalVariableSymbol, FieldDefinition> globalVariables;
         private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
@@ -85,6 +86,7 @@ namespace Compiler.Emit
             convertToStringReference = ResolveMethod("System.Convert", "ToString", "System.String", "System.Object");
             stringEqualsReference = ResolveMethod("System.String", "Equals", "System.Boolean", "System.String", "System.String");
             objectEqualsReference = ResolveMethod("System.Object", "Equals", "System.Boolean", "System.Object", "System.Object");
+            environmentExitReference = ResolveMethod("System.Environment", "Exit", "System.Void", "System.Int32");
         }
 
         public void Emit(string outputPath)
@@ -455,7 +457,7 @@ namespace Compiler.Emit
             else if (node.Symbol == BuiltInFunctions.Clear)
                 ilProcesser.Emit(OpCodes.Call, cosnoleClearReference);
             else if (node.Symbol == BuiltInFunctions.Exit)
-                throw new NotImplementedException();
+                ilProcesser.Emit(OpCodes.Call, environmentExitReference);
             else
             {
                 var function = functions[node.Symbol];
@@ -577,7 +579,12 @@ namespace Compiler.Emit
             var returnTypeDef = ResolveTypeDefinition(returnType);
             var typeDef = ResolveTypeDefinition(type);
 
-
+            if (returnTypeDef == null || typeDef == null)
+            {
+                var missingName = typeDef == null ? type : returnType;
+                diagnostics.ReportError(ErrorMessage.MissingRequiredType, TextLocation.Undefined, missingName);
+                return null;
+            }
 
             var fullName = $"{returnTypeDef.FullName} {typeDef.FullName}::{name}({string.Join(",", parameterTypes.Select(p => ResolveTypeDefinition(p).FullName))})";
             var foundMethods = typeDef.Methods.Where(m => m.FullName == fullName);

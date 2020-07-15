@@ -223,9 +223,6 @@ namespace Compiler.Lowering
             if (node.Op == BoundBinaryOperator.Root)
                 oneLiteral = new BoundLiteralExpression(1.0d, TypeSymbol.Float, true);
 
-            Console.WriteLine("left type: " + leftType);
-            Console.WriteLine("right type: " + rightType);
-
             switch (node.Op, leftType.Name, rightType.Name)
             {
                 case (BoundBinaryOperator.Addition, "float", "int"):

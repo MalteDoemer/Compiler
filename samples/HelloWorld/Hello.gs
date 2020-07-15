@@ -1,23 +1,9 @@
 def main() {
-    
-    while true {
-        var inp = prompt("Enter your name")
-        if inp == "cls"{
-            clear()
-            continue
-        }
-        else if inp == "exit"
-            return void
-        else if inp == "fuck you" || inp == "Fuck you"
-            print("Fuck you to!")
-        else
-            print("Hello " + inp + "!")
-        
-        print("")
+    for var i = 0 i < 20 i++ {
+        if i == 10 break
+        if i % 2 == 0 continue
+        print(i)
     }
-}
 
-def prompt(message: str): str {
-    print(message)
-    return input()
+    input()
 }
