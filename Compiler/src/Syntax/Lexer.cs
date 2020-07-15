@@ -61,7 +61,7 @@ namespace Compiler.Syntax
             if (current == '.')
             {
                 pos++;
-                float fnum = num;
+                double fnum = num;
                 int weight = 1;
 
                 if (!char.IsDigit(current)) diagnostics.ReportError(ErrorMessage.InvalidDecimalPoint, new TextLocation(text, pos - 1, 1));
@@ -69,7 +69,7 @@ namespace Compiler.Syntax
                 while (char.IsDigit(current))
                 {
                     weight *= 10;
-                    fnum += (float)(current - '0') / (float)weight;
+                    fnum += (double)(current - '0') / (double)weight;
                     pos++;
                 }
                 return new SyntaxToken(SyntaxTokenKind.Float, new TextLocation(text, start, pos - start), fnum);

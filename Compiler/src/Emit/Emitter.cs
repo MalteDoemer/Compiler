@@ -63,7 +63,7 @@ namespace Compiler.Emit
 
             builtInTypes.Add(TypeSymbol.Any, ResolveType("System.Object"));
             builtInTypes.Add(TypeSymbol.Int, ResolveType("System.Int32"));
-            builtInTypes.Add(TypeSymbol.Float, ResolveType("System.Single"));
+            builtInTypes.Add(TypeSymbol.Float, ResolveType("System.Double"));
             builtInTypes.Add(TypeSymbol.Bool, ResolveType("System.Boolean"));
             builtInTypes.Add(TypeSymbol.String, ResolveType("System.String"));
             builtInTypes.Add(TypeSymbol.Void, ResolveType("System.Void"));
@@ -255,8 +255,8 @@ namespace Compiler.Emit
             }
             else if (node.ResultType == TypeSymbol.Float)
             {
-                var val = (float)node.Value;
-                ilProcesser.Emit(OpCodes.Ldc_R4, val);
+                var val = (double)node.Value;
+                ilProcesser.Emit(OpCodes.Ldc_R8, val);
             }
             else if (node.ResultType == TypeSymbol.String)
             {

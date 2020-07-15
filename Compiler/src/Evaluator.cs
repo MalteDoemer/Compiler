@@ -202,7 +202,7 @@ namespace Compiler
                 switch (val)
                 {
                     case int i: return i;
-                    case float f: return f;
+                    case double d: return d;
                     case bool b: return b;
                     case string s: return s;
                     default: return val;
@@ -256,7 +256,7 @@ namespace Compiler
             }
             else if (expr.Symbol == BuiltInFunctions.RandomFloat)
             {
-                return (float)random.NextDouble();
+                return random.NextDouble();
             }
             else
             {
