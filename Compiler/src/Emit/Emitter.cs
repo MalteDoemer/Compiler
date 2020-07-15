@@ -1,13 +1,12 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using Mono.Cecil;
 using Compiler.Binding;
 using Compiler.Diagnostics;
 using Compiler.Symbols;
 using Compiler.Text;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 
 namespace Compiler.Emit
 {
@@ -23,8 +22,11 @@ namespace Compiler.Emit
         private readonly Dictionary<BoundLabel, int> labels;
         private readonly List<(int, BoundLabel)> fixups;
 
+        private readonly TypeReference randomTypeReference;
+        private readonly MethodReference randomCtorReference;
+        private readonly MethodReference randomNextReference;
+        private readonly MethodReference randomNextDoubleReference;
 
-        private readonly TypeReference consoleType;
         private readonly MethodReference consoleWriteLineReference;
         private readonly MethodReference cosnoleReadLineReference;
         private readonly MethodReference cosnoleClearReference;
@@ -34,9 +36,13 @@ namespace Compiler.Emit
         private readonly MethodReference stringEqualsReference;
         private readonly MethodReference objectEqualsReference;
         private readonly MethodReference environmentExitReference;
+        private readonly MethodReference stringGetLengthReference;
 
         private readonly Dictionary<GlobalVariableSymbol, FieldDefinition> globalVariables;
         private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
+
+        private FieldDefinition randomDefiniton;
+        private MethodDefinition staticCtor;
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
@@ -74,10 +80,9 @@ namespace Compiler.Emit
             builtInTypes.Add(TypeSymbol.Bool, ResolveType("System.Boolean"));
             builtInTypes.Add(TypeSymbol.String, ResolveType("System.String"));
             builtInTypes.Add(TypeSymbol.Void, ResolveType("System.Void"));
+            randomTypeReference = ResolveType("System.Random");
+
             mainClass = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.Public, builtInTypes[TypeSymbol.Any]);
-            consoleType = ResolveType("System.Console");
-            if (consoleType == null)
-                return;
             consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", "System.Void", "System.Object");
             cosnoleReadLineReference = ResolveMethod("System.Console", "ReadLine", "System.String");
             cosnoleClearReference = ResolveMethod("System.Console", "Clear", "System.Void");
@@ -87,6 +92,10 @@ namespace Compiler.Emit
             stringEqualsReference = ResolveMethod("System.String", "Equals", "System.Boolean", "System.String", "System.String");
             objectEqualsReference = ResolveMethod("System.Object", "Equals", "System.Boolean", "System.Object", "System.Object");
             environmentExitReference = ResolveMethod("System.Environment", "Exit", "System.Void", "System.Int32");
+            stringGetLengthReference = ResolveMethod("System.String", "get_Length", "System.Int32");
+            randomCtorReference = ResolveMethod("System.Random", ".ctor", "System.Void");
+            randomNextReference = ResolveMethod("System.Random", "Next", "System.Int32", "System.Int32", "System.Int32");
+            randomNextDoubleReference = ResolveMethod("System.Random", "NextDouble", "System.Double");
         }
 
         public void Emit(string outputPath)
@@ -150,7 +159,7 @@ namespace Compiler.Emit
                 var targetInst = ilProcesser.Body.Instructions[labels[label]];
                 var instToFix = ilProcesser.Body.Instructions[index];
                 instToFix.Operand = targetInst;
-                
+
             }
         }
 
@@ -214,7 +223,7 @@ namespace Compiler.Emit
 
         private void EmitConditionalGotoStatement(ILProcessor ilProcesser, BoundConditionalGotoStatement node)
         {
-            EmitExpression(ilProcesser, node.Condition); 
+            EmitExpression(ilProcesser, node.Condition);
 
             fixups.Add((ilProcesser.Body.Instructions.Count, node.Label));
             var opCode = node.JumpIfFalse ? OpCodes.Brfalse : OpCodes.Brtrue;
@@ -441,6 +450,25 @@ namespace Compiler.Emit
 
         private void EmitCallExpression(ILProcessor ilProcesser, BoundCallExpression node)
         {
+            if (node.Symbol == BuiltInFunctions.Random || node.Symbol == BuiltInFunctions.RandomFloat)
+            {
+                if (randomDefiniton == null)
+                {
+                    randomDefiniton = new FieldDefinition("random", FieldAttributes.Static | FieldAttributes.Private, randomTypeReference);
+                    mainClass.Fields.Add(randomDefiniton);
+
+                    var attrs = MethodAttributes.SpecialName | MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.RTSpecialName;
+                    staticCtor = new MethodDefinition(".cctor", attrs, builtInTypes[TypeSymbol.Void]);
+                    mainClass.Methods.Add(staticCtor);
+
+                    var ctorProcessor = staticCtor.Body.GetILProcessor();
+                    ctorProcessor.Emit(OpCodes.Newobj, randomCtorReference);
+                    ctorProcessor.Emit(OpCodes.Stsfld, randomDefiniton);
+                    ctorProcessor.Emit(OpCodes.Ret);
+                }
+                ilProcesser.Emit(OpCodes.Ldsfld, randomDefiniton);
+            }
+
             foreach (var arg in node.Arguments)
                 EmitExpression(ilProcesser, arg);
 
@@ -449,15 +477,15 @@ namespace Compiler.Emit
             else if (node.Symbol == BuiltInFunctions.Input)
                 ilProcesser.Emit(OpCodes.Call, cosnoleReadLineReference);
             else if (node.Symbol == BuiltInFunctions.Len)
-                throw new NotImplementedException();
-            else if (node.Symbol == BuiltInFunctions.Random)
-                throw new NotImplementedException();
-            else if (node.Symbol == BuiltInFunctions.RandomFloat)
-                throw new NotImplementedException();
+                ilProcesser.Emit(OpCodes.Call, stringGetLengthReference);
             else if (node.Symbol == BuiltInFunctions.Clear)
                 ilProcesser.Emit(OpCodes.Call, cosnoleClearReference);
             else if (node.Symbol == BuiltInFunctions.Exit)
                 ilProcesser.Emit(OpCodes.Call, environmentExitReference);
+            else if (node.Symbol == BuiltInFunctions.Random)
+                ilProcesser.Emit(OpCodes.Callvirt, randomNextReference);
+            else if (node.Symbol == BuiltInFunctions.RandomFloat)
+                ilProcesser.Emit(OpCodes.Callvirt, randomNextDoubleReference);
             else
             {
                 var function = functions[node.Symbol];
