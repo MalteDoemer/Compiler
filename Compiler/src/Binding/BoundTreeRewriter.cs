@@ -221,8 +221,8 @@ namespace Compiler.Binding
 
         protected virtual BoundExpression RewriteUnaryExpression(BoundUnaryExpression node)
         {
-            var right = RewriteExpression(node.Right);
-            if (right == node.Right)
+            var right = RewriteExpression(node.Expression);
+            if (right == node.Expression)
                 return node;
             return new BoundUnaryExpression(node.Op, right, node.ResultType, node.IsValid);
         }

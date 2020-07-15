@@ -287,7 +287,25 @@ namespace Compiler.Emit
 
         private void EmitUnaryExpression(ILProcessor ilProcesser, BoundUnaryExpression node)
         {
+            EmitExpression(ilProcesser, node.Expression);
 
+            switch (node.Op)
+            {
+                case BoundUnaryOperator.Identety:
+                    // Nothing
+                    break;
+                case BoundUnaryOperator.Negation:
+                    ilProcesser.Emit(OpCodes.Neg);
+                    break;
+                case BoundUnaryOperator.LogicalNot:
+                    ilProcesser.Emit(OpCodes.Ldc_I4_0);
+                    ilProcesser.Emit(OpCodes.Ceq);
+                    break;
+                case BoundUnaryOperator.BitwiseNot:
+                    ilProcesser.Emit(OpCodes.Not);
+                    break;
+                default: throw new Exception($"Unexpceted unary operator {node.Op}");
+            }
         }
 
         private void EmitBinaryExpression(ILProcessor ilProcesser, BoundBinaryExpression node)

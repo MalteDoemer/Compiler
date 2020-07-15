@@ -174,7 +174,7 @@ namespace Compiler.Text
         {
             writer.ColorWrite("(");
             writer.Write(node.Op.GetText());
-            writer.WriteBoundNode(node.Right);
+            writer.WriteBoundNode(node.Expression);
             writer.ColorWrite(")");
         }
 
