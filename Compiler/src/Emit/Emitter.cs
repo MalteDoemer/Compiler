@@ -20,6 +20,8 @@ namespace Compiler.Emit
         private readonly List<AssemblyDefinition> references;
         private readonly Dictionary<TypeSymbol, TypeReference> builtInTypes;
         private readonly Dictionary<FunctionSymbol, MethodDefinition> functions;
+        private readonly Dictionary<BoundLabel, int> labels;
+        private readonly List<(int, BoundLabel)> fixups;
 
 
         private readonly TypeReference consoleType;
@@ -45,6 +47,8 @@ namespace Compiler.Emit
             this.builtInTypes = new Dictionary<TypeSymbol, TypeReference>();
             this.globalVariables = new Dictionary<GlobalVariableSymbol, FieldDefinition>();
             this.locals = new Dictionary<LocalVariableSymbol, VariableDefinition>();
+            this.labels = new Dictionary<BoundLabel, int>();
+            this.fixups = new List<(int, BoundLabel)>();
 
             var assembylInfo = new AssemblyNameDefinition(moduleName, new Version(1, 0));
             mainAssebly = AssemblyDefinition.CreateAssembly(assembylInfo, moduleName, ModuleKind.Console);
@@ -132,10 +136,20 @@ namespace Compiler.Emit
         {
             var function = functions[symbol];
             locals.Clear();
+            fixups.Clear();
+            labels.Clear();
             var ilProcesser = function.Body.GetILProcessor();
 
             foreach (var statement in body.Statements)
                 EmitStatement(ilProcesser, statement);
+
+            foreach (var (index, label) in fixups)
+            {
+                var targetInst = ilProcesser.Body.Instructions[labels[label]];
+                var instToFix = ilProcesser.Body.Instructions[index];
+                instToFix.Operand = targetInst;
+                
+            }
         }
 
         private void EmitStatement(ILProcessor ilProcesser, BoundStatement node)
@@ -185,19 +199,24 @@ namespace Compiler.Emit
             else throw new Exception("Unexpected VariableSymbol");
         }
 
-        private void EmitConditionalGotoStatement(ILProcessor ilProcesser, BoundConditionalGotoStatement node)
+        private void EmitLabelStatement(ILProcessor ilProcesser, BoundLabelStatement node)
         {
-            throw new NotImplementedException();
+            labels.Add(node.Label, ilProcesser.Body.Instructions.Count);
         }
 
         private void EmitGotoStatement(ILProcessor ilProcesser, BoundGotoStatement node)
         {
-            throw new NotImplementedException();
+            fixups.Add((ilProcesser.Body.Instructions.Count, node.Label));
+            ilProcesser.Emit(OpCodes.Br, Instruction.Create(OpCodes.Nop));
         }
 
-        private void EmitLabelStatement(ILProcessor ilProcesser, BoundLabelStatement node)
+        private void EmitConditionalGotoStatement(ILProcessor ilProcesser, BoundConditionalGotoStatement node)
         {
-            throw new NotImplementedException();
+            EmitExpression(ilProcesser, node.Condition); 
+
+            fixups.Add((ilProcesser.Body.Instructions.Count, node.Label));
+            var opCode = node.JumpIfFalse ? OpCodes.Brfalse : OpCodes.Brtrue;
+            ilProcesser.Emit(opCode, Instruction.Create(OpCodes.Nop));
         }
 
         private void EmitReturnStatement(ILProcessor ilProcesser, BoundReturnStatement node)

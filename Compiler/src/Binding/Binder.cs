@@ -521,7 +521,7 @@ namespace Compiler.Binding
                 ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
 
             var left = new BoundVariableExpression(variable, isTreeValid);
-            var right = new BoundLiteralExpression(1L, TypeSymbol.Int, isTreeValid);
+            var right = new BoundLiteralExpression(1, TypeSymbol.Int, isTreeValid);
             var op = BindBinaryOperator(syntax.Op.Kind);
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
