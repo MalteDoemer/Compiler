@@ -212,6 +212,8 @@ namespace Compiler.Lowering
 
         protected override BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)
         {
+            // TODO Root not yet working
+
             var leftType = node.Left.ResultType;
             var rightType = node.Right.ResultType;
 
@@ -282,6 +284,35 @@ namespace Compiler.Lowering
             }
 
             return new BoundBinaryExpression(node.Op, left, right, node.ResultType, node.IsValid);
+        }
+
+        protected override BoundExpression RewriteConversionExpression(BoundConversionExpression node)
+        {
+            if (node.Expression is BoundLiteralExpression literalExpression)
+            {
+                var from = literalExpression.ResultType;
+                var to = node.Type;
+                var value = literalExpression.Value;
+                var isValid = node.Expression.IsValid;
+                switch (from.Name, to.Name)
+                {
+                    case ("int", "float"):
+                        var i = (int)value;
+                        return new BoundLiteralExpression((double)i, TypeSymbol.Float, isValid);
+                    case ("float", "int"):
+                        var f = (double)value;
+                        return new BoundLiteralExpression((int)f, TypeSymbol.Int, isValid);
+                    case ("any", "str"):
+                    case ("int", "str"):
+                    case ("float", "str"):
+                    case ("bool", "str"):
+                        var str = Convert.ToString(value);
+                        return new BoundLiteralExpression(str, TypeSymbol.String, isValid);
+
+                    default: return base.RewriteConversionExpression(node);
+                }
+            }
+            else return base.RewriteConversionExpression(node);
         }
     }
 }

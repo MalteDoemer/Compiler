@@ -1,5 +1,5 @@
 def main() {
-    var f = 4.5 + 1
-    print(int(f))
+    var f = 9 ** 2
+    print(f)
     input()
 }

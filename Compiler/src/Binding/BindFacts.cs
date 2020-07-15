@@ -24,8 +24,8 @@ namespace Compiler.Binding
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Subtraction), TypeSymbol.Int},
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Multiplication), TypeSymbol.Int},
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Division), TypeSymbol.Int},
-            {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Power), TypeSymbol.Int},
-            {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Root), TypeSymbol.Int},
+            {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Power), TypeSymbol.Float}, // Special here 
+            {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Root), TypeSymbol.Float}, //  Math.Pow always returns a float64
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.Modulo), TypeSymbol.Int},
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.BitwiseAnd), TypeSymbol.Int},
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.BitwiseOr), TypeSymbol.Int},

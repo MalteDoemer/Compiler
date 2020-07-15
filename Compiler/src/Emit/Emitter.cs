@@ -391,7 +391,7 @@ namespace Compiler.Emit
                     var type3 = builtInTypes[node.Type];
                     ilProcesser.Emit(OpCodes.Unbox_Any, type3);
                     break;
-                default: throw new Exception("Unexpected type");
+                default: throw new Exception($"Unexpected conversion from {from} to {to}");
             }
         }
 
