@@ -30,6 +30,7 @@ namespace Compiler.Emit
         private readonly MethodReference mathPowReference;
         private readonly MethodReference convertToStringReference;
         private readonly MethodReference stringEqualsReference;
+        private readonly MethodReference objectEqualsReference;
 
         private readonly Dictionary<GlobalVariableSymbol, FieldDefinition> globalVariables;
         private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
@@ -79,6 +80,7 @@ namespace Compiler.Emit
             mathPowReference = ResolveMethod("System.Math", "Pow", "System.Double", "System.Double", "System.Double");
             convertToStringReference = ResolveMethod("System.Convert", "ToString", "System.String", "System.Object");
             stringEqualsReference = ResolveMethod("System.String", "Equals", "System.Boolean", "System.String", "System.String");
+            objectEqualsReference = ResolveMethod("System.Object", "Equals", "System.Boolean", "System.Object", "System.Object");
         }
 
         public void Emit(string outputPath)
@@ -331,9 +333,23 @@ namespace Compiler.Emit
                 return;
             }
 
+            if (node.Op == BoundBinaryOperator.EqualEqual && leftType == TypeSymbol.Any && rightType == TypeSymbol.Any)
+            {
+                ilProcesser.Emit(OpCodes.Call, objectEqualsReference);
+                return;
+            }
+
             if (node.Op == BoundBinaryOperator.NotEqual && leftType == TypeSymbol.String && rightType == TypeSymbol.String)
             {
                 ilProcesser.Emit(OpCodes.Call, stringEqualsReference);
+                ilProcesser.Emit(OpCodes.Ldc_I4_0);
+                ilProcesser.Emit(OpCodes.Ceq);
+                return;
+            }
+
+            if (node.Op == BoundBinaryOperator.NotEqual && leftType == TypeSymbol.Any && rightType == TypeSymbol.Any)
+            {
+                ilProcesser.Emit(OpCodes.Callvirt, objectEqualsReference);
                 ilProcesser.Emit(OpCodes.Ldc_I4_0);
                 ilProcesser.Emit(OpCodes.Ceq);
                 return;
@@ -369,25 +385,36 @@ namespace Compiler.Emit
                     ilProcesser.Emit(OpCodes.Ceq);
                     break;
                 case BoundBinaryOperator.LessThan:
+                    ilProcesser.Emit(OpCodes.Clt);
                     break;
                 case BoundBinaryOperator.GreaterThan:
+                    ilProcesser.Emit(OpCodes.Cgt);
                     break;
                 case BoundBinaryOperator.LessEqual:
+                    ilProcesser.Emit(OpCodes.Cgt);
+                    ilProcesser.Emit(OpCodes.Ldc_I4_0);
+                    ilProcesser.Emit(OpCodes.Ceq);
                     break;
                 case BoundBinaryOperator.GreaterEqual:
+                    ilProcesser.Emit(OpCodes.Clt);
+                    ilProcesser.Emit(OpCodes.Ldc_I4_0);
+                    ilProcesser.Emit(OpCodes.Ceq);
                     break;
+                // TODO short-circuit evalutaion
                 case BoundBinaryOperator.LogicalAnd:
-                    break;
-                case BoundBinaryOperator.LogicalOr:
-                    break;
                 case BoundBinaryOperator.BitwiseAnd:
+                    ilProcesser.Emit(OpCodes.And);
                     break;
+                // TODO short-circuit evalutaion
+                case BoundBinaryOperator.LogicalOr:
                 case BoundBinaryOperator.BitwiseOr:
+                    ilProcesser.Emit(OpCodes.Or);
                     break;
                 case BoundBinaryOperator.BitwiseXor:
+                    ilProcesser.Emit(OpCodes.Xor);
                     break;
 
-                default: throw new Exception("Unexpected binary operator");
+                default: throw new Exception($"Unexpected binary operator {node.Op}");
             }
         }
 

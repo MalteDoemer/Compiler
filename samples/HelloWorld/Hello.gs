@@ -1,4 +1,4 @@
 def main() {
-    print(!false)
+    print(12 <= 12)
     input()
 }

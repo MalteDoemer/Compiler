@@ -59,12 +59,11 @@ namespace Compiler.Binding
             {(TypeSymbol.String, TypeSymbol.String, BoundBinaryOperator.NotEqual), TypeSymbol.Bool},
             {(TypeSymbol.String, TypeSymbol.String, BoundBinaryOperator.EqualEqual), TypeSymbol.Bool},
 
+            {(TypeSymbol.Any, TypeSymbol.Any, BoundBinaryOperator.NotEqual), TypeSymbol.Bool},
+            {(TypeSymbol.Any, TypeSymbol.Any, BoundBinaryOperator.EqualEqual), TypeSymbol.Bool},
+
             {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.EqualEqual), TypeSymbol.Bool},
             {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.NotEqual), TypeSymbol.Bool},
-            {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.LessThan), TypeSymbol.Bool},
-            {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.LessEqual), TypeSymbol.Bool},
-            {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.GreaterThan), TypeSymbol.Bool},
-            {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.GreaterEqual), TypeSymbol.Bool},
 
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.EqualEqual), TypeSymbol.Bool},
             {(TypeSymbol.Int, TypeSymbol.Int, BoundBinaryOperator.NotEqual), TypeSymbol.Bool},
