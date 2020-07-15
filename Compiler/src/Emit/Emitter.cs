@@ -185,6 +185,9 @@ namespace Compiler.Emit
                 case BoundNodeKind.BoundExpressionStatement:
                     EmitExpressionStatement(ilProcesser, (BoundExpressionStatement)node);
                     break;
+                case BoundNodeKind.BoundNopStatement:
+                    ilProcesser.Emit(OpCodes.Nop);
+                    break;
                 default: throw new Exception("Unexpected kind");
             }
         }
@@ -247,11 +250,14 @@ namespace Compiler.Emit
 
         private void EmitExpression(ILProcessor ilProcesser, BoundExpression node)
         {
+            if (node.HasConstant)
+            {
+                EmitConstatnt(ilProcesser, node);
+                return;
+            }
+
             switch (node.Kind)
             {
-                case BoundNodeKind.BoundLiteralExpression:
-                    EmitLiteralExpression(ilProcesser, (BoundLiteralExpression)node);
-                    break;
                 case BoundNodeKind.BoundVariableExpression:
                     EmitVariableExpression(ilProcesser, (BoundVariableExpression)node);
                     break;
@@ -273,31 +279,46 @@ namespace Compiler.Emit
             }
         }
 
-        private void EmitLiteralExpression(ILProcessor ilProcesser, BoundLiteralExpression node)
+        private void EmitConstatnt(ILProcessor ilProcesser, BoundExpression node)
         {
+            var value = node.Constant.Value;
 
-            if (node.ResultType == TypeSymbol.Bool)
+            if (value is int i)
             {
-                var val = (bool)node.Value;
-                var opCode = val ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0;
-                ilProcesser.Emit(opCode);
+                switch (i)
+                {
+                    case -1: ilProcesser.Emit(OpCodes.Ldc_I4_M1); break;
+                    case 0: ilProcesser.Emit(OpCodes.Ldc_I4_0); break;
+                    case 1: ilProcesser.Emit(OpCodes.Ldc_I4_1); break;
+                    case 2: ilProcesser.Emit(OpCodes.Ldc_I4_2); break;
+                    case 3: ilProcesser.Emit(OpCodes.Ldc_I4_3); break;
+                    case 4: ilProcesser.Emit(OpCodes.Ldc_I4_4); break;
+                    case 5: ilProcesser.Emit(OpCodes.Ldc_I4_5); break;
+                    case 6: ilProcesser.Emit(OpCodes.Ldc_I4_6); break;
+                    case 7: ilProcesser.Emit(OpCodes.Ldc_I4_7); break;
+                    case 8: ilProcesser.Emit(OpCodes.Ldc_I4_8); break;
+                    default:
+                        if (i < byte.MaxValue)
+                            ilProcesser.Emit(OpCodes.Ldc_I4_S, i);
+                        else
+                            ilProcesser.Emit(OpCodes.Ldc_I4, i);
+                        break;
+                }
             }
-            else if (node.ResultType == TypeSymbol.Int)
+            else if (value is double d)
             {
-                var val = (int)node.Value;
-                ilProcesser.Emit(OpCodes.Ldc_I4, val);
+                ilProcesser.Emit(OpCodes.Ldc_R8, d);
             }
-            else if (node.ResultType == TypeSymbol.Float)
+            else if (value is bool b)
             {
-                var val = (double)node.Value;
-                ilProcesser.Emit(OpCodes.Ldc_R8, val);
+                var opcode = b ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0;
+                ilProcesser.Emit(opcode);
             }
-            else if (node.ResultType == TypeSymbol.String)
+            else if (value is string s)
             {
-                var val = (string)node.Value;
-                ilProcesser.Emit(OpCodes.Ldstr, val);
+                ilProcesser.Emit(OpCodes.Ldstr, s);
             }
-            else throw new Exception("Unexpected literal type");
+            else throw new Exception($"Unexpected constant type ${value.GetType()}");
         }
 
         private void EmitVariableExpression(ILProcessor ilProcesser, BoundVariableExpression node)

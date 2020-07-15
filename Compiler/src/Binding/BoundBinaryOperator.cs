@@ -9,7 +9,6 @@ namespace Compiler.Binding
         Power,
         Root,
         Modulo,
-        
         EqualEqual,
         NotEqual,
         LessThan,

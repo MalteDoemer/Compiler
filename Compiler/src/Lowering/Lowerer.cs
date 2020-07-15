@@ -210,8 +210,25 @@ namespace Compiler.Lowering
             return RewriteStatement(res);
         }
 
+        protected override BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
+        {
+            if (node.Condition.HasConstant)
+            {
+                var val = (bool)node.Condition.Constant.Value;
+                val = node.JumpIfFalse ? !val : val;
+                if (val)
+                    return new BoundGotoStatement(node.Label, node.IsValid);
+                else 
+                    return new BoundNopStatement(node.IsValid);
+            }
+
+            return base.RewriteConditionalGotoStatement(node);
+        }
+
         protected override BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)
         {
+            if (node.HasConstant)
+                return node;
 
             var left = RewriteExpression(node.Left);
             var right = RewriteExpression(node.Right);

@@ -79,6 +79,7 @@ namespace Compiler
                         lastValue = res;
                         return res;
                     case BoundLabelStatement _:
+                    case BoundNopStatement __:
                         instPtr++;
                         break;
                     default: throw new Exception($"Unexpected Statement <{stmt}>");

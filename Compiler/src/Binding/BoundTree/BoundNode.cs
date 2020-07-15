@@ -7,6 +7,9 @@ namespace Compiler.Binding
     {
         public abstract BoundNodeKind Kind { get; }
         public abstract bool IsValid { get; }
+        public virtual BoundConstant Constant { get; }
+        public bool HasConstant => Constant != null;
+
         public override string ToString()
         {
             using (var writer = new StringWriter())

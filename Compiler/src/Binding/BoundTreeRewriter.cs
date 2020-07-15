@@ -31,16 +31,23 @@ namespace Compiler.Binding
                     return RewriteLabelStatement((BoundLabelStatement)statement);
                 case BoundNodeKind.BoundReturnStatement:
                     return RewriteReturnStatement((BoundReturnStatement)statement);
+                case BoundNodeKind.BoundNopStatement:
+                    return RewriteNopStatement((BoundNopStatement)statement);
                 default: throw new Exception($"Unknown BoundStatement <{statement}>");
             }
         }
 
-        private BoundStatement RewriteReturnStatement(BoundReturnStatement node)
+        protected virtual BoundStatement RewriteReturnStatement(BoundReturnStatement node)
         {
             var expr = node.Expression == null ? null : RewriteExpression(node.Expression);
             if (expr == node.Expression)
                 return node;
             return new BoundReturnStatement(expr, node.IsValid);
+        }
+
+        protected virtual BoundStatement RewriteNopStatement(BoundNopStatement node)
+        {
+            return node;
         }
 
         protected virtual BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)

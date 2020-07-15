@@ -9,10 +9,12 @@ namespace Compiler.Binding
         {
             Variable = variable;
             IsValid = isValid;
+            Constant = ConstantFolder.ComputeConstantVariable(variable);
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundVariableExpression;
         public override TypeSymbol ResultType => Variable.Type;
+        public override BoundConstant Constant { get; }
         public override bool IsValid { get; }
         public VariableSymbol Variable { get; }
     }
