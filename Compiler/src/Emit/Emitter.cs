@@ -29,6 +29,7 @@ namespace Compiler.Emit
         private readonly MethodReference stringConcatReference;
         private readonly MethodReference mathPowReference;
         private readonly MethodReference convertToStringReference;
+        private readonly MethodReference stringEqualsReference;
 
         private readonly Dictionary<GlobalVariableSymbol, FieldDefinition> globalVariables;
         private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
@@ -77,6 +78,7 @@ namespace Compiler.Emit
             stringConcatReference = ResolveMethod("System.String", "Concat", "System.String", "System.String", "System.String");
             mathPowReference = ResolveMethod("System.Math", "Pow", "System.Double", "System.Double", "System.Double");
             convertToStringReference = ResolveMethod("System.Convert", "ToString", "System.String", "System.Object");
+            stringEqualsReference = ResolveMethod("System.String", "Equals", "System.Boolean", "System.String", "System.String");
         }
 
         public void Emit(string outputPath)
@@ -316,11 +318,32 @@ namespace Compiler.Emit
             EmitExpression(ilProcesser, node.Left);
             EmitExpression(ilProcesser, node.Right);
 
+
+            if (node.Op == BoundBinaryOperator.Addition && leftType == TypeSymbol.String && rightType == TypeSymbol.String)
+            {
+                ilProcesser.Emit(OpCodes.Call, stringConcatReference);
+                return;
+            }
+
+            if (node.Op == BoundBinaryOperator.EqualEqual && leftType == TypeSymbol.String && rightType == TypeSymbol.String)
+            {
+                ilProcesser.Emit(OpCodes.Call, stringEqualsReference);
+                return;
+            }
+
+            if (node.Op == BoundBinaryOperator.NotEqual && leftType == TypeSymbol.String && rightType == TypeSymbol.String)
+            {
+                ilProcesser.Emit(OpCodes.Call, stringEqualsReference);
+                ilProcesser.Emit(OpCodes.Ldc_I4_0);
+                ilProcesser.Emit(OpCodes.Ceq);
+                return;
+            }
+
+
             switch (node.Op)
             {
                 case BoundBinaryOperator.Addition:
-                    if (leftType == TypeSymbol.String && rightType == TypeSymbol.String) ilProcesser.Emit(OpCodes.Call, stringConcatReference);
-                    else ilProcesser.Emit(OpCodes.Add);
+                    ilProcesser.Emit(OpCodes.Add);
                     break;
                 case BoundBinaryOperator.Subtraction:
                     ilProcesser.Emit(OpCodes.Sub);
@@ -336,6 +359,32 @@ namespace Compiler.Emit
                     break;
                 case BoundBinaryOperator.Power:
                     ilProcesser.Emit(OpCodes.Call, mathPowReference);
+                    break;
+                case BoundBinaryOperator.EqualEqual:
+                    ilProcesser.Emit(OpCodes.Ceq);
+                    break;
+                case BoundBinaryOperator.NotEqual:
+                    ilProcesser.Emit(OpCodes.Ceq);
+                    ilProcesser.Emit(OpCodes.Ldc_I4_0);
+                    ilProcesser.Emit(OpCodes.Ceq);
+                    break;
+                case BoundBinaryOperator.LessThan:
+                    break;
+                case BoundBinaryOperator.GreaterThan:
+                    break;
+                case BoundBinaryOperator.LessEqual:
+                    break;
+                case BoundBinaryOperator.GreaterEqual:
+                    break;
+                case BoundBinaryOperator.LogicalAnd:
+                    break;
+                case BoundBinaryOperator.LogicalOr:
+                    break;
+                case BoundBinaryOperator.BitwiseAnd:
+                    break;
+                case BoundBinaryOperator.BitwiseOr:
+                    break;
+                case BoundBinaryOperator.BitwiseXor:
                     break;
 
                 default: throw new Exception("Unexpected binary operator");
