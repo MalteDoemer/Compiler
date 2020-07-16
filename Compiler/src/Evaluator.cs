@@ -230,7 +230,7 @@ namespace Compiler
             else if (expr.Symbol == BuiltInFunctions.Print)
             {
                 var message = EvaluateExpression(expr.Arguments[0]);
-                Console.WriteLine(message);
+                Console.Write(message);
                 return null;
             }
             else if (expr.Symbol == BuiltInFunctions.Len)

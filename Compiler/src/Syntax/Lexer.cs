@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Text;
 using Compiler.Diagnostics;
 using Compiler.Text;
 
@@ -93,11 +94,11 @@ namespace Compiler.Syntax
 
         private SyntaxToken LexString()
         {
+            var builder = new StringBuilder();
             var quoteStart = pos;
             var quote = Advance();
-
-            int textStart = pos;
             var done = false;
+            var valid = true;
 
             while (!done)
             {
@@ -106,18 +107,75 @@ namespace Compiler.Syntax
                     case '\0':
                     case '\r':
                     case '\n':
-                        diagnostics.ReportError(ErrorMessage.NeverClosedStringLiteral, new TextLocation(text, TextSpan.FromBounds(quoteStart, pos)));
-                        var t1 = text.ToString(textStart, pos - textStart);
-                        return new SyntaxToken(SyntaxTokenKind.String, new TextLocation(text, quoteStart, pos - quoteStart), t1, false);
-                    default:
-                        if (current == quote) done = true;
+                        diagnostics.ReportError(ErrorMessage.NeverClosedStringLiteral, new TextLocation(text,TextSpan.FromBounds(quoteStart, pos)));
+                        valid = false;
+                        done = true;
+                        break;
+                    case '\\':
+                        switch (ahead)
+                        {
+                            case '0':
+                                builder.Append('\0');
+                                pos += 2;
+                                break;
 
+                            case 'n':
+                                builder.Append('\n');
+                                pos += 2;
+                                break;
+
+                            case 'r':
+                                builder.Append('\r');
+                                pos += 2;
+                                break;
+
+                            case 't':
+                                builder.Append('\t');
+                                pos += 2;
+                                break;
+
+                            case '"':
+                                builder.Append('\"');
+                                pos += 2;
+                                break;
+
+                            case '\'':
+                                builder.Append('\'');
+                                pos += 2;
+                                break;
+
+                            case '\\':
+                                builder.Append('\\');
+                                pos += 2;
+                                break;
+
+                            default:
+                                var escapeStart = pos;
+                                var escapeEnd = pos + 2;
+                                var character = ahead;
+
+                                diagnostics.ReportError(ErrorMessage.InvalidEscapeSequence, new TextLocation(text, TextSpan.FromBounds(escapeStart, escapeEnd)), character);
+                                pos += 2;
+                                valid = false;
+                                break;
+                        }
+
+                        break;
+                    default:
+                        if (current == quote)
+                        {
+                            done = true;
+                            pos++;
+                            break;
+                        }
+
+                        builder.Append(current);
                         pos++;
                         break;
                 }
             }
-            var t = text.ToString(textStart, pos - textStart - 1);
-            return new SyntaxToken(SyntaxTokenKind.String, new TextLocation(text, quoteStart, pos - quoteStart), t);
+            var t = builder.ToString();
+            return new SyntaxToken(SyntaxTokenKind.String, new TextLocation(text, quoteStart, pos - quoteStart), t, valid);
         }
 
         private SyntaxToken LexSingleChar()

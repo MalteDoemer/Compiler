@@ -37,6 +37,7 @@ namespace Compiler.Diagnostics
            "The required type {0} was found in multiple references: {1}",
            "The required method {0} cannot be resolved in the given references.",
            "The required method {0} was found in multiple references: {1}",
+           "Invalid escape sequence: '{0}'"
         };
 
         private readonly List<Diagnostic> builder;

@@ -30,5 +30,6 @@ namespace Compiler.Diagnostics
         AmbiguousRequiredType,
         MissingRequiredMethod,
         AmbiguousRequiredMethod,
+        InvalidEscapeSequence,
     }
 }

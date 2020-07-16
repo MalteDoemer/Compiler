@@ -27,7 +27,7 @@ namespace Compiler.Emit
         private readonly MethodReference randomNextReference;
         private readonly MethodReference randomNextDoubleReference;
 
-        private readonly MethodReference consoleWriteLineReference;
+        private readonly MethodReference consoleWriteReference;
         private readonly MethodReference cosnoleReadLineReference;
         private readonly MethodReference cosnoleClearReference;
         private readonly MethodReference stringConcatReference;
@@ -83,7 +83,7 @@ namespace Compiler.Emit
             randomTypeReference = ResolveType("System.Random");
 
             mainClass = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.Public, builtInTypes[TypeSymbol.Any]);
-            consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", "System.Void", "System.Object");
+            consoleWriteReference = ResolveMethod("System.Console", "Write", "System.Void", "System.Object");
             cosnoleReadLineReference = ResolveMethod("System.Console", "ReadLine", "System.String");
             cosnoleClearReference = ResolveMethod("System.Console", "Clear", "System.Void");
             stringConcatReference = ResolveMethod("System.String", "Concat", "System.String", "System.String", "System.String");
@@ -494,7 +494,7 @@ namespace Compiler.Emit
                 EmitExpression(ilProcesser, arg);
 
             if (node.Symbol == BuiltInFunctions.Print)
-                ilProcesser.Emit(OpCodes.Call, consoleWriteLineReference);
+                ilProcesser.Emit(OpCodes.Call, consoleWriteReference);
             else if (node.Symbol == BuiltInFunctions.Input)
                 ilProcesser.Emit(OpCodes.Call, cosnoleReadLineReference);
             else if (node.Symbol == BuiltInFunctions.Len)

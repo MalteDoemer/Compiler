@@ -157,6 +157,7 @@ namespace Compiler.Binding
                                 break;
                             case BoundNodeKind.BoundLabelStatement:
                             case BoundNodeKind.BoundVariableDeclarationStatement:
+                            case BoundNodeKind.BoundNopStatement:
                             case BoundNodeKind.BoundExpressionStatement:
                                 if (isLast)
                                     Connect(current, next);
@@ -247,6 +248,7 @@ namespace Compiler.Binding
                     {
                         case BoundNodeKind.BoundExpressionStatement:
                         case BoundNodeKind.BoundVariableDeclarationStatement:
+                        case BoundNodeKind.BoundNopStatement:
                             statements.Add(statement);
                             break;
                         case BoundNodeKind.BoundLabelStatement:

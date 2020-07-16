@@ -34,7 +34,6 @@ namespace Compiler.Syntax
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics.Concat(lexerDiagnosics);
 
-
         private void ReportError(ErrorMessage message, TextLocation location, params object[] values)
         {
             if (isStatementValid)
