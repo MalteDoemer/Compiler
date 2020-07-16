@@ -12,8 +12,8 @@ namespace Compiler.Syntax
         private readonly SourceText text;
         private readonly bool isScript;
         private int pos;
-        private char current { get => pos < text.Length ? text[pos] : '\0'; }
-        private char ahead { get => pos + 1 < text.Length ? text[pos + 1] : '\0'; }
+        private char current { get => Peak(0); }
+        private char ahead { get => Peak(1); }
 
         public Lexer(SourceText text, bool isScript)
         {
@@ -31,10 +31,10 @@ namespace Compiler.Syntax
             return res;
         }
 
-        private string Peak(int len)
+        private char Peak(int off)
         {
-            if (pos + len <= text.Length) return text.ToString(pos, len);
-            else return "\0";
+            if (pos + off < text.Length) return text[pos + off];
+            else return '\0';
         }
 
         private SyntaxToken LexSpace()
@@ -107,7 +107,7 @@ namespace Compiler.Syntax
                     case '\0':
                     case '\r':
                     case '\n':
-                        diagnostics.ReportError(ErrorMessage.NeverClosedStringLiteral, new TextLocation(text,TextSpan.FromBounds(quoteStart, pos)));
+                        diagnostics.ReportError(ErrorMessage.NeverClosedStringLiteral, new TextLocation(text, TextSpan.FromBounds(quoteStart, pos)));
                         valid = false;
                         done = true;
                         break;
