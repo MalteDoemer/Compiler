@@ -12,7 +12,8 @@ namespace Compiler.Binding
             Op = op;
             Left = left;
             Right = right;
-            Constant = ConstantFolder.ComputeConstantBinary(op, left, right);
+            if (isValid)
+                Constant = ConstantFolder.ComputeConstantBinary(op, left, right);
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundBinaryExpression;

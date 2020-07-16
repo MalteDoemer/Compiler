@@ -10,7 +10,8 @@ namespace Compiler.Binding
             ResultType = resultType;
             Op = op;
             Expression = expression;
-            Constant = ConstantFolder.ComputeConstantUnary(op, expression);
+            if (isValid)
+                Constant = ConstantFolder.ComputeConstantUnary(op, expression);
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundUnaryExpression;

@@ -1,10 +1,9 @@
 def main() {
+    
+    var i = 0
+    i += 10
 
-    while false && true || false{
-
-        print("fett")
-    }
-    print("saik")
+    print(i)
     input()
 }
 
