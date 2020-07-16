@@ -194,6 +194,9 @@ namespace Compiler.Emit
 
         private void EmitVariableDeclarationStatement(ILProcessor ilProcesser, BoundVariableDeclarationStatement node)
         {
+            if (node.Variable.IsConst)
+                return;
+
             if (node.Variable is GlobalVariableSymbol globalVariable)
             {
                 var field = globalVariables[globalVariable];
@@ -561,6 +564,9 @@ namespace Compiler.Emit
 
         private void EmitAssignmentExpression(ILProcessor ilProcesser, BoundAssignmentExpression node)
         {
+            if (node.Variable.IsConst)
+                return;
+
             if (node.Variable is GlobalVariableSymbol globalVariable)
             {
                 var field = globalVariables[globalVariable];

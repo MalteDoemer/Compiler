@@ -1,9 +1,18 @@
+using System;
+using Compiler.Binding;
+
 namespace Compiler.Symbols
 {
     public sealed class GlobalVariableSymbol : VariableSymbol
     {
-        public GlobalVariableSymbol(string name, TypeSymbol type, VariableModifier modifier = VariableModifier.None) : base(name, type, modifier)
+        internal GlobalVariableSymbol(string name, TypeSymbol type, bool isConst = false, BoundConstant constant = null) : base(name, type, isConst)
         {
+            Constant = constant;
+
+            if (isConst && constant == null || !isConst && constant != null)
+                throw new Exception("Variable is declared as const but has no constant value");
         }
+
+        internal BoundConstant Constant { get; }
     }
 }

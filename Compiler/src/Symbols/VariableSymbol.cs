@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Compiler.Symbols
 {
@@ -7,16 +6,16 @@ namespace Compiler.Symbols
     {
         internal static readonly VariableSymbol Invalid = new GlobalVariableSymbol("$invalid", TypeSymbol.ErrorType);
 
-        public VariableSymbol(string name, TypeSymbol type, VariableModifier modifiers) : base(name)
+        public VariableSymbol(string name, TypeSymbol type, bool isConst = false) : base(name)
         {
             Type = type;
-            Modifiers = modifiers;
+            IsConst = isConst;
         }
 
         public TypeSymbol Type { get; }
-        public VariableModifier Modifiers { get; }
+        public bool IsConst { get; }
 
-        public override bool Equals(object obj) => obj is VariableSymbol symbol && Name == symbol.Name && Type == symbol.Type && Modifiers == symbol.Modifiers;
-        public override int GetHashCode() => HashCode.Combine(Name, Type, Modifiers);
+        public override bool Equals(object obj) => obj is VariableSymbol symbol && Name == symbol.Name && Type == symbol.Type && IsConst == symbol.IsConst;
+        public override int GetHashCode() => HashCode.Combine(Name, Type, IsConst);
     }
 }

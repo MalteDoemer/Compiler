@@ -263,11 +263,13 @@ namespace Compiler.Binding
 
             bool isConst = syntax.VarKeyword.Kind == SyntaxTokenKind.ConstKeyword;
 
+            
+
             VariableSymbol variable;
             if (function == null)
-                variable = new GlobalVariableSymbol(syntax.Identifier.Value.ToString(), type, isConst ? VariableModifier.Constant : VariableModifier.None);
+                variable = new GlobalVariableSymbol(syntax.Identifier.Value.ToString(), type, isConst, expr.Constant);
             else
-                variable = new LocalVariableSymbol(syntax.Identifier.Value.ToString(), type, isConst ? VariableModifier.Constant : VariableModifier.None);
+                variable = new LocalVariableSymbol(syntax.Identifier.Value.ToString(), type, isConst, expr.Constant);
 
             if (!scope.TryDeclareVariable(variable))
                 ReportError(ErrorMessage.VariableAlreadyDeclared, syntax.Identifier.Location, variable.Name);
@@ -483,7 +485,7 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable(syntax.Identifier.Value.ToString(), out var variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, syntax.Identifier.Value.ToString());
 
-            if (variable.Modifiers == VariableModifier.Constant)
+            if (variable.IsConst)
                 ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
 
             var expr = CheckTypeAndConversion(variable.Type, syntax.Expression);
@@ -495,7 +497,7 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable(syntax.Identifier.Value.ToString(), out VariableSymbol variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, syntax.Identifier.Value.ToString());
 
-            if (variable.Modifiers == VariableModifier.Constant)
+            if (variable.IsConst)
                 ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
 
 
@@ -517,7 +519,7 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out VariableSymbol variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, (string)syntax.Identifier.Value);
 
-            if (variable.Modifiers == VariableModifier.Constant)
+            if (variable.IsConst)
                 ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
 
             var left = new BoundVariableExpression(variable, isTreeValid);

@@ -1,6 +1,4 @@
 using System;
-using Compiler;
-using Compiler.Binding;
 using Compiler.Symbols;
 
 namespace Compiler.Binding
@@ -233,7 +231,11 @@ namespace Compiler.Binding
 
         public static BoundConstant ComputeConstantVariable(VariableSymbol symbol)
         {
-            // TODO constants in variables
+
+            if (symbol.IsConst && symbol is GlobalVariableSymbol global)
+                return global.Constant;
+            if (symbol.IsConst && symbol is LocalVariableSymbol local)
+                return local.Constant;
             return null;
         }
 
@@ -254,7 +256,7 @@ namespace Compiler.Binding
                         }
                     case ("float", "int"):
                         {
-                            var d = (double)value; 
+                            var d = (double)value;
                             res = (int)d;
                             break;
                         }
