@@ -178,70 +178,6 @@ namespace Compiler.Syntax
             return new SyntaxToken(SyntaxTokenKind.String, new TextLocation(text, quoteStart, pos - quoteStart), t, valid);
         }
 
-        private SyntaxToken LexInterpolatedString()
-        {
-            var strBuilder = new StringBuilder();
-            var sectionBuilder = ImmutableArray.CreateBuilder<string>();
-            var dollarPos = pos;
-            var dollar = Advance();
-            var quote = Advance();
-            var done = false;
-            var valid = true;
-
-            while (!done)
-            {
-                switch (current)
-                {
-                    case '\0':
-                    case '\r':
-                    case '\n':
-                        diagnostics.ReportError(ErrorMessage.NeverClosedStringLiteral, new TextLocation(text, TextSpan.FromBounds(dollarPos, pos)));
-                        valid = false;
-                        done = true;
-                        break;
-                    case '\\':
-                        // TODO handle escape sequences
-                        pos++;
-                        break;
-
-                    case '{':
-                        strBuilder.Append(Advance());
-                        var sectionStr = new StringBuilder();
-
-                        while (current != '}')
-                        {
-                            if (current == '\0' || current == '\0' || current == '\0')
-                            {
-                                diagnostics.ReportError(ErrorMessage.NeverClosedStringLiteral, new TextLocation(text, TextSpan.FromBounds(dollarPos, pos)));
-                                valid = false;
-                                done = true;
-                                break;
-                            }
-                            sectionStr.Append(current);
-                            pos++;
-                        }
-                        strBuilder.Append(Advance());
-
-                        sectionBuilder.Add(sectionStr.ToString());
-                        break;
-                    default:
-                        if (current == quote)
-                        {
-                            done = true;
-                            pos++;
-                            break;
-                        }
-
-                        strBuilder.Append(current);
-                        pos++;
-                        break;
-                }
-            }
-
-            var interpolatedString = new InterpolatedString(strBuilder.ToString(), sectionBuilder.ToImmutable());
-            return new SyntaxToken(SyntaxTokenKind.InterpolatedString, new TextLocation(text, dollarPos, pos - dollarPos), interpolatedString, valid);
-        }
-
         private SyntaxToken LexSingleChar()
         {
             var kind = SyntaxFacts.IsSingleCharacter(current);
@@ -282,7 +218,6 @@ namespace Compiler.Syntax
 
             if (current == '\0') return new SyntaxToken(SyntaxTokenKind.End, new TextLocation(text, pos, 0), "End");
             else if (current == '"' || current == '\'') return LexString();
-            else if (current == '$' && (ahead == '"' || ahead == '\'')) return LexInterpolatedString();
             else if (char.IsNumber(current)) return LexNumber();
             else if (char.IsWhiteSpace(current)) return LexSpace();
             else if (current == '#') return LexComment();

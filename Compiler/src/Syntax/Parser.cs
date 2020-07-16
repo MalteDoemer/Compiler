@@ -329,30 +329,12 @@ namespace Compiler.Syntax
                 return ParseParenthesizedExpression();
             else if (SyntaxFacts.IsTypeKeyword(current.Kind))
                 return ParseFunctionCall(Advance());
-            else if (current.Kind == SyntaxTokenKind.InterpolatedString)
-                return ParseInterpolatedString();
             else
             {
                 var token = Advance();
                 ReportError(ErrorMessage.UnexpectedToken, token.Location, token.Kind);
                 return new LiteralExpressionSyntax(token, false, token.Location);
             }
-        }
-
-        private ExpressionSyntax ParseInterpolatedString()
-        {
-            var interpolated = (InterpolatedString)current.Value;
-            var strings = interpolated.Text.Split("{}");
-            var builder = ImmutableArray.CreateBuilder<ExpressionSyntax>();
-
-            Console.WriteLine(string.Join(", ", strings));
-
-            foreach (var section in interpolated.Sections)
-            {
-
-            }
-
-            return new LiteralExpressionSyntax(new SyntaxToken(SyntaxTokenKind.String, current.Location, "yeet"), true, current.Location);
         }
 
         private ExpressionSyntax ParseParenthesizedExpression()

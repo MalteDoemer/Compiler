@@ -1,5 +1,5 @@
 def main() {
-    var string = $"fett {123} fett"
+    print("fett" + '\n')
     input()
 }
 
