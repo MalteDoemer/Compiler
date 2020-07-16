@@ -140,6 +140,8 @@ namespace Compiler.Text
                     WriteBoundInvalidExpression(writer, (BoundInvalidExpression)node); break;
                 case BoundNodeKind.BoundReturnStatement:
                     WriteBoundReturnStatement(writer, (BoundReturnStatement)node); break;
+                case BoundNodeKind.BoundNopStatement:
+                    writer.WriteBlueKeyword("nop"); break;
                 default: throw new Exception("Unexpected kind");
             }
         }

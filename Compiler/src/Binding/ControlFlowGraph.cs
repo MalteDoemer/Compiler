@@ -41,8 +41,8 @@ namespace Compiler.Binding
 
             foreach (var toEnd in graph.End.Incoming)
             {
-                if (!toEnd.From.Statments.Any()) return false;
-                if (toEnd.From.Statments.Last().Kind != BoundNodeKind.BoundReturnStatement) return false;
+                if (!toEnd.From.Statements.Any()) return false;
+                if (toEnd.From.Statements.Last().Kind != BoundNodeKind.BoundReturnStatement) return false;
             }
 
             return true;
@@ -112,7 +112,7 @@ namespace Compiler.Binding
 
                 foreach (var block in blocks)
                 {
-                    foreach (var statement in block.Statments)
+                    foreach (var statement in block.Statements)
                     {
                         blockFromStatement.Add(statement, block);
                         if (statement is BoundLabelStatement labelStatement)
@@ -125,10 +125,10 @@ namespace Compiler.Binding
                     var current = blocks[i];
                     var next = (i == blocks.Count - 1 ? end : blocks[i + 1]);
 
-                    for (int j = 0; j < current.Statments.Count; j++)
+                    for (int j = 0; j < current.Statements.Count; j++)
                     {
-                        var statement = current.Statments[j];
-                        var isLast = j == current.Statments.Count - 1;
+                        var statement = current.Statements[j];
+                        var isLast = j == current.Statements.Count - 1;
 
                         switch (statement.Kind)
                         {
@@ -274,7 +274,7 @@ namespace Compiler.Binding
                 if (statements.Count > 0)
                 {
                     var block = new BasicBlock();
-                    block.Statments.AddRange(statements);
+                    block.Statements.AddRange(statements);
                     blocks.Add(block);
                     statements.Clear();
                 }
@@ -293,7 +293,7 @@ namespace Compiler.Binding
                 IsEnd = !isStart;
             }
 
-            public List<BoundStatement> Statments { get; } = new List<BoundStatement>();
+            public List<BoundStatement> Statements { get; } = new List<BoundStatement>();
             public List<BasicBlockBranch> Incoming { get; } = new List<BasicBlockBranch>();
             public List<BasicBlockBranch> Outgoing { get; } = new List<BasicBlockBranch>();
             public bool IsStart { get; }
@@ -308,7 +308,7 @@ namespace Compiler.Binding
 
                 using (var writer = new StringWriter())
                 {
-                    foreach (var stmt in Statments)
+                    foreach (var stmt in Statements)
                     {
                         writer.WriteBoundNode(stmt);
                         writer.WriteLine();

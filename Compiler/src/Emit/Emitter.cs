@@ -301,8 +301,8 @@ namespace Compiler.Emit
                     case 7: ilProcesser.Emit(OpCodes.Ldc_I4_7); break;
                     case 8: ilProcesser.Emit(OpCodes.Ldc_I4_8); break;
                     default:
-                        if (i < byte.MaxValue)
-                            ilProcesser.Emit(OpCodes.Ldc_I4_S, i);
+                        if (i <= sbyte.MaxValue)
+                            ilProcesser.Emit(OpCodes.Ldc_I4_S, (sbyte)i);
                         else
                             ilProcesser.Emit(OpCodes.Ldc_I4, i);
                         break;

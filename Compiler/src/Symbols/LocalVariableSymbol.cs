@@ -7,10 +7,8 @@ namespace Compiler.Symbols
     {
         internal LocalVariableSymbol(string name, TypeSymbol type, bool isConst = false, BoundConstant constant = null) : base(name, type, isConst)
         {
-            Constant = constant;
-
-            if (isConst && constant == null || !isConst && constant != null)
-                throw new Exception("Variable is declared as const but has no constant value");
+            if (isConst)
+                Constant = constant;
         }
 
         internal BoundConstant Constant { get; }

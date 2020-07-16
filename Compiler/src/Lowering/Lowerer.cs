@@ -23,7 +23,7 @@ namespace Compiler.Lowering
         {
             var lowerer = new Lowerer();
             var res = lowerer.RewriteStatement(body);
-            return Flatten(function, res);
+            return RemoveDeadCode(Flatten(function, res));
         }
 
         private static BoundBlockStatement Flatten(FunctionSymbol function, BoundStatement node)
@@ -55,6 +55,22 @@ namespace Compiler.Lowering
         private static bool CanFallThrough(BoundStatement boundStatement)
         {
             return boundStatement.Kind != BoundNodeKind.BoundReturnStatement && boundStatement.Kind != BoundNodeKind.BoundGotoStatement;
+        }
+
+        private static BoundBlockStatement RemoveDeadCode(BoundBlockStatement node)
+        {
+            var controlFlow = ControlFlowGraph.Create(node);
+            var reachableStatements = new HashSet<BoundStatement>(
+                controlFlow.Blocks.SelectMany(b => b.Statements));
+
+            var builder = node.Statements.ToBuilder();
+            for (int i = builder.Count - 1; i >= 0; i--)
+            {
+                if (!reachableStatements.Contains(builder[i]))
+                    builder.RemoveAt(i);
+            }
+
+            return new BoundBlockStatement(builder.ToImmutable(), node.IsValid);
         }
 
         protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
@@ -218,7 +234,7 @@ namespace Compiler.Lowering
                 val = node.JumpIfFalse ? !val : val;
                 if (val)
                     return new BoundGotoStatement(node.Label, node.IsValid);
-                else 
+                else
                     return new BoundNopStatement(node.IsValid);
             }
 

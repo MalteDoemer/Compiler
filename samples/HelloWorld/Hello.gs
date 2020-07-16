@@ -1,10 +1,10 @@
 def main() {
-    const message = "fett"
-    doSomething(message)
+
+    while false && true || false{
+
+        print("fett")
+    }
+    print("saik")
     input()
 }
 
-def doSomething(string: str){
-    string = "hello"
-    print(string + '\n')
-}
