@@ -11,6 +11,7 @@ namespace Compiler.Syntax
         Identifier,
         Comment,
         Space,
+        InterpolatedString,
         
         True,
         False,

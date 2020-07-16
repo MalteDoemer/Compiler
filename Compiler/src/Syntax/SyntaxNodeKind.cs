@@ -29,5 +29,6 @@ namespace Compiler.Syntax
         BreakStatementSyntax,
         ContinueStatementSyntax,
         ReturnStatementSyntax,
+        InterpolatedStringSyntax,
     }
 }

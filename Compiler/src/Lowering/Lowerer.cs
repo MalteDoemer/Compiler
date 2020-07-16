@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Compiler.Binding;
 using Compiler.Symbols;
+using Compiler.Syntax;
 
 namespace Compiler.Lowering
 {
@@ -218,7 +219,7 @@ namespace Compiler.Lowering
                 val = node.JumpIfFalse ? !val : val;
                 if (val)
                     return new BoundGotoStatement(node.Label, node.IsValid);
-                else 
+                else
                     return new BoundNopStatement(node.IsValid);
             }
 
@@ -303,6 +304,5 @@ namespace Compiler.Lowering
 
             return new BoundBinaryExpression(node.Op, left, right, node.ResultType, node.IsValid);
         }
-
     }
 }

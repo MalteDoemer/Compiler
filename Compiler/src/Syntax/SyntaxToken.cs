@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Compiler.Text;
 
 namespace Compiler.Syntax
@@ -16,5 +17,17 @@ namespace Compiler.Syntax
             Location = location;
             IsValid = isValid;
         }
+    }
+
+    internal class InterpolatedString
+    {
+        public InterpolatedString(string text, ImmutableArray<string> sections)
+        {
+            Text = text;
+            Sections = sections;
+        }
+
+        public string Text { get; }
+        public ImmutableArray<string> Sections { get; }
     }
 }

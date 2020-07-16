@@ -7,6 +7,7 @@ using Compiler.Symbols;
 using Compiler.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Compiler.Syntax;
 
 namespace Compiler.Emit
 {
@@ -276,6 +277,7 @@ namespace Compiler.Emit
                 case BoundNodeKind.BoundAssignmentExpression:
                     EmitAssignmentExpression(ilProcesser, (BoundAssignmentExpression)node);
                     break;
+                default: throw new Exception($"Unexpecte kind {node.Kind}");
             }
         }
 

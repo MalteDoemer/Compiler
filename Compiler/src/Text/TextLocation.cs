@@ -31,5 +31,7 @@ namespace Compiler.Text
 
         public static bool operator ==(TextLocation l, TextLocation r) => l.Text == r.Text && l.Span == r.Span;
         public static bool operator !=(TextLocation l, TextLocation r) => l.Text != r.Text || r.Span != r.Span;
+
+        public override string ToString() => Text.ToString(Span);
     }
 }
