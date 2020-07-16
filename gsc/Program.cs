@@ -16,6 +16,7 @@ namespace gsc
             var moduleName = (string)null;
             var referencePaths = new List<string>();
             var sourcePaths = new List<string>();
+            var printTree = false;
             var needsHelp = false;
 
             var options = new OptionSet(){
@@ -24,6 +25,7 @@ namespace gsc
                 {"r=", "The {path} of a assembly to referenc", r => referencePaths.Add(r) },
                 {"o=", "The {path} of the output file", o => outputPath = o },
                 {"m=", "The {name} of the module", m => moduleName = m },
+                {"d|dump", "Displays the bound tree in the console", d => printTree = true},
                 {"<>", s => sourcePaths.Add(s)},
                 {"?|h|help", "Displays Help", h => needsHelp = true},
                 "",
@@ -64,6 +66,12 @@ namespace gsc
             var diagnostics = compilation.Emit(moduleName, outputPath, referencePaths.ToArray());
             diagnostics.WriteTo(Console.Out);
 
+            if (printTree)
+            {
+                Console.WriteLine();
+                compilation.WriteBoundTree(Console.Out);
+            }
+
             if (!diagnostics.HasErrors)
                 Console.Out.ColorWrite($"Sucessfully created {outputPath}\n", ConsoleColor.Green);
 
@@ -86,7 +94,7 @@ namespace gsc
                 if (File.Exists(path))
                     if (Path.IsPathFullyQualified(path))
                         result.Add(path);
-                    else 
+                    else
                         result.Add(Path.GetFullPath(path));
                 else
                 {

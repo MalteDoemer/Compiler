@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.IO;
 using Compiler.Binding;
 using Compiler.Diagnostics;
+using Compiler.Symbols;
 using Compiler.Syntax;
 
 namespace Compiler.Text
@@ -148,9 +149,37 @@ namespace Compiler.Text
 
         private static void WriteBoundProgram(this TextWriter writer, BoundProgram node)
         {
-            throw new NotImplementedException();
-            //writer.WriteBoundNode(node.GlobalStatements);
-            //writer.WriteLine();
+            foreach (var function in node.GetFunctionSymbols())
+            {
+                var body = node.GetFunctionBody(function);
+                writer.WriteFunctionSymbol(function);
+                writer.WriteLine();
+                writer.WriteBoundBlockStatement(body);
+                writer.WriteLine();
+            }
+        }
+
+        private static void WriteFunctionSymbol(this TextWriter writer, FunctionSymbol symbol)
+        {
+            writer.WriteBlueKeyword("def");
+            writer.WriteSpace();
+            writer.WriteFunction(symbol.Name);
+            writer.ColorWrite("(");
+
+            for (int i = 0; i < symbol.Parameters.Length; i++)
+            {
+                var parameter = symbol.Parameters[i];
+
+                writer.WriteVariable(parameter.Name);
+                writer.ColorWrite(":");
+                writer.WriteSpace();
+                writer.WriteBlueKeyword(parameter.Type.Name);
+
+                if (i != symbol.Parameters.Length - 1)
+                    writer.ColorWrite(", ");
+            }
+
+            writer.ColorWrite(")");
         }
 
         private static void WriteBoundLiteralExpression(this TextWriter writer, BoundLiteralExpression node)
@@ -320,8 +349,8 @@ namespace Compiler.Text
                 iw.Indent -= 4;
                 iw.ColorWrite(node.Label.Identifier + ":", ConsoleColor.DarkGray);
                 iw.Indent += 4;
-            } 
-            else 
+            }
+            else
             {
                 var iw2 = new IndentedTextWriter(writer);
                 iw2.Indent -= 4;
@@ -352,4 +381,4 @@ namespace Compiler.Text
         private static void WriteBlueKeyword(this TextWriter writer, string keyword) => writer.ColorWrite(keyword, ConsoleColor.Blue);
         private static void WriteSpace(this TextWriter writer, int len = 1) => writer.Write(new string(' ', len));
     }
-} 
+}

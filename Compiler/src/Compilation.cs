@@ -78,17 +78,22 @@ namespace Compiler
 
         public void WriteBoundTree(TextWriter writer, string functionName = null)
         {
-            var symbols = program.GetFunctionSymbols().Where(s => s.Name == functionName);
-            if (!symbols.Any())
-                writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);
+            if (functionName == null)
+                writer.WriteBoundNode(program);
             else
             {
-                writer.WriteBoundNode(program.GetFunctionBody(symbols.First()));
-                writer.WriteLine();
+                var symbols = program.GetFunctionSymbols().Where(s => s.Name == functionName);
+                if (!symbols.Any())
+                    writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);
+                else
+                {
+                    writer.WriteBoundNode(program.GetFunctionBody(symbols.First()));
+                    writer.WriteLine();
+                }
             }
         }
 
-        public void WriteControlFlowGraph(TextWriter writer, string functionName = null)
+        public void WriteControlFlowGraph(TextWriter writer, string functionName)
         {
             var symbols = program.GetFunctionSymbols().Where(s => s.Name == functionName);
             if (!symbols.Any())
