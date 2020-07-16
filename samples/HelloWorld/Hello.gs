@@ -1,9 +1,10 @@
+const c = 36
+
 def main() {
     
-    var i = 0
-    i += 10
-
-    print(i)
+    for var i = 0 i < c i++ {
+        print(i + c + '\n')
+    }
+    
     input()
 }
-

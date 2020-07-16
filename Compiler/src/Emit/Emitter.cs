@@ -119,11 +119,14 @@ namespace Compiler.Emit
 
         private void AddGlobalVariable(GlobalVariableSymbol variable)
         {
-            const FieldAttributes attrs = FieldAttributes.Static | FieldAttributes.Private;
-            var type = builtInTypes[variable.Type];
-            var field = new FieldDefinition(variable.Name, attrs, type);
-            globalVariables.Add(variable, field);
-            mainClass.Fields.Add(field);
+            if (variable.Constant == null)
+            {
+                const FieldAttributes attrs = FieldAttributes.Static | FieldAttributes.Private;
+                var type = builtInTypes[variable.Type];
+                var field = new FieldDefinition(variable.Name, attrs, type);
+                globalVariables.Add(variable, field);
+                mainClass.Fields.Add(field);
+            }
         }
 
         private void EmitFunctionDecleration(FunctionSymbol symbol)
