@@ -10,7 +10,7 @@ namespace Compiler.Binding
             Variable = variable;
             IsValid = isValid;
             if (isValid)
-                Constant = ConstantFolder.ComputeConstantVariable(variable);
+                Constant = variable.Constant;
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundVariableExpression;

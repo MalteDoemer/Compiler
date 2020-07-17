@@ -229,16 +229,6 @@ namespace Compiler.Binding
             return null;
         }
 
-        public static BoundConstant ComputeConstantVariable(VariableSymbol symbol)
-        {
-
-            if (symbol.IsConst && symbol is GlobalVariableSymbol global)
-                return global.Constant;
-            if (symbol.IsConst && symbol is LocalVariableSymbol local)
-                return local.Constant;
-            return null;
-        }
-
         public static BoundConstant ComputeConstantConversion(TypeSymbol typeToConvert, BoundExpression expression)
         {
             if (expression.HasConstant)

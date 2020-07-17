@@ -5,12 +5,8 @@ namespace Compiler.Symbols
 {
     public sealed class LocalVariableSymbol : VariableSymbol
     {
-        internal LocalVariableSymbol(string name, TypeSymbol type, bool isConst = false, BoundConstant constant = null) : base(name, type, isConst)
+        internal LocalVariableSymbol(string name, TypeSymbol type, bool isConst = false, BoundConstant constant = null) : base(name, type, isConst, constant)
         {
-            if (isConst)
-                Constant = constant;
         }
-
-        internal BoundConstant Constant { get; }
     }
 }
