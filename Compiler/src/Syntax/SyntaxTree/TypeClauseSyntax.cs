@@ -4,17 +4,13 @@ namespace Compiler.Syntax
 {
     internal sealed class TypeClauseSyntax : SyntaxNode
     {
-        public TypeClauseSyntax(SyntaxToken colonToken, SyntaxToken typeToken, bool isExplicit, bool isValid, TextLocation location)
+        public TypeClauseSyntax(SyntaxToken colonToken, SyntaxToken typeToken, bool isExplicit, bool isValid, TextLocation location) : base(isValid, location)
         {
             ColonToken = colonToken;
             TypeToken = typeToken;
             IsExplicit = isExplicit;
-            IsValid = isValid;
-            Location = location;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.TypeClauseSyntax;
-        public override TextLocation Location { get; }
-        public override bool IsValid { get; }
         public bool IsExplicit { get; }
         public SyntaxToken ColonToken { get; }
         public SyntaxToken TypeToken { get; }

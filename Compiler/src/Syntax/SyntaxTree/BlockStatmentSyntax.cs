@@ -8,17 +8,13 @@ namespace Compiler.Syntax
 {
     internal sealed class BlockStatmentSyntax : StatementSyntax
     {
-        public BlockStatmentSyntax(SyntaxToken openCurly, ImmutableArray<StatementSyntax> statements, SyntaxToken closeCurly, bool isValid, TextLocation location)
+        public BlockStatmentSyntax(SyntaxToken openCurly, ImmutableArray<StatementSyntax> statements, SyntaxToken closeCurly, bool isValid, TextLocation location) : base(isValid, location)
         {
             OpenCurly = openCurly;
             Statements = statements;
             CloseCurly = closeCurly;
-            IsValid = isValid;
-            Location = location;
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.BlockStatmentSyntax;
-        public override TextLocation Location { get; }
-        public override bool IsValid { get; }
         public SyntaxToken OpenCurly { get; }
         public ImmutableArray<StatementSyntax> Statements { get; }
         public SyntaxToken CloseCurly { get; }

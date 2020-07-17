@@ -7,9 +7,13 @@ namespace Compiler.Syntax
 
     internal abstract class SyntaxNode
     {
-        public abstract TextLocation Location { get; }
+        protected SyntaxNode(bool isValid, TextLocation location)
+        {
+        }
+
+        public TextLocation Location { get; }
+        public bool IsValid { get; }
         public abstract SyntaxNodeKind Kind { get; }
-        public abstract bool IsValid { get; }
 
         public abstract override string ToString();
 
