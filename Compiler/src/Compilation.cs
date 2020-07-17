@@ -5,7 +5,6 @@ using Compiler.Binding;
 using System.Collections.Generic;
 using Compiler.Diagnostics;
 using System.IO;
-using Compiler.Symbols;
 using System;
 using System.Linq;
 using Compiler.Emit;
@@ -15,15 +14,24 @@ namespace Compiler
 
     public sealed class Compilation
     {
+        public readonly static string[] StandardReferencePaths =
+        {
+            @"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\3.1.0\ref\netcoreapp3.1\System.Console.dll",
+            @"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\3.1.0\ref\netcoreapp3.1\System.Runtime.dll",
+            @"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\3.1.0\ref\netcoreapp3.1\System.Runtime.Extensions.dll",
+        };
+
         private readonly BoundProgram program;
         private readonly Compilation previous;
 
         private Dictionary<string, object> globals;
+        private readonly string[] referencePaths;
         private bool isScript;
 
-        private Compilation(Compilation previous, IEnumerable<SourceText> sourceTexts, Dictionary<string, object> globals, bool isScript)
+        private Compilation(Compilation previous, IEnumerable<SourceText> sourceTexts, Dictionary<string, object> globals, string[] referencePaths, bool isScript)
         {
             this.globals = globals;
+            this.referencePaths = referencePaths;
             this.isScript = isScript;
             this.previous = previous;
             this.SourceTexts = sourceTexts;
@@ -53,20 +61,14 @@ namespace Compiler
         public void Evaluate()
         {
             if (Diagnostics.HasErrors) return;
-
-            var evaluator = new Evaluator(program, globals);
-            evaluator.Evaluate();
+            var tempDir = Path.GetTempPath() + "\\gsharp\\Hello.dll";
+            var emitter = new Emiter(program, "Hello", referencePaths);
+            emitter.Emit(tempDir);
+            var assembly = System.Reflection.Assembly.LoadFile(tempDir);
+            assembly.EntryPoint.Invoke(null, null);
         }
 
-        public object EvaluateExpression()
-        {
-            if (Diagnostics.HasErrors) return null;
-
-            var evaluator = new Evaluator(program, globals);
-            return evaluator.Evaluate();
-        }
-
-        public DiagnosticReport Emit(string moduleName, string outputPath, string[] referencePaths)
+        public DiagnosticReport Emit(string moduleName, string outputPath)
         {
             if (Diagnostics.HasErrors)
                 return Diagnostics;
@@ -102,12 +104,12 @@ namespace Compiler
             writer.WriteControlFlowGraph(cfg);
         }
 
-        public static Compilation Compile(params SourceText[] text) => new Compilation(null, text, new Dictionary<string, object>(), false);
+        public static Compilation Compile(SourceText[] text, string[] referencePaths) => new Compilation(null, text, new Dictionary<string, object>(), referencePaths, false);
 
-        public static Compilation CompileScript(SourceText text, Compilation previous = null)
+        public static Compilation CompileScript(SourceText text, string[] referencePaths, Compilation previous = null)
         {
             var env = previous == null ? new Dictionary<string, object>() : previous.globals;
-            return new Compilation(previous, new[] { text }, env, true);
+            return new Compilation(previous, new[] { text }, env, referencePaths, true);
         }
 
         public static ImmutableArray<SyntaxToken> Tokenize(SourceText text)

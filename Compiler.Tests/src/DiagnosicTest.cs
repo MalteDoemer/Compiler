@@ -246,7 +246,7 @@ namespace Compiler.Test
         private static void AssertDiagnostic(string text, string expected)
         {
             var annotatedText = AnnotatedText.Parse(text);
-            var compilation = Compilation.CompileScript(new SourceText(annotatedText.Text, null));
+            var compilation = Compilation.CompileScript(new SourceText(annotatedText.Text, null), Compilation.StandardReferencePaths);
             compilation.Evaluate();
             var diagnostics = AnnotatedText.UnindentLines(expected);
 

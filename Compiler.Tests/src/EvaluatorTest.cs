@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using Compiler.Text;
 using Xunit;
 
@@ -90,11 +92,19 @@ namespace Compiler.Test
         [InlineData("\"test\" != \"abc\"", true)]
         public static void Evaluate_Result(string text, object expceted)
         {
-            var compiltaion = Compilation.CompileScript(new SourceText(text, null));
-            var res = compiltaion.EvaluateExpression();
-
+            text = $"print({text})";
+            var compiltaion = Compilation.CompileScript(new SourceText(text, null), Compilation.StandardReferencePaths);
+            string res;
+            using (var writer = new StringWriter())
+            {
+                var original = Console.Out;
+                Console.SetOut(writer);
+                compiltaion.Evaluate();
+                Console.SetOut(original);
+                res = writer.ToString();
+            }
             Assert.Empty(compiltaion.Diagnostics);
-            Assert.Equal(expceted, res);
+            Assert.Equal(expceted.ToString(), res);
         }
     }
 }

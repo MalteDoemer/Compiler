@@ -18,19 +18,15 @@ namespace Compiler
 
         protected override void EvaluateSubmission(string text)
         {
-            compilation = Compilation.CompileScript(new SourceText(text, "<stdin>"), compilation);
-
-            if (compilation.Diagnostics.HasErrors)
-                compilation.Diagnostics.WriteTo(Console.Out);
-            else
-                compilation.Evaluate();
+            compilation = Compilation.CompileScript(new SourceText(text, "<stdin>"), Compilation.StandardReferencePaths, compilation);
+            compilation.Evaluate();
         }
 
         protected override object RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
         {
             var srcText = new SourceText(lines[lineIndex], null);
 
-            if (srcText.ToString().StartsWith('@'))
+            if (srcText.ToString().StartsWith('#'))
             {
                 Console.WriteLine(srcText);
                 return null;
@@ -48,7 +44,7 @@ namespace Compiler
             if (string.IsNullOrEmpty(text))
                 return true;
 
-            compilation = Compilation.CompileScript(new SourceText(text, null), compilation);
+            compilation = Compilation.CompileScript(new SourceText(text, null), Compilation.StandardReferencePaths, compilation);
 
             if (compilation.Diagnostics.Where(d =>
             {

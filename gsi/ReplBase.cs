@@ -47,7 +47,7 @@ namespace Compiler
                 if (string.IsNullOrEmpty(text))
                     continue;
 
-                if (!text.Contains(Environment.NewLine) && text.StartsWith("@"))
+                if (!text.Contains(Environment.NewLine) && text.StartsWith("#"))
                     EvaluateMetaCommand(text);
                 else
                     EvaluateSubmission(text);
@@ -254,7 +254,7 @@ namespace Compiler
         private void HandleEnter(ObservableCollection<string> document, SubmissionView view)
         {
             var submissionText = string.Join(Environment.NewLine, document);
-            if (submissionText.StartsWith("@") || IsCompleteSubmission(submissionText))
+            if (submissionText.StartsWith("#") || IsCompleteSubmission(submissionText))
             {
                 _done = true;
                 return;
@@ -494,7 +494,7 @@ namespace Compiler
                 var parameterNames = string.Join(" ", parameters.Select(p => $"<{p.Name}>"));
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"error: invalid number of arguments");
-                Console.WriteLine($"usage: @{command.Name} {parameterNames}");
+                Console.WriteLine($"usage: #{command.Name} {parameterNames}");
                 Console.ResetColor();
                 return;
             }
