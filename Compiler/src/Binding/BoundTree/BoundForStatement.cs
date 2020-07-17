@@ -4,7 +4,7 @@ namespace Compiler.Binding
 {
     internal sealed class BoundForStatement : BoundStatement
     {
-        public BoundForStatement(BoundStatement variableDeclaration, BoundExpression condition, BoundExpression increment, BoundStatement body, BoundLabel breakLabel, BoundLabel continueLabel, bool isValid)
+        public BoundForStatement(BoundStatement variableDeclaration, BoundExpression condition, BoundExpression increment, BoundStatement body, BoundLabel breakLabel, BoundLabel continueLabel, bool isValid) : base(isValid)
         {
             VariableDeclaration = variableDeclaration;
             Condition = condition;
@@ -12,10 +12,8 @@ namespace Compiler.Binding
             Body = body;
             BreakLabel = breakLabel;
             ContinueLabel = continueLabel;
-            IsValid = isValid;
         }
         public override BoundNodeKind Kind => BoundNodeKind.BoundForStatement;
-        public override bool IsValid { get; }
         public BoundStatement VariableDeclaration { get; }
         public BoundExpression Condition { get; }
         public BoundExpression Increment { get; }

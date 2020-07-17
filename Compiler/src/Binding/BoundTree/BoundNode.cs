@@ -5,9 +5,15 @@ namespace Compiler.Binding
 {
     internal abstract class BoundNode
     {
+        protected BoundNode(bool isValid)
+        {
+            IsValid = isValid;
+        }
+
         public abstract BoundNodeKind Kind { get; }
-        public abstract bool IsValid { get; }
         public virtual BoundConstant Constant { get; }
+        
+        public bool IsValid { get; }
         public bool HasConstant => Constant != null;
 
         public override string ToString()

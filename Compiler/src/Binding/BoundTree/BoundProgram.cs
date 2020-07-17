@@ -8,18 +8,16 @@ namespace Compiler.Binding
 {
     internal class BoundProgram : BoundNode
     {
-        public BoundProgram(BoundProgram previous, ImmutableArray<GlobalVariableSymbol> globalVariables, FunctionSymbol mainFunction, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, DiagnosticReport diagnostics, bool isValid)
+        public BoundProgram(BoundProgram previous, ImmutableArray<GlobalVariableSymbol> globalVariables, FunctionSymbol mainFunction, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, DiagnosticReport diagnostics, bool isValid) : base(isValid)
         {
             Previous = previous;
             GlobalVariables = globalVariables;
             MainFunction = mainFunction;
             Functions = functions;
             Diagnostics = diagnostics;
-            IsValid = isValid;
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundProgram;
-        public override bool IsValid { get; }
         public BoundProgram Previous { get; }
         public FunctionSymbol MainFunction  { get; }
         public ImmutableArray<GlobalVariableSymbol> GlobalVariables { get; }

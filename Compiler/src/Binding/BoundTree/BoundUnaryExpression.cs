@@ -5,7 +5,7 @@ namespace Compiler.Binding
 {
     internal sealed class BoundUnaryExpression : BoundExpression
     {
-        public BoundUnaryExpression(BoundUnaryOperator op, BoundExpression expression, TypeSymbol resultType, bool isValid)
+        public BoundUnaryExpression(BoundUnaryOperator op, BoundExpression expression, TypeSymbol resultType, bool isValid) : base(isValid)
         {
             ResultType = resultType;
             Op = op;
@@ -17,7 +17,6 @@ namespace Compiler.Binding
         public override BoundNodeKind Kind => BoundNodeKind.BoundUnaryExpression;
         public override TypeSymbol ResultType { get; }
         public override BoundConstant Constant { get; }
-        public override bool IsValid { get; }
         public BoundUnaryOperator Op { get; }
         public BoundExpression Expression { get; }
     }

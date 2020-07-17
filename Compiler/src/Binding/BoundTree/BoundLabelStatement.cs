@@ -2,13 +2,11 @@ namespace Compiler.Binding
 {
     internal sealed class BoundLabelStatement : BoundStatement
     {
-        public BoundLabelStatement(BoundLabel label, bool isValid)
+        public BoundLabelStatement(BoundLabel label, bool isValid) : base(isValid)
         {
             Label = label;
-            IsValid = isValid;
         }
         public override BoundNodeKind Kind => BoundNodeKind.BoundLabelStatement;
-        public override bool IsValid { get; }
         public BoundLabel Label { get; }
     }
 }
