@@ -6,36 +6,45 @@ using Compiler.Symbols;
 
 namespace Compiler.Binding
 {
-    internal sealed class BoundGlobalScope
+    internal class BoundProgram : BoundNode
     {
-        public BoundGlobalScope(FunctionSymbol mainFunction, ImmutableArray<GlobalVariableSymbol> globals, ImmutableArray<FunctionSymbol> functions, DiagnosticReport diagnostics)
+        public BoundProgram(BoundProgram previous, ImmutableArray<GlobalVariableSymbol> globalVariables, FunctionSymbol mainFunction, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, DiagnosticReport diagnostics, bool isValid) : base(isValid)
         {
+            Previous = previous;
+            GlobalVariables = globalVariables;
             MainFunction = mainFunction;
-            Globals = globals;
-            Functions = functions;
-            Diagnostics = diagnostics;
-        }
-
-        public FunctionSymbol MainFunction { get; }
-        public ImmutableArray<GlobalVariableSymbol> Globals { get; }
-        public ImmutableArray<FunctionSymbol> Functions { get; }
-        public DiagnosticReport Diagnostics { get; }
-    }
-
-    internal sealed class BoundProgram : BoundNode
-    {
-        public BoundProgram(BoundGlobalScope globalScope, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, DiagnosticReport diagnostics, bool isValid) : base(isValid)
-        {
-            GlobalScope = globalScope;
             Functions = functions;
             Diagnostics = diagnostics;
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundProgram;
+        public BoundProgram Previous { get; }
+        public FunctionSymbol MainFunction  { get; }
         public ImmutableArray<GlobalVariableSymbol> GlobalVariables { get; }
-        public BoundGlobalScope GlobalScope { get; }
         public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> Functions { get; }
         public DiagnosticReport Diagnostics { get; }
-        
+
+        public BoundBlockStatement GetFunctionBody(FunctionSymbol symbol)
+        {
+            if (Functions.ContainsKey(symbol))
+                return Functions[symbol];
+            else
+                return Previous.GetFunctionBody(symbol);
+        }
+
+        public IEnumerable<FunctionSymbol> GetFunctionSymbols()
+        {
+            foreach (var func in Functions.Keys)
+                yield return func;
+
+            var pre = Previous;
+
+            while (pre != null)
+            {
+                foreach (var func in pre.Functions.Keys)
+                    yield return func;
+                pre = pre.Previous;
+            }
+        }
     }
 }

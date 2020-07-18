@@ -22,13 +22,18 @@ namespace Compiler
         };
 
         private readonly BoundProgram program;
+        private readonly Compilation previous;
+
+        private Dictionary<string, object> globals;
         private readonly string[] referencePaths;
         private bool isScript;
 
-        private Compilation(IEnumerable<SourceText> sourceTexts, string[] referencePaths, bool isScript)
+        private Compilation(Compilation previous, IEnumerable<SourceText> sourceTexts, Dictionary<string, object> globals, string[] referencePaths, bool isScript)
         {
+            this.globals = globals;
             this.referencePaths = referencePaths;
             this.isScript = isScript;
+            this.previous = previous;
             this.SourceTexts = sourceTexts;
 
             var diagnosticBuilder = ImmutableArray.CreateBuilder<Diagnostic>();
@@ -42,7 +47,8 @@ namespace Compiler
             }
 
 
-            program = Binder.BindProgram(isScript, trees);
+            var previousProgram = previous == null ? null : previous.program;
+            program = Binder.BindProgram(previousProgram, isScript, trees);
             diagnosticBuilder.AddRange(program.Diagnostics);
 
             Diagnostics = new DiagnosticReport(diagnosticBuilder.ToImmutable());
@@ -97,9 +103,13 @@ namespace Compiler
             writer.WriteControlFlowGraph(cfg);
         }
 
-        public static Compilation Compile(SourceText[] texts, string[] referencePaths) => new Compilation(texts, referencePaths, false);
+        public static Compilation Compile(SourceText[] text, string[] referencePaths) => new Compilation(null, text, new Dictionary<string, object>(), referencePaths, false);
 
-        public static Compilation CompileScript(SourceText text, string[] referencePaths) => new Compilation(new[] { text }, referencePaths, true);
+        public static Compilation CompileScript(SourceText text, string[] referencePaths, Compilation previous = null)
+        {
+            var env = previous == null ? new Dictionary<string, object>() : previous.globals;
+            return new Compilation(previous, new[] { text }, env, referencePaths, true);
+        }
 
         public static ImmutableArray<SyntaxToken> Tokenize(SourceText text)
         {

@@ -10,9 +10,6 @@ using Compiler.Text;
 
 namespace Compiler.Binding
 {
-    
-
-
     internal sealed class Binder : IDiagnostable
     {
         private readonly DiagnosticBag diagnostics;
@@ -50,87 +47,112 @@ namespace Compiler.Binding
                     scope.TryDeclareVariable(param);
         }
 
-        // public static BoundProgram BindProgram(BoundProgram previous, bool isScript, IEnumerable<CompilationUnitSyntax> units)
-        // {
-        //     var parentScope = CreateBoundScopes(previous);
-        //     var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
-        //     var functionSyntax = units.SelectMany(u => u.Members.OfType<FunctionDeclarationSyntax>());
-        //     var statementSyntax = units.SelectMany(u => u.Members.OfType<GlobalStatementSynatx>());
-        //     var globalBinder = new Binder(parentScope, isScript, function: null);
-        //     var isProgramValid = true;
-
-        //     foreach (var func in functionSyntax)
-        //         globalBinder.DeclareFunction(func);
-
-        //     var globalStatementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
-        //     foreach (var stmt in statementSyntax)
-        //     {
-        //         var boundStmt = globalBinder.BindStatement(stmt.Statement);
-        //         globalStatementBuilder.Add(boundStmt);
-        //     }
-
-        //     diagnostics.AddRange(globalBinder.GetDiagnostics());
-        //     isProgramValid = isProgramValid && globalBinder.isTreeValid;
-
-        //     var declaredVariables = globalBinder.scope.GetDeclaredVariables().Cast<GlobalVariableSymbol>().ToImmutableArray();
-        //     var declaredFunctions = globalBinder.scope.GetDeclaredFunctions();
-
-        //     var currentScope = globalBinder.scope;
-        //     var functions = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
-
-        //     foreach (var symbol in declaredFunctions)
-        //     {
-        //         var binder = new Binder(currentScope, isScript, symbol);
-        //         var body = binder.BindBlockStatmentSyntax(symbol.Syntax.Body);
-        //         var loweredBody = Lowerer.Lower(symbol, body);
-
-        //         if (!ControlFlowGraph.AllPathsReturn(symbol, loweredBody))
-        //             binder.ReportError(ErrorMessage.AllPathsMustReturn, symbol.Syntax.Identifier.Location);
-
-        //         functions.Add(symbol, loweredBody);
-        //         diagnostics.AddRange(binder.GetDiagnostics());
-        //         isProgramValid = isProgramValid && binder.isTreeValid;
-        //     }
-
-        //     var mainFunction = (FunctionSymbol)null;
-        //     if (!isScript && !globalBinder.scope.TryLookUpFunction("main", out mainFunction))
-        //     {
-        //         diagnostics.Add(new Diagnostic("Program doesn't define main fuction.", TextLocation.Undefined, ErrorLevel.Error));
-        //         isProgramValid = false;
-        //     }
-        //     if (mainFunction != null && mainFunction.Parameters.Length > 0)
-        //     {
-        //         diagnostics.Add(new Diagnostic("Main function cannot have arguments.", mainFunction.Syntax.Identifier.Location, ErrorLevel.Error));
-        //         isProgramValid = false;
-        //     }
-        //     if (mainFunction != null && mainFunction.ReturnType != TypeSymbol.Void)
-        //     {
-        //         diagnostics.Add(new Diagnostic("Main function must return void.", mainFunction.Syntax.ReturnType.Location, ErrorLevel.Error));
-        //         isProgramValid = false;
-        //     }
-        //     var globalStatements = new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid);
-        //     if (mainFunction == null)
-        //     {
-        //         mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
-        //         globalStatements = Lowerer.Lower(mainFunction, globalStatements);
-        //         functions.Add(mainFunction, globalStatements);
-        //         declaredFunctions = declaredFunctions.Add(mainFunction);
-        //     }
-        //     else
-        //     {
-        //         globalStatements = Lowerer.Lower(null, globalStatements);
-        //         var mainBody = functions[mainFunction];
-        //         var body = new BoundBlockStatement(globalStatements.Statements.AddRange(mainBody.Statements), isProgramValid);
-        //         var loweredBody = Lowerer.Lower(mainFunction, body);
-        //         functions[mainFunction] = loweredBody;
-        //     }
-
-        //     return new BoundProgram(previous, declaredVariables, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
-        // }
-
-        public static BoundGlobalScope BindGlobalScope(IEnumerable<SyntaxTree> trees, bool isScript)
+        public static BoundProgram BindProgram(BoundProgram previous, bool isScript, IEnumerable<CompilationUnitSyntax> units)
         {
-            
+            var parentScope = CreateBoundScopes(previous);
+            var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
+            var functionSyntax = units.SelectMany(u => u.Members.OfType<FunctionDeclarationSyntax>());
+            var statementSyntax = units.SelectMany(u => u.Members.OfType<GlobalStatementSynatx>());
+            var globalBinder = new Binder(parentScope, isScript, function: null);
+            var isProgramValid = true;
+
+            foreach (var func in functionSyntax)
+                globalBinder.DeclareFunction(func);
+
+            var globalStatementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
+            foreach (var stmt in statementSyntax)
+            {
+                var boundStmt = globalBinder.BindStatement(stmt.Statement);
+                globalStatementBuilder.Add(boundStmt);
+            }
+
+            diagnostics.AddRange(globalBinder.GetDiagnostics());
+            isProgramValid = isProgramValid && globalBinder.isTreeValid;
+
+            var declaredVariables = globalBinder.scope.GetDeclaredVariables().Cast<GlobalVariableSymbol>().ToImmutableArray();
+            var declaredFunctions = globalBinder.scope.GetDeclaredFunctions();
+
+            var currentScope = globalBinder.scope;
+            var functions = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
+
+            foreach (var symbol in declaredFunctions)
+            {
+                var binder = new Binder(currentScope, isScript, symbol);
+                var body = binder.BindBlockStatmentSyntax(symbol.Syntax.Body);
+                var loweredBody = Lowerer.Lower(symbol, body);
+
+                if (!ControlFlowGraph.AllPathsReturn(symbol, loweredBody))
+                    binder.ReportError(ErrorMessage.AllPathsMustReturn, symbol.Syntax.Identifier.Location);
+
+                functions.Add(symbol, loweredBody);
+                diagnostics.AddRange(binder.GetDiagnostics());
+                isProgramValid = isProgramValid && binder.isTreeValid;
+            }
+
+            var mainFunction = (FunctionSymbol)null;
+            if (!isScript && !globalBinder.scope.TryLookUpFunction("main", out mainFunction))
+            {
+                diagnostics.Add(new Diagnostic("Program doesn't define main fuction.", TextLocation.Undefined, ErrorLevel.Error));
+                isProgramValid = false;
+            }
+            if (mainFunction != null && mainFunction.Parameters.Length > 0)
+            {
+                diagnostics.Add(new Diagnostic("Main function cannot have arguments.", mainFunction.Syntax.Identifier.Location, ErrorLevel.Error));
+                isProgramValid = false;
+            }
+            if (mainFunction != null && mainFunction.ReturnType != TypeSymbol.Void)
+            {
+                diagnostics.Add(new Diagnostic("Main function must return void.", mainFunction.Syntax.ReturnType.Location, ErrorLevel.Error));
+                isProgramValid = false;
+            }
+            var globalStatements = new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid);
+            if (mainFunction == null)
+            {
+                mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
+                globalStatements = Lowerer.Lower(mainFunction, globalStatements);
+                functions.Add(mainFunction, globalStatements);
+                declaredFunctions = declaredFunctions.Add(mainFunction);
+            }
+            else
+            {
+                globalStatements = Lowerer.Lower(null, globalStatements);
+                var mainBody = functions[mainFunction];
+                var body = new BoundBlockStatement(globalStatements.Statements.AddRange(mainBody.Statements), isProgramValid);
+                var loweredBody = Lowerer.Lower(mainFunction, body);
+                functions[mainFunction] = loweredBody;
+            }
+
+            return new BoundProgram(previous, declaredVariables, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
+        }
+
+        private static BoundScope CreateBoundScopes(BoundProgram previous)
+        {
+            var stack = new Stack<BoundProgram>();
+
+
+            while (previous != null)
+            {
+                if (previous.IsValid)
+                    stack.Push(previous);
+                previous = previous.Previous;
+            }
+
+            var current = CreateRootScope();
+
+            while (stack.Count > 0)
+            {
+                var global = stack.Pop();
+                var scope = new BoundScope(current);
+                foreach (var variable in global.GlobalVariables)
+                    scope.TryDeclareVariable(variable);
+
+                foreach (var function in global.Functions)
+                    scope.TryDeclareFunction(function.Key);
+
+                current = scope;
+            }
+
+            return current;
         }
 
         private static BoundScope CreateRootScope()
