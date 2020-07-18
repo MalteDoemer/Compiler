@@ -48,7 +48,7 @@ namespace Compiler
 
 
             var previousProgram = previous == null ? null : previous.program;
-            program = Binder.BindProgram(previousProgram, isScript, trees);
+            program = Binder.BindProgram(previousProgram, isScript, trees.Select(t => t.Root));
             diagnosticBuilder.AddRange(program.Diagnostics);
 
             Diagnostics = new DiagnosticReport(diagnosticBuilder.ToImmutable());
