@@ -7,6 +7,7 @@ using Compiler.Symbols;
 using Compiler.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System.IO;
 
 namespace Compiler.Emit
 {
@@ -105,7 +106,7 @@ namespace Compiler.Emit
             mainClass.Fields.Add(randomDefiniton);
         }
 
-        public void Emit(string outputPath)
+        public void Emit()
         {
             if (diagnostics.Count(d => d.Level == ErrorLevel.Error) > 0)
                 return;
@@ -119,7 +120,7 @@ namespace Compiler.Emit
             var ctorProcessor = staticCtor.Body.GetILProcessor();
             ctorProcessor.Emit(OpCodes.Newobj, randomCtorReference);
             ctorProcessor.Emit(OpCodes.Stsfld, randomDefiniton);
-            
+
             foreach (var stmt in program.GlobalStatements)
                 EmitStatement(ctorProcessor, stmt);
 
@@ -131,8 +132,11 @@ namespace Compiler.Emit
 
             mainAssebly.MainModule.Types.Add(mainClass);
             mainAssebly.EntryPoint = functions[program.MainFunction];
-            mainAssebly.Write(outputPath);
         }
+
+        public void WriteTo(string outputPath) => mainAssebly.Write(outputPath);
+
+        public void WriteTo(Stream stream) => mainAssebly.Write(stream);
 
         private void AddGlobalVariable(VariableSymbol variable)
         {

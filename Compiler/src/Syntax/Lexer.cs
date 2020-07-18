@@ -182,10 +182,7 @@ namespace Compiler.Syntax
         {
             var kind = SyntaxFacts.IsSingleCharacter(current);
             if (kind != null)
-            {
-
                 return new SyntaxToken((SyntaxTokenKind)kind, new TextLocation(text, pos, 1), Advance());
-            }
             return null;
         }
 

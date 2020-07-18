@@ -50,24 +50,32 @@ namespace Compiler
         public DiagnosticReport Diagnostics { get; }
         public IEnumerable<SourceText> SourceTexts { get; }
 
-        public void Evaluate()
-        {
-            if (Diagnostics.HasErrors) return;
-            var tempDir = Path.GetTempPath() + "\\gsharp\\Hello.dll";
-            var emitter = new Emiter(program, "Hello", referencePaths);
-            emitter.Emit(tempDir);
-            var assembly = System.Reflection.Assembly.LoadFile(tempDir);
-            assembly.EntryPoint.Invoke(null, null);
-        }
-
         public DiagnosticReport Emit(string moduleName, string outputPath)
         {
             if (Diagnostics.HasErrors)
                 return Diagnostics;
 
             var emitter = new Emiter(program, moduleName, referencePaths);
-            emitter.Emit(outputPath);
+            emitter.Emit();
+            emitter.WriteTo(outputPath);
             return new DiagnosticReport(Diagnostics.Concat(emitter.GetDiagnostics()));
+        }
+
+        public void Evaluate()
+        {
+            if (Diagnostics.HasErrors) return;
+
+            using (var ms = new MemoryStream())
+            {
+                var emitter = new Emiter(program, "Hello", referencePaths);
+                emitter.Emit();
+                emitter.WriteTo(ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                var data = ms.ToArray();
+                var assembly = System.Reflection.Assembly.Load(data);
+                //var assembly = System.Reflection.Assembly.Load(ms.ToArray());
+                assembly.EntryPoint.Invoke(null, null);
+            }
         }
 
         public void WriteBoundTree(TextWriter writer, string functionName = null)
@@ -93,24 +101,12 @@ namespace Compiler
             if (!symbols.Any())
                 writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);
             var cfg = ControlFlowGraph.Create(program.Functions[symbols.First()]);
-            writer.WriteControlFlowGraph(cfg);
+            cfg.WriteTo(writer);
         }
 
         public static Compilation Compile(SourceText[] text, string[] referencePaths) => new Compilation(text, referencePaths, false);
 
         public static Compilation CompileScript(SourceText text, string[] referencePaths) => new Compilation(new[] { text }, referencePaths, true);
 
-        public static ImmutableArray<SyntaxToken> Tokenize(SourceText text)
-        {
-            var lexer = new Lexer(text, true);
-            return lexer.Tokenize().ToImmutableArray();
-        }
-
-        public static string SyntaxTreeToString(SourceText text)
-        {
-            var parser = new Parser(text, true);
-            var root = parser.ParseCompilationUnit();
-            return root.ToString();
-        }
     }
 }

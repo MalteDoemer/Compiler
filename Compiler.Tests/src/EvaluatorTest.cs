@@ -90,21 +90,22 @@ namespace Compiler.Test
         [InlineData("'test' != 'test'", false)]
         [InlineData("'test' == 'abc'", false)]
         [InlineData("\"test\" != \"abc\"", true)]
-        public static void Evaluate_Result(string text, object expceted)
+        public static void Test_Correct_Value(string text, object value)
         {
             text = $"print({text})";
-            var compiltaion = Compilation.CompileScript(new SourceText(text, null), Compilation.StandardReferencePaths);
-            string res;
+            var expected = value.ToString();
+            var compilation = Compilation.CompileScript(new SourceText(text, null), Compilation.StandardReferencePaths);
+
+            Assert.Empty(compilation.Diagnostics);
+
             using (var writer = new StringWriter())
             {
                 var original = Console.Out;
                 Console.SetOut(writer);
-                compiltaion.Evaluate();
-                Console.SetOut(original);
-                res = writer.ToString();
+                compilation.Evaluate();
+                var res = writer.ToString();
+                Assert.Equal(expected, res);
             }
-            Assert.Empty(compiltaion.Diagnostics);
-            Assert.Equal(expceted.ToString(), res);
         }
     }
 }

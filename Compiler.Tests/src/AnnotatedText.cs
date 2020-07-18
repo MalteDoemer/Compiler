@@ -33,7 +33,6 @@ namespace Compiler.Test
                 if (c == '[')
                 {
                     startStack.Push(pos);
-
                 }
                 else if (c == ']')
                 {

@@ -88,7 +88,7 @@ namespace Compiler.Binding
 
             globalBinder.scope.TryLookUpFunction("main", out var mainFunction);
 
-            if (mainFunction != null)
+            if (mainFunction != FunctionSymbol.Invalid)
             {
                 void Report(string message, TextLocation location)
                 {
@@ -101,6 +101,12 @@ namespace Compiler.Binding
                     Report("Main function cannot have arguments.", mainFunction.Syntax.Parameters.Location);
                 if (mainFunction.ReturnType != TypeSymbol.Void)
                     Report("Main function must return void.", mainFunction.Syntax.ReturnType.Location);
+            }
+            else
+            {
+                mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
+                var mainBody = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(new BoundReturnStatement(null, isProgramValid)), isProgramValid);
+                functions.Add(mainFunction, mainBody);
             }
 
             var globalStatements = Lowerer.Lower(null, new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid));

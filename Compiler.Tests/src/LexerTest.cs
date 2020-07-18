@@ -14,36 +14,16 @@ namespace Compiler.Test
         [MemberData(nameof(GetAllTokenData))]
         public static void LexAllTokens(string text, SyntaxTokenKind kind)
         {
-            var tokens = Compilation.Tokenize(new SourceText(text,null));
+            var tokens = SyntaxTree.Tokenize(new SourceText(text,null));
             Assert.Equal(2, tokens.Length);
             Assert.Equal(kind, tokens[0].Kind);
             Assert.Equal(SyntaxTokenKind.End, tokens[1].Kind);
         }
 
-        [Theory]
-        [MemberData(nameof(GetAllTokenDataSquared))]
-        public static void LexAllTokensWithSpace(string text1, SyntaxTokenKind kind1, string text2, SyntaxTokenKind kind2)
-        {
-            var text = text1 + " " + text2;
-            var tokens = Compilation.Tokenize(new SourceText(text, null));
-            Assert.Equal(3, tokens.Length);
-            Assert.Equal(kind1, tokens[0].Kind);
-            Assert.Equal(kind2, tokens[1].Kind);
-            Assert.Equal(SyntaxTokenKind.End, tokens[2].Kind);
-        }
-
-
         public static IEnumerable<object[]> GetAllTokenData()
         {
             foreach (var t in GetAllTokens())
                 yield return new object[] { t.Item1, t.Item2 };
-        }
-
-        public static IEnumerable<object[]> GetAllTokenDataSquared()
-        {
-            foreach (var t1 in GetAllTokens())
-                foreach (var t2 in GetAllTokens())
-                    yield return new object[] { t1.Item1, t1.Item2, t2.Item1, t2.Item2 };
         }
 
         public static IEnumerable<object[]> GetStringTokenData()

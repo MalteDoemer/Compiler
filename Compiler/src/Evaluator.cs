@@ -28,7 +28,7 @@ namespace Compiler
 
         public dynamic Evaluate()
         {
-            if (program.MainFunction != null)
+            if (program.MainFunction != FunctionSymbol.Invalid)
             {
                 var locals = new Dictionary<string, object>();
                 stackFrames.Push(locals);
