@@ -37,19 +37,18 @@ namespace Compiler
             this.SourceTexts = sourceTexts;
 
             var diagnosticBuilder = ImmutableArray.CreateBuilder<Diagnostic>();
-            var units = new List<CompilationUnitSyntax>();
+            var trees = new List<SyntaxTree>();
 
             foreach (var text in sourceTexts)
             {
-                var parser = new Parser(text, isScript);
-                var unit = parser.ParseCompilationUnit();
-                diagnosticBuilder.AddRange(parser.GetDiagnostics());
-                units.Add(unit);
+                var tree = SyntaxTree.ParseSyntaxTree(text, isScript);
+                diagnosticBuilder.AddRange(tree.GetDiagnostics());
+                trees.Add(tree);
             }
 
 
             var previousProgram = previous == null ? null : previous.program;
-            program = Binder.BindProgram(previousProgram, isScript, units);
+            program = Binder.BindProgram(previousProgram, isScript, trees);
             diagnosticBuilder.AddRange(program.Diagnostics);
 
             Diagnostics = new DiagnosticReport(diagnosticBuilder.ToImmutable());
