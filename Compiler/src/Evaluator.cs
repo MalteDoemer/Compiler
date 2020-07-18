@@ -32,7 +32,7 @@ namespace Compiler
             {
                 var locals = new Dictionary<string, object>();
                 stackFrames.Push(locals);
-                var body = program.GetFunctionBody(program.MainFunction);
+                var body = program.Functions[program.MainFunction];
                 EvaluateBlock(body);
                 stackFrames.Pop();
             }
@@ -268,7 +268,7 @@ namespace Compiler
                     var val = EvaluateExpression(expr.Arguments[i]);
                     locals[expr.Symbol.Parameters[i].Name] = val;
                 }
-                var body = program.GetFunctionBody(expr.Symbol);
+                var body = program.Functions[expr.Symbol];
                 stackFrames.Push(locals);
                 var res = EvaluateBlock(body);
                 stackFrames.Pop();

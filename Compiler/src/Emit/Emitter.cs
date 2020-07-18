@@ -119,8 +119,9 @@ namespace Compiler.Emit
 
         private void AddGlobalVariable(GlobalVariableSymbol variable)
         {
-            if (variable.Constant == null)
+            if (!variable.IsConst &&  variable.Constant == null)
             {
+                Console.WriteLine("Variable isn't const");
                 const FieldAttributes attrs = FieldAttributes.Static | FieldAttributes.Private;
                 var type = builtInTypes[variable.Type];
                 var field = new FieldDefinition(variable.Name, attrs, type);
