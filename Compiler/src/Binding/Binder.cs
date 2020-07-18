@@ -425,7 +425,6 @@ namespace Compiler.Binding
             var identifier = syntax.Name.Value.ToString();
             if (!scope.TryLookUpVariable(identifier, out VariableSymbol variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Name.Location, syntax.Name.Value);
-            Console.WriteLine($"BoundTreeValid: {isTreeValid}");
             return new BoundVariableExpression(variable, isTreeValid);
         }
 
