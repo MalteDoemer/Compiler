@@ -22,13 +22,18 @@ namespace Compiler
         };
 
         private readonly BoundProgram program;
+        private readonly Compilation previous;
+
+        private Dictionary<string, object> globals;
         private readonly string[] referencePaths;
         private bool isScript;
 
-        private Compilation(IEnumerable<SourceText> sourceTexts, string[] referencePaths, bool isScript)
+        private Compilation(Compilation previous, IEnumerable<SourceText> sourceTexts, Dictionary<string, object> globals, string[] referencePaths, bool isScript)
         {
+            this.globals = globals;
             this.referencePaths = referencePaths;
             this.isScript = isScript;
+            this.previous = previous;
             this.SourceTexts = sourceTexts;
 
             var diagnosticBuilder = ImmutableArray.CreateBuilder<Diagnostic>();
@@ -41,7 +46,9 @@ namespace Compiler
                 trees.Add(tree);
             }
 
-            program = Binder.BindProgram(isScript, trees);
+
+            var previousProgram = previous == null ? null : previous.program;
+            program = Binder.BindProgram(previousProgram, isScript, trees);
             diagnosticBuilder.AddRange(program.Diagnostics);
 
             Diagnostics = new DiagnosticReport(diagnosticBuilder.ToImmutable());
@@ -76,12 +83,12 @@ namespace Compiler
                 writer.WriteBoundNode(program);
             else
             {
-                var symbols = program.Functions.Keys.Where(s => s.Name == functionName);
+                var symbols = program.GetFunctionSymbols().Where(s => s.Name == functionName);
                 if (!symbols.Any())
                     writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);
                 else
                 {
-                    writer.WriteBoundNode(program.Functions[symbols.First()]);
+                    writer.WriteBoundNode(program.GetFunctionBody(symbols.First()));
                     writer.WriteLine();
                 }
             }
@@ -89,16 +96,20 @@ namespace Compiler
 
         public void WriteControlFlowGraph(TextWriter writer, string functionName)
         {
-            var symbols = program.Functions.Keys.Where(s => s.Name == functionName);
+            var symbols = program.GetFunctionSymbols().Where(s => s.Name == functionName);
             if (!symbols.Any())
                 writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);
-            var cfg = ControlFlowGraph.Create(program.Functions[symbols.First()]);
+            var cfg = ControlFlowGraph.Create(program.GetFunctionBody(symbols.First()));
             writer.WriteControlFlowGraph(cfg);
         }
 
-        public static Compilation Compile(SourceText[] text, string[] referencePaths) => new Compilation(text, referencePaths, false);
+        public static Compilation Compile(SourceText[] text, string[] referencePaths) => new Compilation(null, text, new Dictionary<string, object>(), referencePaths, false);
 
-        public static Compilation CompileScript(SourceText text, string[] referencePaths) => new Compilation(new[] { text }, referencePaths, true);
+        public static Compilation CompileScript(SourceText text, string[] referencePaths, Compilation previous = null)
+        {
+            var env = previous == null ? new Dictionary<string, object>() : previous.globals;
+            return new Compilation(previous, new[] { text }, env, referencePaths, true);
+        }
 
         public static ImmutableArray<SyntaxToken> Tokenize(SourceText text)
         {

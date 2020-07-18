@@ -18,8 +18,8 @@ namespace Compiler
 
         protected override void EvaluateSubmission(string text)
         {
-            //compilation = Compilation.CompileScript(new SourceText(text, "<stdin>"), Compilation.StandardReferencePaths, compilation);
-            //compilation.Evaluate();
+            compilation = Compilation.CompileScript(new SourceText(text, "<stdin>"), Compilation.StandardReferencePaths, compilation);
+            compilation.Evaluate();
         }
 
         protected override object RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
@@ -44,18 +44,18 @@ namespace Compiler
             if (string.IsNullOrEmpty(text))
                 return true;
 
-            //compilation = Compilation.CompileScript(new SourceText(text, null), Compilation.StandardReferencePaths, compilation);
+            compilation = Compilation.CompileScript(new SourceText(text, null), Compilation.StandardReferencePaths, compilation);
 
-            // if (compilation.Diagnostics.Where(d =>
-            // {
-            //     if (d.Message == DiagnosticBag.ErrorFormats[(int)ErrorMessage.NeverClosedCurlyBrackets] ||
-            //         d.Message == DiagnosticBag.ErrorFormats[(int)ErrorMessage.NeverClosedParenthesis] ||
-            //         d.Message == DiagnosticBag.ErrorFormats[(int)ErrorMessage.NeverClosedStringLiteral] ||
-            //         d.Message == string.Format(DiagnosticBag.ErrorFormats[(int)ErrorMessage.UnexpectedToken], SyntaxTokenKind.End))
-            //         return true;
-            //     else
-            //         return false;
-            // }).Count() > 0) return false;
+            if (compilation.Diagnostics.Where(d =>
+            {
+                if (d.Message == DiagnosticBag.ErrorFormats[(int)ErrorMessage.NeverClosedCurlyBrackets] ||
+                    d.Message == DiagnosticBag.ErrorFormats[(int)ErrorMessage.NeverClosedParenthesis] ||
+                    d.Message == DiagnosticBag.ErrorFormats[(int)ErrorMessage.NeverClosedStringLiteral] ||
+                    d.Message == string.Format(DiagnosticBag.ErrorFormats[(int)ErrorMessage.UnexpectedToken], SyntaxTokenKind.End))
+                    return true;
+                else
+                    return false;
+            }).Count() > 0) return false;
 
             return true;
         }

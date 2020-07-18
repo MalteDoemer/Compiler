@@ -47,17 +47,12 @@ namespace Compiler.Binding
                     scope.TryDeclareVariable(param);
         }
 
-        public static BoundProgram BindProgram(bool isScript, IEnumerable<SyntaxTree> trees)
+        public static BoundProgram BindProgram(BoundProgram previous, bool isScript, IEnumerable<CompilationUnitSyntax> units)
         {
-            var parentScope = CreateRootScope();
+            var parentScope = CreateBoundScopes(previous);
             var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
-            var functionSyntax = trees
-                                    .Select(t => t.Root)
-                                    .SelectMany(u => u.Members.OfType<FunctionDeclarationSyntax>());
-            var statementSyntax = trees
-                                    .Select(t => t.Root)
-                                    .SelectMany(u => u.Members.OfType<GlobalStatementSynatx>());
-                                    
+            var functionSyntax = units.SelectMany(u => u.Members.OfType<FunctionDeclarationSyntax>());
+            var statementSyntax = units.SelectMany(u => u.Members.OfType<GlobalStatementSynatx>());
             var globalBinder = new Binder(parentScope, isScript, function: null);
             var isProgramValid = true;
 
@@ -127,7 +122,37 @@ namespace Compiler.Binding
                 functions[mainFunction] = loweredBody;
             }
 
-            return new BoundProgram(declaredVariables, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
+            return new BoundProgram(previous, declaredVariables, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
+        }
+
+        private static BoundScope CreateBoundScopes(BoundProgram previous)
+        {
+            var stack = new Stack<BoundProgram>();
+
+
+            while (previous != null)
+            {
+                if (previous.IsValid)
+                    stack.Push(previous);
+                previous = previous.Previous;
+            }
+
+            var current = CreateRootScope();
+
+            while (stack.Count > 0)
+            {
+                var global = stack.Pop();
+                var scope = new BoundScope(current);
+                foreach (var variable in global.GlobalVariables)
+                    scope.TryDeclareVariable(variable);
+
+                foreach (var function in global.Functions)
+                    scope.TryDeclareFunction(function.Key);
+
+                current = scope;
+            }
+
+            return current;
         }
 
         private static BoundScope CreateRootScope()
@@ -238,7 +263,7 @@ namespace Compiler.Binding
 
             bool isConst = syntax.VarKeyword.Kind == SyntaxTokenKind.ConstKeyword;
 
-            Console.WriteLine(isConst);
+            
 
             VariableSymbol variable;
             if (function == null)
