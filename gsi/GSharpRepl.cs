@@ -18,7 +18,7 @@ namespace Compiler
 
         protected override void EvaluateSubmission(string text)
         {
-            compilation = Compilation.CompileScript(new SourceText(text, "<stdin>"), Compilation.StandardReferencePaths, compilation);
+            compilation = Compilation.CompileScript(new SourceText(text, "<stdin>"), Compilation.StandardReferencePaths);
             compilation.Evaluate();
         }
 
@@ -44,7 +44,7 @@ namespace Compiler
             if (string.IsNullOrEmpty(text))
                 return true;
 
-            compilation = Compilation.CompileScript(new SourceText(text, null), Compilation.StandardReferencePaths, compilation);
+            compilation = Compilation.CompileScript(new SourceText(text, null), Compilation.StandardReferencePaths);
 
             if (compilation.Diagnostics.Where(d =>
             {

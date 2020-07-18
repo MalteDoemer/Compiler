@@ -149,12 +149,11 @@ namespace Compiler.Text
 
         private static void WriteBoundProgram(this TextWriter writer, BoundProgram node)
         {
-            foreach (var function in node.GetFunctionSymbols())
+            foreach (var pair in node.Functions)
             {
-                var body = node.GetFunctionBody(function);
-                writer.WriteFunctionSymbol(function);
+                writer.WriteFunctionSymbol(pair.Key);
                 writer.WriteLine();
-                writer.WriteBoundBlockStatement(body);
+                writer.WriteBoundBlockStatement(pair.Value);
                 writer.WriteLine();
             }
         }

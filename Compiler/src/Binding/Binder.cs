@@ -47,9 +47,9 @@ namespace Compiler.Binding
                     scope.TryDeclareVariable(param);
         }
 
-        public static BoundProgram BindProgram(BoundProgram previous, bool isScript, IEnumerable<CompilationUnitSyntax> units)
+        public static BoundProgram BindProgram(bool isScript, IEnumerable<CompilationUnitSyntax> units)
         {
-            var parentScope = CreateBoundScopes(previous);
+            var parentScope = CreateRootScope();
             var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
             var functionSyntax = units.SelectMany(u => u.Members.OfType<FunctionDeclarationSyntax>());
             var statementSyntax = units.SelectMany(u => u.Members.OfType<GlobalStatementSynatx>());
@@ -105,37 +105,7 @@ namespace Compiler.Binding
 
             var globalStatements = Lowerer.Lower(null, new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid));
 
-            return new BoundProgram(previous, declaredVariables, globalStatements.Statements, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
-        }
-
-        private static BoundScope CreateBoundScopes(BoundProgram previous)
-        {
-            var stack = new Stack<BoundProgram>();
-
-
-            while (previous != null)
-            {
-                if (previous.IsValid)
-                    stack.Push(previous);
-                previous = previous.Previous;
-            }
-
-            var current = CreateRootScope();
-
-            while (stack.Count > 0)
-            {
-                var global = stack.Pop();
-                var scope = new BoundScope(current);
-                foreach (var variable in global.GlobalVariables)
-                    scope.TryDeclareVariable(variable);
-
-                foreach (var function in global.Functions)
-                    scope.TryDeclareFunction(function.Key);
-
-                current = scope;
-            }
-
-            return current;
+            return new BoundProgram(declaredVariables, globalStatements.Statements, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
         }
 
         private static BoundScope CreateRootScope()
