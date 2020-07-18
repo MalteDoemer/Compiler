@@ -53,23 +53,20 @@ namespace Compiler.Binding
             var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
             var functionSyntax = units.SelectMany(u => u.Members.OfType<FunctionDeclarationSyntax>());
             var statementSyntax = units.SelectMany(u => u.Members.OfType<GlobalStatementSynatx>());
+            var globalStatementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
             var globalBinder = new Binder(parentScope, isScript, function: null);
             var isProgramValid = true;
 
             foreach (var func in functionSyntax)
                 globalBinder.DeclareFunction(func);
 
-            var globalStatementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
             foreach (var stmt in statementSyntax)
-            {
-                var boundStmt = globalBinder.BindStatement(stmt.Statement);
-                globalStatementBuilder.Add(boundStmt);
-            }
+                globalStatementBuilder.Add(globalBinder.BindStatement(stmt.Statement));
 
             diagnostics.AddRange(globalBinder.GetDiagnostics());
             isProgramValid = isProgramValid && globalBinder.isTreeValid;
 
-            var declaredVariables = globalBinder.scope.GetDeclaredVariables().Cast<GlobalVariableSymbol>().ToImmutableArray();
+            var declaredVariables = globalBinder.scope.GetDeclaredVariables();
             var declaredFunctions = globalBinder.scope.GetDeclaredFunctions();
 
             var currentScope = globalBinder.scope;
@@ -89,40 +86,26 @@ namespace Compiler.Binding
                 isProgramValid = isProgramValid && binder.isTreeValid;
             }
 
-            var mainFunction = (FunctionSymbol)null;
-            if (!isScript && !globalBinder.scope.TryLookUpFunction("main", out mainFunction))
+            globalBinder.scope.TryLookUpFunction("main", out var mainFunction);
+
+            if (mainFunction != null)
             {
-                diagnostics.Add(new Diagnostic("Program doesn't define main fuction.", TextLocation.Undefined, ErrorLevel.Error));
-                isProgramValid = false;
-            }
-            if (mainFunction != null && mainFunction.Parameters.Length > 0)
-            {
-                diagnostics.Add(new Diagnostic("Main function cannot have arguments.", mainFunction.Syntax.Identifier.Location, ErrorLevel.Error));
-                isProgramValid = false;
-            }
-            if (mainFunction != null && mainFunction.ReturnType != TypeSymbol.Void)
-            {
-                diagnostics.Add(new Diagnostic("Main function must return void.", mainFunction.Syntax.ReturnType.Location, ErrorLevel.Error));
-                isProgramValid = false;
-            }
-            var globalStatements = new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid);
-            if (mainFunction == null)
-            {
-                mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
-                globalStatements = Lowerer.Lower(mainFunction, globalStatements);
-                functions.Add(mainFunction, globalStatements);
-                declaredFunctions = declaredFunctions.Add(mainFunction);
-            }
-            else
-            {
-                globalStatements = Lowerer.Lower(null, globalStatements);
-                var mainBody = functions[mainFunction];
-                var body = new BoundBlockStatement(globalStatements.Statements.AddRange(mainBody.Statements), isProgramValid);
-                var loweredBody = Lowerer.Lower(mainFunction, body);
-                functions[mainFunction] = loweredBody;
+                void Report(string message, TextLocation location)
+                {
+                    if (isProgramValid)
+                        diagnostics.Add(new Diagnostic(message, location, ErrorLevel.Error));
+                    isProgramValid = false;
+                }
+
+                if (mainFunction.Parameters.Length != 0)
+                    Report("Main function cannot have arguments.", mainFunction.Syntax.Parameters.Location);
+                if (mainFunction.ReturnType != TypeSymbol.Void)
+                    Report("Main function must return void.", mainFunction.Syntax.ReturnType.Location);
             }
 
-            return new BoundProgram(previous, declaredVariables, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
+            var globalStatements = Lowerer.Lower(null, new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid));
+
+            return new BoundProgram(previous, declaredVariables, globalStatements.Statements, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
         }
 
         private static BoundScope CreateBoundScopes(BoundProgram previous)
@@ -263,7 +246,7 @@ namespace Compiler.Binding
 
             bool isConst = syntax.VarKeyword.Kind == SyntaxTokenKind.ConstKeyword;
 
-            
+
 
             VariableSymbol variable;
             if (function == null)

@@ -38,7 +38,7 @@ namespace Compiler.Emit
         private readonly MethodReference environmentExitReference;
         private readonly MethodReference stringGetLengthReference;
 
-        private readonly Dictionary<GlobalVariableSymbol, FieldDefinition> globalVariables;
+        private readonly Dictionary<VariableSymbol, FieldDefinition> globalVariables;
         private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
 
         private FieldDefinition randomDefiniton;
@@ -52,7 +52,7 @@ namespace Compiler.Emit
             this.diagnostics = new DiagnosticBag();
             this.functions = new Dictionary<FunctionSymbol, MethodDefinition>();
             this.builtInTypes = new Dictionary<TypeSymbol, TypeReference>();
-            this.globalVariables = new Dictionary<GlobalVariableSymbol, FieldDefinition>();
+            this.globalVariables = new Dictionary<VariableSymbol, FieldDefinition>();
             this.locals = new Dictionary<LocalVariableSymbol, VariableDefinition>();
             this.labels = new Dictionary<BoundLabel, int>();
             this.fixups = new List<(int, BoundLabel)>();
@@ -96,6 +96,13 @@ namespace Compiler.Emit
             randomCtorReference = ResolveMethod("System.Random", ".ctor", "System.Void");
             randomNextReference = ResolveMethod("System.Random", "Next", "System.Int32", "System.Int32", "System.Int32");
             randomNextDoubleReference = ResolveMethod("System.Random", "NextDouble", "System.Double");
+
+            const MethodAttributes attrs = MethodAttributes.SpecialName | MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.RTSpecialName;
+            staticCtor = new MethodDefinition(".cctor", attrs, builtInTypes[TypeSymbol.Void]);
+            mainClass.Methods.Add(staticCtor);
+
+            randomDefiniton = new FieldDefinition("random", FieldAttributes.Static | FieldAttributes.Private, randomTypeReference);
+            mainClass.Fields.Add(randomDefiniton);
         }
 
         public void Emit(string outputPath)
@@ -109,6 +116,16 @@ namespace Compiler.Emit
             foreach (var func in program.Functions.Keys)
                 EmitFunctionDecleration(func);
 
+            var ctorProcessor = staticCtor.Body.GetILProcessor();
+            ctorProcessor.Emit(OpCodes.Newobj, randomCtorReference);
+            ctorProcessor.Emit(OpCodes.Stsfld, randomDefiniton);
+            
+            foreach (var stmt in program.GlobalStatements)
+                EmitStatement(ctorProcessor, stmt);
+
+            ctorProcessor.Emit(OpCodes.Ret);
+
+
             foreach (var func in program.Functions)
                 EmitFunctionBody(func.Key, func.Value);
 
@@ -117,7 +134,7 @@ namespace Compiler.Emit
             mainAssebly.Write(outputPath);
         }
 
-        private void AddGlobalVariable(GlobalVariableSymbol variable)
+        private void AddGlobalVariable(VariableSymbol variable)
         {
             if (variable.Constant == null)
             {
@@ -479,20 +496,7 @@ namespace Compiler.Emit
         {
             if (node.Symbol == BuiltInFunctions.Random || node.Symbol == BuiltInFunctions.RandomFloat)
             {
-                if (randomDefiniton == null)
-                {
-                    randomDefiniton = new FieldDefinition("random", FieldAttributes.Static | FieldAttributes.Private, randomTypeReference);
-                    mainClass.Fields.Add(randomDefiniton);
 
-                    var attrs = MethodAttributes.SpecialName | MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.RTSpecialName;
-                    staticCtor = new MethodDefinition(".cctor", attrs, builtInTypes[TypeSymbol.Void]);
-                    mainClass.Methods.Add(staticCtor);
-
-                    var ctorProcessor = staticCtor.Body.GetILProcessor();
-                    ctorProcessor.Emit(OpCodes.Newobj, randomCtorReference);
-                    ctorProcessor.Emit(OpCodes.Stsfld, randomDefiniton);
-                    ctorProcessor.Emit(OpCodes.Ret);
-                }
                 ilProcesser.Emit(OpCodes.Ldsfld, randomDefiniton);
             }
 
