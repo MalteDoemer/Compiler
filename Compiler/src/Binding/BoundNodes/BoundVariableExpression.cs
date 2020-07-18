@@ -10,6 +10,8 @@ namespace Compiler.Binding
             Variable = variable;
             if (isValid)
                 Constant = variable.Constant;
+
+            System.Console.WriteLine($"Constant in variable: {Constant == null}");
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundVariableExpression;

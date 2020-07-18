@@ -256,6 +256,10 @@ namespace Compiler.Emit
 
         private void EmitExpression(ILProcessor ilProcesser, BoundExpression node)
         {
+            
+            Console.WriteLine("Constant == null: " + (node.Constant == null));
+
+
             if (node.HasConstant)
             {
                 EmitConstatnt(ilProcesser, node);
