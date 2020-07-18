@@ -61,11 +61,6 @@ namespace Compiler.Text
 
             if (diagnostic.HasPositon)
             {
-                //var src = diagnostic.Location.Text;
-                //var prefix = src.ToString(0, diagnostic.Span.Start);
-                //var errorText = src.ToString(diagnostic.Span);
-                //var postfix = src.ToString(diagnostic.Span.End, src.Length - diagnostic.Span.End);
-
                 var lineStart = diagnostic.Location.StartLine;
                 var lineEnd = diagnostic.Location.EndLine;
                 var columnStart = diagnostic.Location.StartCharacter + 1;
@@ -75,12 +70,6 @@ namespace Compiler.Text
                 writer.WriteLine();
                 writer.ColorWrite($"{errType} in {file} line [{lineStart},{lineEnd}] column [{columnStart},{columnEnd}]: {diagnostic.Message}", reportColor);
                 writer.WriteLine();
-
-                // writer.ColorWrite($"\n\nError in {file} line {linenum} column {charOff}\n\n");
-                // writer.ColorWrite(prefix);
-                // writer.ColorWrite(errorText, ConsoleColor.Red);
-                // writer.ColorWrite(postfix);
-                // writer.ColorWrite($"\n\n{diagnostic.Message}\n\n");
 
             }
             else writer.ColorWrite($"{errType}: {diagnostic.Message}\n", ConsoleColor.Red);
@@ -92,12 +81,22 @@ namespace Compiler.Text
                 writer.WriteDiagnostic(d);
         }
 
-        internal static void WriteControlFlowGraph(this TextWriter writer, ControlFlowGraph graph)
+        internal static void WriteControlFlowGraph(this IndentedTextWriter writer, ControlFlowGraph graph)
         {
             graph.WriteTo(writer);
         }
 
         internal static void WriteBoundNode(this TextWriter writer, BoundNode node)
+        {
+            if (writer is IndentedTextWriter indented) WriteBoundNodeInternal(indented, node);
+            else
+            {
+                var indentedWriter = new IndentedTextWriter(writer);
+                WriteBoundNodeInternal(indentedWriter, node);
+            }
+        }
+
+        private static void WriteBoundNodeInternal(this IndentedTextWriter writer, BoundNode node)
         {
             switch (node.Kind)
             {
@@ -123,22 +122,12 @@ namespace Compiler.Text
                     WriteBoundExpressionStatement(writer, (BoundExpressionStatement)node); break;
                 case BoundNodeKind.BoundVariableDeclarationStatement:
                     WriteBoundVariableDeclarationStatement(writer, (BoundVariableDeclarationStatement)node); break;
-                case BoundNodeKind.BoundIfStatement:
-                    WriteBoundIfStatement(writer, (BoundIfStatement)node); break;
-                case BoundNodeKind.BoundForStatement:
-                    WriteBoundForStatement(writer, (BoundForStatement)node); break;
-                case BoundNodeKind.BoundWhileStatement:
-                    WriteBoundWhileStatement(writer, (BoundWhileStatement)node); break;
-                case BoundNodeKind.BoundDoWhileStatement:
-                    WriteBoundDoWhileStatement(writer, (BoundDoWhileStatement)node); break;
                 case BoundNodeKind.BoundConditionalGotoStatement:
                     WriteBoundConditionalGotoStatement(writer, (BoundConditionalGotoStatement)node); break;
                 case BoundNodeKind.BoundGotoStatement:
                     WriteBoundGotoStatement(writer, (BoundGotoStatement)node); break;
                 case BoundNodeKind.BoundLabelStatement:
                     WriteBoundLabelStatement(writer, (BoundLabelStatement)node); break;
-                case BoundNodeKind.BoundInvalidExpression:
-                    WriteBoundInvalidExpression(writer, (BoundInvalidExpression)node); break;
                 case BoundNodeKind.BoundReturnStatement:
                     WriteBoundReturnStatement(writer, (BoundReturnStatement)node); break;
                 case BoundNodeKind.BoundNopStatement:
@@ -147,7 +136,7 @@ namespace Compiler.Text
             }
         }
 
-        private static void WriteBoundProgram(this TextWriter writer, BoundProgram node)
+        private static void WriteBoundProgram(this IndentedTextWriter writer, BoundProgram node)
         {
             foreach (var pair in node.Functions)
             {
@@ -158,7 +147,7 @@ namespace Compiler.Text
             }
         }
 
-        private static void WriteFunctionSymbol(this TextWriter writer, FunctionSymbol symbol)
+        private static void WriteFunctionSymbol(this IndentedTextWriter writer, FunctionSymbol symbol)
         {
             writer.WriteBlueKeyword("def");
             writer.WriteSpace();
@@ -181,7 +170,7 @@ namespace Compiler.Text
             writer.ColorWrite(")");
         }
 
-        private static void WriteBoundLiteralExpression(this TextWriter writer, BoundLiteralExpression node)
+        private static void WriteBoundLiteralExpression(this IndentedTextWriter writer, BoundLiteralExpression node)
         {
             switch (node.Value)
             {
@@ -195,12 +184,12 @@ namespace Compiler.Text
             }
         }
 
-        private static void WriteBoundVariableExpression(this TextWriter writer, BoundVariableExpression node)
+        private static void WriteBoundVariableExpression(this IndentedTextWriter writer, BoundVariableExpression node)
         {
             writer.WriteVariable(node.Variable.Name);
         }
 
-        private static void WriteBoundUnaryExpression(this TextWriter writer, BoundUnaryExpression node)
+        private static void WriteBoundUnaryExpression(this IndentedTextWriter writer, BoundUnaryExpression node)
         {
             writer.ColorWrite("(");
             writer.Write(node.Op.GetText());
@@ -208,7 +197,7 @@ namespace Compiler.Text
             writer.ColorWrite(")");
         }
 
-        private static void WriteBoundBinaryExpression(this TextWriter writer, BoundBinaryExpression node)
+        private static void WriteBoundBinaryExpression(this IndentedTextWriter writer, BoundBinaryExpression node)
         {
             writer.ColorWrite("(");
             writer.WriteBoundNode(node.Left);
@@ -219,7 +208,7 @@ namespace Compiler.Text
             writer.ColorWrite(")");
         }
 
-        private static void WriteBoundCallExpression(this TextWriter writer, BoundCallExpression node)
+        private static void WriteBoundCallExpression(this IndentedTextWriter writer, BoundCallExpression node)
         {
             writer.WriteFunction(node.Symbol.Name);
             writer.Write('(');
@@ -234,7 +223,7 @@ namespace Compiler.Text
             writer.Write(')');
         }
 
-        private static void WriteBoundConversionExpression(this TextWriter writer, BoundConversionExpression node)
+        private static void WriteBoundConversionExpression(this IndentedTextWriter writer, BoundConversionExpression node)
         {
             writer.WriteBlueKeyword(node.Type.Name);
             writer.ColorWrite('(');
@@ -242,7 +231,7 @@ namespace Compiler.Text
             writer.ColorWrite(')');
         }
 
-        private static void WriteBoundAssignmentExpression(this TextWriter writer, BoundAssignmentExpression node)
+        private static void WriteBoundAssignmentExpression(this IndentedTextWriter writer, BoundAssignmentExpression node)
         {
             writer.WriteVariable(node.Variable.Name);
             writer.WriteSpace();
@@ -251,43 +240,27 @@ namespace Compiler.Text
             writer.WriteBoundNode(node.Expression);
         }
 
-        private static void WriteBoundBlockStatement(this TextWriter writer, BoundBlockStatement node)
+        private static void WriteBoundBlockStatement(this IndentedTextWriter writer, BoundBlockStatement node)
         {
-            if (writer is IndentedTextWriter indentedTextWriter1)
+
+            writer.ColorWrite("{");
+            writer.Indent += 4;
+            foreach (var n in node.Statements)
             {
-                indentedTextWriter1.ColorWrite("{");
-                indentedTextWriter1.Indent += 4;
-                foreach (var n in node.Statements)
-                {
-                    indentedTextWriter1.WriteLine();
-                    indentedTextWriter1.WriteBoundNode(n);
-                }
-                indentedTextWriter1.Indent -= 4;
-                indentedTextWriter1.WriteLine();
-                indentedTextWriter1.ColorWrite("}");
+                writer.WriteLine();
+                writer.WriteBoundNode(n);
             }
-            else
-            {
-                var indentedTextWriter2 = new IndentedTextWriter(writer, " ");
-                indentedTextWriter2.ColorWrite("{");
-                indentedTextWriter2.Indent += 4;
-                foreach (var n in node.Statements)
-                {
-                    indentedTextWriter2.WriteLine();
-                    indentedTextWriter2.WriteBoundNode(n);
-                }
-                indentedTextWriter2.Indent -= 4;
-                indentedTextWriter2.WriteLine();
-                indentedTextWriter2.ColorWrite("}");
-            }
+            writer.Indent -= 4;
+            writer.WriteLine();
+            writer.ColorWrite("}");
         }
 
-        private static void WriteBoundExpressionStatement(this TextWriter writer, BoundExpressionStatement node)
+        private static void WriteBoundExpressionStatement(this IndentedTextWriter writer, BoundExpressionStatement node)
         {
             writer.WriteBoundNode(node.Expression);
         }
 
-        private static void WriteBoundVariableDeclarationStatement(this TextWriter writer, BoundVariableDeclarationStatement node)
+        private static void WriteBoundVariableDeclarationStatement(this IndentedTextWriter writer, BoundVariableDeclarationStatement node)
         {
             writer.WriteBlueKeyword("var");
             writer.WriteSpace();
@@ -298,27 +271,7 @@ namespace Compiler.Text
             writer.WriteBoundNode(node.Expression);
         }
 
-        private static void WriteBoundIfStatement(this TextWriter writer, BoundIfStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static void WriteBoundForStatement(this TextWriter writer, BoundForStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static void WriteBoundWhileStatement(this TextWriter writer, BoundWhileStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static void WriteBoundDoWhileStatement(this TextWriter writer, BoundDoWhileStatement node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static void WriteBoundConditionalGotoStatement(this TextWriter writer, BoundConditionalGotoStatement node)
+        private static void WriteBoundConditionalGotoStatement(this IndentedTextWriter writer, BoundConditionalGotoStatement node)
         {
             writer.WriteMagentaKeyword("goto");
             writer.WriteSpace();
@@ -334,14 +287,14 @@ namespace Compiler.Text
             writer.WriteBoundNode(node.Condition);
         }
 
-        private static void WriteBoundGotoStatement(this TextWriter writer, BoundGotoStatement node)
+        private static void WriteBoundGotoStatement(this IndentedTextWriter writer, BoundGotoStatement node)
         {
             writer.WriteMagentaKeyword("goto");
             writer.WriteSpace();
             writer.ColorWrite(node.Label.Identifier);
         }
 
-        private static void WriteBoundLabelStatement(this TextWriter writer, BoundLabelStatement node)
+        private static void WriteBoundLabelStatement(this IndentedTextWriter writer, BoundLabelStatement node)
         {
             if (writer is IndentedTextWriter iw)
             {
@@ -358,12 +311,7 @@ namespace Compiler.Text
             }
         }
 
-        private static void WriteBoundInvalidExpression(this TextWriter writer, BoundInvalidExpression node)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static void WriteBoundReturnStatement(this TextWriter writer, BoundReturnStatement node)
+        private static void WriteBoundReturnStatement(this IndentedTextWriter writer, BoundReturnStatement node)
         {
             writer.WriteMagentaKeyword("return");
             writer.WriteSpace();
@@ -372,12 +320,12 @@ namespace Compiler.Text
             else writer.WriteBoundNode(node.Expression);
         }
 
-        private static void WriteNumber(this TextWriter writer, object val) => writer.ColorWrite(val, ConsoleColor.DarkGreen);
-        private static void WriteVariable(this TextWriter writer, string name) => writer.ColorWrite(name, ConsoleColor.Cyan);
-        private static void WriteFunction(this TextWriter writer, string name) => writer.ColorWrite(name, ConsoleColor.Yellow);
-        private static void WriteString(this TextWriter writer, string content) => writer.ColorWrite($"\"{content}\"", ConsoleColor.DarkCyan);
-        private static void WriteMagentaKeyword(this TextWriter writer, string keyword) => writer.ColorWrite(keyword, ConsoleColor.Magenta);
-        private static void WriteBlueKeyword(this TextWriter writer, string keyword) => writer.ColorWrite(keyword, ConsoleColor.Blue);
-        private static void WriteSpace(this TextWriter writer, int len = 1) => writer.Write(new string(' ', len));
+        private static void WriteNumber(this IndentedTextWriter writer, object val) => writer.ColorWrite(val, ConsoleColor.DarkGreen);
+        private static void WriteVariable(this IndentedTextWriter writer, string name) => writer.ColorWrite(name, ConsoleColor.Cyan);
+        private static void WriteFunction(this IndentedTextWriter writer, string name) => writer.ColorWrite(name, ConsoleColor.Yellow);
+        private static void WriteString(this IndentedTextWriter writer, string content) => writer.ColorWrite($"\"{content}\"", ConsoleColor.DarkCyan);
+        private static void WriteMagentaKeyword(this IndentedTextWriter writer, string keyword) => writer.ColorWrite(keyword, ConsoleColor.Magenta);
+        private static void WriteBlueKeyword(this IndentedTextWriter writer, string keyword) => writer.ColorWrite(keyword, ConsoleColor.Blue);
+        private static void WriteSpace(this IndentedTextWriter writer, int len = 1) => writer.Write(new string(' ', len));
     }
 }
