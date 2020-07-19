@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 using Compiler.Text;
 
 namespace Compiler.Syntax
@@ -19,5 +20,15 @@ namespace Compiler.Syntax
         public TypeClauseSyntax TypeClause { get; }
         public SyntaxToken EqualToken { get; }
         public ExpressionSyntax Expression { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return VarKeyword;
+            yield return Identifier;
+            if (TypeClause.IsExplicit)
+                yield return TypeClause;
+            yield return EqualToken;
+            yield return Expression;
+        }
     }
 }

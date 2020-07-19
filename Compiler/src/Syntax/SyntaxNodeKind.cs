@@ -30,5 +30,6 @@ namespace Compiler.Syntax
         ContinueStatementSyntax,
         ReturnStatementSyntax,
         SyntaxToken,
+        ParenthesizedExpression,
     }
 }

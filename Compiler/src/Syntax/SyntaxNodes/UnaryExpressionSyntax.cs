@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Compiler.Text;
 
 namespace Compiler.Syntax
@@ -12,5 +13,11 @@ namespace Compiler.Syntax
         public override SyntaxNodeKind Kind => SyntaxNodeKind.UnaryExpressionSyntax;
         public SyntaxToken Op { get; }
         public ExpressionSyntax Expression { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return Op;
+            yield return Expression;
+        }
     }
 }

@@ -66,8 +66,8 @@ namespace Compiler.Binding
             diagnostics.AddRange(globalBinder.GetDiagnostics());
             isProgramValid = isProgramValid && globalBinder.isTreeValid;
 
-            var declaredVariables = globalBinder.scope.GetDeclaredVariables();
             var declaredFunctions = globalBinder.scope.GetDeclaredFunctions();
+            var declaredVariables = globalBinder.scope.GetDeclaredVariables();
 
             var currentScope = globalBinder.scope;
             var functions = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
@@ -117,6 +117,17 @@ namespace Compiler.Binding
                 var globalBody = Lowerer.Lower(globalFunction, new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid));
                 functions.Add(globalFunction, globalBody);
             }
+
+            // Special case 
+            // In a script global statements can have nested scopes 
+            if (isScript && globalFunction != FunctionSymbol.Invalid)
+            {
+                var body = functions[globalFunction];
+                var stmts = body.Statements.OfType<BoundVariableDeclarationStatement>();
+                declaredVariables = declaredVariables.Union(stmts.Select(s => s.Variable)).ToImmutableArray();
+            }
+
+
             return new BoundProgram(declaredVariables, globalFunction, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
         }
 
@@ -374,6 +385,8 @@ namespace Compiler.Binding
                     return BindAdditionalAssignmentExpressionSyntax((AdditionalAssignmentExpressionSyntax)syntax);
                 case SyntaxNodeKind.PostIncDecExpressionSyntax:
                     return BindPostIncDecExpressionSyntax((PostIncDecExpressionSyntax)syntax);
+                case SyntaxNodeKind.ParenthesizedExpression:
+                    return BindExpression(((ParenthesizedExpression)syntax).Expression);
                 default: throw new Exception($"Unexpected SyntaxKind <{syntax.Kind}>");
             }
         }

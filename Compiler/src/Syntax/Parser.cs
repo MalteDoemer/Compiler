@@ -340,12 +340,13 @@ namespace Compiler.Syntax
         private ExpressionSyntax ParseParenthesizedExpression()
         {
             var start = current.Location.Span.Start;
-            MatchToken(SyntaxTokenKind.LParen);
+            var lparen = MatchToken(SyntaxTokenKind.LParen);
             var expr = ParseExpression();
             if (current.TokenKind != SyntaxTokenKind.RParen)
                 ReportError(ErrorMessage.NeverClosedParenthesis, new TextLocation(source, TextSpan.FromBounds(start, current.Location.Span.End)));
-            MatchToken(SyntaxTokenKind.RParen);
-            return expr;
+            var rparen = MatchToken(SyntaxTokenKind.RParen);
+            var span = TextSpan.FromBounds(start, current.Location.Span.End);
+            return new ParenthesizedExpression(lparen, expr, rparen, isStatementValid, new TextLocation(source, span));
         }
 
         private ExpressionSyntax ParseIdentifier()

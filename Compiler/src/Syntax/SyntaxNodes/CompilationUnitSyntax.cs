@@ -2,6 +2,7 @@ using Compiler.Text;
 using System.Linq;
 using System.Collections.Immutable;
 using System.Text;
+using System.Collections.Generic;
 
 namespace Compiler.Syntax
 {
@@ -13,5 +14,7 @@ namespace Compiler.Syntax
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.CompilationUnitSyntax;
         public ImmutableArray<MemberSyntax> Members { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren() => Members;
     }
 }

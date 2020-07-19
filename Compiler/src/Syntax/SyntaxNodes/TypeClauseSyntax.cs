@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Compiler.Text;
 
 namespace Compiler.Syntax
@@ -14,5 +15,11 @@ namespace Compiler.Syntax
         public bool IsExplicit { get; }
         public SyntaxToken ColonToken { get; }
         public SyntaxToken TypeToken { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return ColonToken;
+            yield return TypeToken;
+        }
     }
 }

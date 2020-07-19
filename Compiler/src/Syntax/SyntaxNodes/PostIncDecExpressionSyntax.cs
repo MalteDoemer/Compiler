@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Compiler.Text;
 
 
@@ -14,5 +15,11 @@ namespace Compiler.Syntax
         public override SyntaxNodeKind Kind => SyntaxNodeKind.PostIncDecExpressionSyntax;
         public SyntaxToken Identifier { get; }
         public SyntaxToken Op { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return Identifier;
+            yield return Op;
+        }
     }
 }

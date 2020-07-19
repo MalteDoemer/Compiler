@@ -23,7 +23,8 @@ namespace Compiler.Binding
         {
             if (variables.TryGetValue(identifier, out value))
                 return true;
-            else if (Parent == null) {
+            else if (Parent == null)
+            {
                 value = VariableSymbol.Invalid;
                 return false;
             }
@@ -42,7 +43,8 @@ namespace Compiler.Binding
         {
             if (functions.TryGetValue(identifier, out value))
                 return true;
-            else if (Parent == null) {
+            else if (Parent == null)
+            {
                 value = FunctionSymbol.Invalid;
                 return false;
             }

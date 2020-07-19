@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Compiler.Text;
 
 
@@ -21,5 +22,14 @@ namespace Compiler.Syntax
         public ExpressionSyntax Condition { get; }
         public ExpressionSyntax Increment { get; }
         public StatementSyntax Body { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return ForToken;
+            yield return VariableDeclaration;
+            yield return Condition;
+            yield return Increment;
+            yield return Body;
+        }
     }
 }

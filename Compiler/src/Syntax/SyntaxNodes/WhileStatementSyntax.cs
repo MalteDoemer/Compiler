@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Compiler.Text;
 
 namespace Compiler.Syntax
@@ -14,5 +15,12 @@ namespace Compiler.Syntax
         public SyntaxToken WhileToken { get; }
         public ExpressionSyntax Condition { get; }
         public StatementSyntax Body { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return WhileToken;
+            yield return Condition;
+            yield return Body;
+        }
     }
 }

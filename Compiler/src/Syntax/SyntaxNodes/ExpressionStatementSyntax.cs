@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Compiler.Text;
 
 namespace Compiler.Syntax
@@ -11,5 +12,10 @@ namespace Compiler.Syntax
         
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ExpressionStatementSyntax;
         public ExpressionSyntax Expression { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return Expression;
+        }
     }
 }

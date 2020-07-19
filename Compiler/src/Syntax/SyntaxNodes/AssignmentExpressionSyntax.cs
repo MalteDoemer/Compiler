@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Compiler.Text;
 
 namespace Compiler.Syntax
@@ -14,5 +15,12 @@ namespace Compiler.Syntax
         public SyntaxToken Identifier { get; }
         public SyntaxToken EqualToken { get; }
         public ExpressionSyntax Expression { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return Identifier;
+            yield return EqualToken;
+            yield return Expression;
+        }
     }
 }

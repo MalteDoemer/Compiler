@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Immutable;
 using System.Text;
 using Compiler.Text;
+using System.Collections.Generic;
 
 namespace Compiler.Syntax
 {
@@ -18,5 +19,13 @@ namespace Compiler.Syntax
         public SyntaxToken OpenCurly { get; }
         public ImmutableArray<StatementSyntax> Statements { get; }
         public SyntaxToken CloseCurly { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return OpenCurly;
+            foreach (var stmt in Statements) 
+                yield return stmt;
+            yield return CloseCurly;
+        }
     }
 }

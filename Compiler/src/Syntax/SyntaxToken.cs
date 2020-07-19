@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Compiler.Text;
 
 namespace Compiler.Syntax
@@ -14,5 +16,7 @@ namespace Compiler.Syntax
             TokenKind = kind;
             Value = value;
         }
+
+        public override IEnumerable<SyntaxNode> GetChildren() => Array.Empty<SyntaxNode>();
     }
 }

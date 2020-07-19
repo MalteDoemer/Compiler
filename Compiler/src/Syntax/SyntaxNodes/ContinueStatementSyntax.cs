@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Compiler.Text;
 
 
@@ -12,5 +13,10 @@ namespace Compiler.Syntax
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ContinueStatementSyntax;
         public SyntaxToken ContinueToken { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return ContinueToken;
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Compiler.Text;
 
 
@@ -18,5 +19,14 @@ namespace Compiler.Syntax
         public SyntaxToken LeftParenthesis { get; }
         public SyntaxToken RightParenthesis { get; }
         public SeperatedSyntaxList<ExpressionSyntax> Arguments { get; }
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return Identifier;
+            yield return LeftParenthesis;
+            foreach (var arg in Arguments)
+                yield return arg;
+            yield return RightParenthesis;
+        }
     }
 }
