@@ -102,13 +102,11 @@ namespace Compiler.Binding
                 if (mainFunction.ReturnType != TypeSymbol.Void)
                     Report("Main function must return void.", mainFunction.Syntax.ReturnType.Location);
             }
-            else
+            else if (isScript)
             {
                 mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
-                var mainBody = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
-                    new BoundNopStatement(isProgramValid),
-                    new BoundReturnStatement(null, isProgramValid)), isProgramValid);
-                functions.Add(mainFunction, mainBody);
+                var mainBody = new BoundBlockStatement(ImmutableArray<BoundStatement>.Empty, isProgramValid);
+                functions.Add(mainFunction, Lowerer.Lower(mainFunction, mainBody));
             }
 
             var globalFunction = FunctionSymbol.Invalid;
@@ -119,8 +117,6 @@ namespace Compiler.Binding
                 var globalBody = Lowerer.Lower(globalFunction, new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid));
                 functions.Add(globalFunction, globalBody);
             }
-
-
             return new BoundProgram(declaredVariables, globalFunction, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
         }
 

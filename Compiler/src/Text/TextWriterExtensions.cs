@@ -91,7 +91,7 @@ namespace Compiler.Text
             if (writer is IndentedTextWriter indented) WriteBoundNodeInternal(indented, node);
             else
             {
-                var indentedWriter = new IndentedTextWriter(writer);
+                var indentedWriter = new IndentedTextWriter(writer, " ");
                 WriteBoundNodeInternal(indentedWriter, node);
             }
         }
@@ -143,6 +143,7 @@ namespace Compiler.Text
                 writer.WriteFunctionSymbol(pair.Key);
                 writer.WriteLine();
                 writer.WriteBoundBlockStatement(pair.Value);
+                writer.WriteLine();
                 writer.WriteLine();
             }
         }

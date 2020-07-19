@@ -70,8 +70,8 @@ namespace gsi
                 previous = "";
         }
 
-        [MetaCommand("dump", "Displays the bound tree of the specified function")]
-        private void BoundTreeCommand(string function)
+        [MetaCommand("dumpf", "Displays the bound tree of the specified function")]
+        private void DumpfCommand(string function)
         {
             var compilation = Compilation.CompileScript(new SourceText(previous, "<stdin>"), Compilation.StandardReferencePaths);
             Console.WriteLine();
@@ -79,6 +79,17 @@ namespace gsi
 
             if (!compilation.Diagnostics.HasErrors)
                 compilation.WriteBoundTree(Console.Out, function);
+        }
+
+        [MetaCommand("dump", "Displays the bound tree")]
+        private void DumpCommand()
+        {
+            var compilation = Compilation.CompileScript(new SourceText(previous, "<stdin>"), Compilation.StandardReferencePaths);
+            Console.WriteLine();
+            compilation.Diagnostics.WriteTo(Console.Out);
+
+            if (!compilation.Diagnostics.HasErrors)
+                compilation.WriteBoundTree(Console.Out);
         }
     }
 }
