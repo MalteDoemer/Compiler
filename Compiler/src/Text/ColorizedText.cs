@@ -26,7 +26,7 @@ namespace Compiler.Text
             {
                 var token = tokens[i];
 
-                switch (token.Kind)
+                switch (token.TokenKind)
                 {
                     case SyntaxTokenKind.Float:
                     case SyntaxTokenKind.Int:
@@ -63,7 +63,7 @@ namespace Compiler.Text
                         break;
                     case SyntaxTokenKind.Identifier:
                         ConsoleColor color;
-                        if (i < tokens.Length - 1 && tokens[i + 1].Kind == SyntaxTokenKind.LParen)
+                        if (i < tokens.Length - 1 && tokens[i + 1].TokenKind == SyntaxTokenKind.LParen)
                             color = ConsoleColor.Yellow;
                         else
                             color = ConsoleColor.Cyan;
@@ -117,7 +117,7 @@ namespace Compiler.Text
 
     public sealed class ColorizedToken : ColorizedSpan
     {
-        public ColorizedToken(SyntaxToken token, ConsoleColor color)
+        internal ColorizedToken(SyntaxToken token, ConsoleColor color)
         {
             Token = token;
             Color = color;
@@ -125,6 +125,6 @@ namespace Compiler.Text
 
         public override ConsoleColor Color { get; }
         public override TextSpan Span => Token.Location.Span;
-        public SyntaxToken Token { get; }
+        internal SyntaxToken Token { get; }
     }
 }

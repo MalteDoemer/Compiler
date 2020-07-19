@@ -238,10 +238,10 @@ namespace Compiler.Syntax
             do
             {
                 token = NextToken();
-                var shouldYield = verbose ? true : (token.Kind != SyntaxTokenKind.Space && token.Kind != SyntaxTokenKind.Comment);
+                var shouldYield = verbose ? true : (token.TokenKind != SyntaxTokenKind.Space && token.TokenKind != SyntaxTokenKind.Comment);
                 if (shouldYield)
                     yield return token;
-            } while (token.Kind != SyntaxTokenKind.EndOfFile);
+            } while (token.TokenKind != SyntaxTokenKind.EndOfFile);
         }
     }
 }

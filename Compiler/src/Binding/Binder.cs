@@ -136,7 +136,7 @@ namespace Compiler.Binding
             for (var i = 0; i < func.Parameters.Length; i++)
             {
                 var parameterSyntax = func.Parameters[i];
-                var type = BindFacts.GetTypeSymbol(parameterSyntax.TypeClause.TypeToken.Kind);
+                var type = BindFacts.GetTypeSymbol(parameterSyntax.TypeClause.TypeToken.TokenKind);
                 var name = parameterSyntax.Identifier.Value.ToString();
 
                 if (!seenParameters.Add(name))
@@ -146,7 +146,7 @@ namespace Compiler.Binding
 
             TypeSymbol returnType;
             if (func.ReturnType.IsExplicit)
-                returnType = BindFacts.GetTypeSymbol(func.ReturnType.TypeToken.Kind);
+                returnType = BindFacts.GetTypeSymbol(func.ReturnType.TypeToken.TokenKind);
             else
                 returnType = TypeSymbol.Void;
 
@@ -217,7 +217,7 @@ namespace Compiler.Binding
 
             if (syntax.TypeClause.IsExplicit)
             {
-                type = BindFacts.GetTypeSymbol(syntax.TypeClause.TypeToken.Kind);
+                type = BindFacts.GetTypeSymbol(syntax.TypeClause.TypeToken.TokenKind);
                 expr = CheckTypeAndConversion(type, syntax.Expression);
             }
             else
@@ -226,7 +226,7 @@ namespace Compiler.Binding
                 type = expr.ResultType;
             }
 
-            bool isConst = syntax.VarKeyword.Kind == SyntaxTokenKind.ConstKeyword;
+            bool isConst = syntax.VarKeyword.TokenKind == SyntaxTokenKind.ConstKeyword;
 
 
 
@@ -381,7 +381,7 @@ namespace Compiler.Binding
         private BoundExpression BindLiteralExpressionSyntax(LiteralExpressionSyntax syntax)
         {
             var value = syntax.Literal.Value;
-            var type = BindFacts.GetTypeSymbol(syntax.Literal.Kind);
+            var type = BindFacts.GetTypeSymbol(syntax.Literal.TokenKind);
             return new BoundLiteralExpression(value, type, isTreeValid);
         }
 
@@ -396,7 +396,7 @@ namespace Compiler.Binding
         private BoundExpression BindUnaryExpressionSyntax(UnaryExpressionSyntax syntax)
         {
             var right = BindExpression(syntax.Expression);
-            var boundOperator = BindUnaryOperator(syntax.Op.Kind);
+            var boundOperator = BindUnaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveUnaryType(boundOperator, right.ResultType);
             if (boundOperator == BoundUnaryOperator.Invalid || resultType == null)
                 ReportError(ErrorMessage.UnsupportedUnaryOperator, syntax.Op.Location, syntax.Op.Value.ToString(), right.ResultType);
@@ -407,7 +407,7 @@ namespace Compiler.Binding
         {
             var left = BindExpression(syntax.Left);
             var right = BindExpression(syntax.Right);
-            var boundOperator = BindBinaryOperator(syntax.Op.Kind);
+            var boundOperator = BindBinaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
 
             if (boundOperator == BoundBinaryOperator.Invalid || resultType == null)
@@ -469,7 +469,7 @@ namespace Compiler.Binding
             var left = new BoundVariableExpression(variable, isTreeValid);
             var right = BindExpression(syntax.Expression);
 
-            var op = BindBinaryOperator(syntax.Op.Kind);
+            var op = BindBinaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
             if (op == BoundBinaryOperator.Invalid || resultType == null)
@@ -489,7 +489,7 @@ namespace Compiler.Binding
 
             var left = new BoundVariableExpression(variable, isTreeValid);
             var right = new BoundLiteralExpression(1, TypeSymbol.Int, isTreeValid);
-            var op = BindBinaryOperator(syntax.Op.Kind);
+            var op = BindBinaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
             if (op == BoundBinaryOperator.Invalid || resultType == null)

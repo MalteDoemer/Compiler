@@ -2,19 +2,17 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    public class SyntaxToken
+    internal class SyntaxToken : SyntaxNode
     {
-        public SyntaxTokenKind Kind { get; }
+        public SyntaxTokenKind TokenKind { get; }
         public object Value { get; }
-        public TextLocation Location { get; }
-        public bool IsValid { get; }
 
-        public SyntaxToken(SyntaxTokenKind kind, TextLocation location, object value, bool isValid = true)
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.SyntaxToken;
+
+        public SyntaxToken(SyntaxTokenKind kind, TextLocation location, object value, bool isValid = true) : base(isValid, location)
         {
-            Kind = kind;
+            TokenKind = kind;
             Value = value;
-            Location = location;
-            IsValid = isValid;
         }
     }
 }

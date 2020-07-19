@@ -44,10 +44,10 @@ namespace Compiler.Syntax
 
         private SyntaxToken MatchToken(SyntaxTokenKind kind, params SyntaxTokenKind[] others)
         {
-            if (current.Kind == kind) return Advance();
+            if (current.TokenKind == kind) return Advance();
 
             foreach (var kind2 in others)
-                if (current.Kind == kind2) return Advance();
+                if (current.TokenKind == kind2) return Advance();
 
             ReportError(ErrorMessage.ExpectedToken, current.Location, kind);
             var res = new SyntaxToken(kind, current.Location, current.Value, false);
@@ -79,7 +79,7 @@ namespace Compiler.Syntax
         {
             var builder = ImmutableArray.CreateBuilder<MemberSyntax>();
 
-            while (current.Kind != SyntaxTokenKind.EndOfFile)
+            while (current.TokenKind != SyntaxTokenKind.EndOfFile)
             {
                 var member = ParseMember();
                 builder.Add(member);
@@ -89,7 +89,7 @@ namespace Compiler.Syntax
 
         private MemberSyntax ParseMember()
         {
-            if (current.Kind == SyntaxTokenKind.FunctionDefinitionKeyword)
+            if (current.TokenKind == SyntaxTokenKind.FunctionDefinitionKeyword)
                 return ParseFunctionDeclaration();
             else return ParseGlobalStatement();
         }
@@ -110,7 +110,7 @@ namespace Compiler.Syntax
             var lparen = MatchToken(SyntaxTokenKind.LParen);
 
             SeperatedSyntaxList<ParameterSyntax> parameters;
-            if (current.Kind == SyntaxTokenKind.RParen)
+            if (current.TokenKind == SyntaxTokenKind.RParen)
                 parameters = SeperatedSyntaxList<ParameterSyntax>.Empty;
             else
                 parameters = ParseSeperatedSyntaxList<ParameterSyntax>(ParseParameter, SyntaxTokenKind.Comma);
@@ -136,7 +136,7 @@ namespace Compiler.Syntax
         private StatementSyntax ParseStatement()
         {
             isStatementValid = true;
-            switch (current.Kind)
+            switch (current.TokenKind)
             {
                 case SyntaxTokenKind.LCurly:
                     return ParseBlockStatement();
@@ -165,7 +165,7 @@ namespace Compiler.Syntax
         private StatementSyntax ParseReturnStatement()
         {
             var returnKeyword = MatchToken(SyntaxTokenKind.ReturnKeyword);
-            if (current.Kind == SyntaxTokenKind.VoidKeyword)
+            if (current.TokenKind == SyntaxTokenKind.VoidKeyword)
             {
                 var voidToken = MatchToken(SyntaxTokenKind.VoidKeyword);
                 var span = TextSpan.FromBounds(returnKeyword.Location.Span.Start, voidToken.Location.Span.End);
@@ -243,9 +243,9 @@ namespace Compiler.Syntax
             var lcurly = MatchToken(SyntaxTokenKind.LCurly);
 
             var builder = ImmutableArray.CreateBuilder<StatementSyntax>();
-            while (current.Kind != SyntaxTokenKind.RCurly)
+            while (current.TokenKind != SyntaxTokenKind.RCurly)
             {
-                if (current.Kind == SyntaxTokenKind.EndOfFile)
+                if (current.TokenKind == SyntaxTokenKind.EndOfFile)
                 {
                     ReportError(ErrorMessage.NeverClosedCurlyBrackets, new TextLocation(source, TextSpan.FromBounds(lcurly.Location.Span.Start, current.Location.Span.Start)));
                     break;
@@ -273,7 +273,7 @@ namespace Compiler.Syntax
 
         private TypeClauseSyntax ParseOptionalTypeClause()
         {
-            if (current.Kind == SyntaxTokenKind.Colon && Peak(1).Kind.IsTypeKeyword())
+            if (current.TokenKind == SyntaxTokenKind.Colon && Peak(1).TokenKind.IsTypeKeyword())
                 return ParseTypeClause();
 
             var loc = new TextLocation(source, current.Location.Span.Start, 0);
@@ -298,7 +298,7 @@ namespace Compiler.Syntax
 
             var left = ParseExpression(lvl - 1);
 
-            while (current.Kind.GetBinaryPrecedence() == lvl)
+            while (current.TokenKind.GetBinaryPrecedence() == lvl)
             {
                 var op = Advance();
                 var right = ParseExpression(lvl - 1);
@@ -311,28 +311,28 @@ namespace Compiler.Syntax
 
         private ExpressionSyntax ParsePrimaryExpression()
         {
-            if (SyntaxFacts.IsLiteralExpression(current.Kind))
+            if (SyntaxFacts.IsLiteralExpression(current.TokenKind))
             {
                 var literal = Advance();
                 return new LiteralExpressionSyntax(literal, isTreeValid, literal.Location);
             }
-            else if (current.Kind == SyntaxTokenKind.Identifier)
+            else if (current.TokenKind == SyntaxTokenKind.Identifier)
                 return ParseIdentifier();
-            else if (current.Kind.IsUnaryOperator())
+            else if (current.TokenKind.IsUnaryOperator())
             {
                 var op = Advance();
                 var expr = ParsePrimaryExpression();
                 var span = TextSpan.FromBounds(op.Location.Span.Start, expr.Location.Span.End);
                 return new UnaryExpressionSyntax(op, expr, isTreeValid, new TextLocation(source, span));
             }
-            else if (current.Kind == SyntaxTokenKind.LParen)
+            else if (current.TokenKind == SyntaxTokenKind.LParen)
                 return ParseParenthesizedExpression();
-            else if (SyntaxFacts.IsTypeKeyword(current.Kind))
+            else if (SyntaxFacts.IsTypeKeyword(current.TokenKind))
                 return ParseFunctionCall(Advance());
             else
             {
                 var token = Advance();
-                ReportError(ErrorMessage.UnexpectedToken, token.Location, token.Kind);
+                ReportError(ErrorMessage.UnexpectedToken, token.Location, token.TokenKind);
                 return new LiteralExpressionSyntax(token, false, token.Location);
             }
         }
@@ -342,7 +342,7 @@ namespace Compiler.Syntax
             var start = current.Location.Span.Start;
             MatchToken(SyntaxTokenKind.LParen);
             var expr = ParseExpression();
-            if (current.Kind != SyntaxTokenKind.RParen)
+            if (current.TokenKind != SyntaxTokenKind.RParen)
                 ReportError(ErrorMessage.NeverClosedParenthesis, new TextLocation(source, TextSpan.FromBounds(start, current.Location.Span.End)));
             MatchToken(SyntaxTokenKind.RParen);
             return expr;
@@ -353,7 +353,7 @@ namespace Compiler.Syntax
             var identifier = MatchToken(SyntaxTokenKind.Identifier);
             var start = identifier.Location.Span.Start;
 
-            switch (current.Kind)
+            switch (current.TokenKind)
             {
                 case SyntaxTokenKind.Equal:
                     var equalToken = Advance();
@@ -388,7 +388,7 @@ namespace Compiler.Syntax
 
             SeperatedSyntaxList<ExpressionSyntax> arguments;
 
-            if (current.Kind != SyntaxTokenKind.RParen)
+            if (current.TokenKind != SyntaxTokenKind.RParen)
                 arguments = ParseSeperatedSyntaxList<ExpressionSyntax>(ParseExpression, SyntaxTokenKind.Comma);
             else
                 arguments = SeperatedSyntaxList<ExpressionSyntax>.Empty;
@@ -400,7 +400,7 @@ namespace Compiler.Syntax
 
         private ElseStatementSyntax ParseElseClause()
         {
-            if (current.Kind != SyntaxTokenKind.ElseKeyword)
+            if (current.TokenKind != SyntaxTokenKind.ElseKeyword)
                 return null;
             var elseKeyword = Advance();
             var statement = ParseStatement();
@@ -417,15 +417,15 @@ namespace Compiler.Syntax
 
             while (true)
             {
-                if (current.Kind == SyntaxTokenKind.EndOfFile)
+                if (current.TokenKind == SyntaxTokenKind.EndOfFile)
                 {
-                    ReportError(ErrorMessage.UnexpectedToken, current.Location, current.Kind);
+                    ReportError(ErrorMessage.UnexpectedToken, current.Location, current.TokenKind);
                     break;
                 }
 
                 nodes.Add(function());
 
-                if (current.Kind != seperator)
+                if (current.TokenKind != seperator)
                     break;
 
                 seperators.Add(MatchToken(seperator));

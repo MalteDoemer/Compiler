@@ -337,6 +337,9 @@ namespace Compiler.Text
 
     public static class SyntaxNodePrinter
     {
-        
+        internal static void WriteSyntaxNode(this TextWriter writer, SyntaxNode node)
+        {
+
+        }
     }
 }
