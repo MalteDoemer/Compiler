@@ -19,7 +19,5 @@ namespace Compiler.Syntax
         public TypeClauseSyntax TypeClause { get; }
         public SyntaxToken EqualToken { get; }
         public ExpressionSyntax Expression { get; }
-
-        public override string ToString() => $"{VarKeyword.Value} {Identifier.Value}{TypeClause} = {Expression}";
     }
 }

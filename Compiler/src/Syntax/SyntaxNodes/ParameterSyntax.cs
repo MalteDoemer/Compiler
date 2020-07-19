@@ -12,8 +12,5 @@ namespace Compiler.Syntax
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ParameterSyntax;
         public SyntaxToken Identifier { get; }
         public TypeClauseSyntax TypeClause { get; }
-
-        public override string ToString() => $"{Identifier.Value}{TypeClause}";
     }
-
 }

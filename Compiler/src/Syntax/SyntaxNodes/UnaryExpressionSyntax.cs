@@ -12,7 +12,5 @@ namespace Compiler.Syntax
         public override SyntaxNodeKind Kind => SyntaxNodeKind.UnaryExpressionSyntax;
         public SyntaxToken Op { get; }
         public ExpressionSyntax Expression { get; }
-
-        public override string ToString() => $"({Op.Value}{Expression})";
     }
 }

@@ -11,7 +11,5 @@ namespace Compiler.Syntax
         
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ExpressionStatementSyntax;
         public ExpressionSyntax Expression { get; }
-
-        public override string ToString() => Expression.ToString();
     }
 }

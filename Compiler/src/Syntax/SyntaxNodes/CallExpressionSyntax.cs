@@ -18,7 +18,5 @@ namespace Compiler.Syntax
         public SyntaxToken LeftParenthesis { get; }
         public SyntaxToken RightParenthesis { get; }
         public SeperatedSyntaxList<ExpressionSyntax> Arguments { get; }
-
-        public override string ToString() => Identifier.Value.ToString() + "(" + Arguments.ToString() + ")";
     }
 }

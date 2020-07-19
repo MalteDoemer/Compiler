@@ -11,7 +11,5 @@ namespace Compiler.Syntax
 
         public override SyntaxNodeKind Kind => SyntaxNodeKind.LiteralExpressionSyntax;
         public SyntaxToken Literal { get; }
-
-        public override string ToString() => Literal.Value.ToString();
     }
 }

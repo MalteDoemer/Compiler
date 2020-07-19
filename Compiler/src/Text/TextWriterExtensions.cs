@@ -10,7 +10,7 @@ namespace Compiler.Text
 {
     public static class TextWriterExtensions
     {
-        private static bool IsConsole(this TextWriter writer)
+        internal static bool IsConsole(this TextWriter writer)
         {
             if (writer == Console.Out) return !Console.IsOutputRedirected;
             if (writer == Console.Error) return !Console.IsOutputRedirected && !Console.IsErrorRedirected;
@@ -18,13 +18,13 @@ namespace Compiler.Text
             return false;
         }
 
-        private static void SetForeground(this TextWriter writer, ConsoleColor color)
+        internal static void SetForeground(this TextWriter writer, ConsoleColor color)
         {
             if (writer.IsConsole())
                 Console.ForegroundColor = color;
         }
 
-        private static void ResetColor(this TextWriter writer)
+        internal static void ResetColor(this TextWriter writer)
         {
             if (writer.IsConsole())
                 Console.ResetColor();
@@ -86,6 +86,18 @@ namespace Compiler.Text
             graph.WriteTo(writer);
         }
 
+
+        internal static void WriteNumber(this IndentedTextWriter writer, object val) => writer.ColorWrite(val, ConsoleColor.DarkGreen);
+        internal static void WriteVariable(this IndentedTextWriter writer, string name) => writer.ColorWrite(name, ConsoleColor.Cyan);
+        internal static void WriteFunction(this IndentedTextWriter writer, string name) => writer.ColorWrite(name, ConsoleColor.Yellow);
+        internal static void WriteString(this IndentedTextWriter writer, string content) => writer.ColorWrite($"\"{content}\"", ConsoleColor.DarkCyan);
+        internal static void WriteMagentaKeyword(this IndentedTextWriter writer, string keyword) => writer.ColorWrite(keyword, ConsoleColor.Magenta);
+        internal static void WriteBlueKeyword(this IndentedTextWriter writer, string keyword) => writer.ColorWrite(keyword, ConsoleColor.Blue);
+        internal static void WriteSpace(this IndentedTextWriter writer, int len = 1) => writer.Write(new string(' ', len));
+    }
+
+    public static class BoundNodePrinter
+    {
         internal static void WriteBoundNode(this TextWriter writer, BoundNode node)
         {
             if (writer is IndentedTextWriter indented) WriteBoundNodeInternal(indented, node);
@@ -321,12 +333,10 @@ namespace Compiler.Text
             else writer.WriteBoundNode(node.Expression);
         }
 
-        private static void WriteNumber(this IndentedTextWriter writer, object val) => writer.ColorWrite(val, ConsoleColor.DarkGreen);
-        private static void WriteVariable(this IndentedTextWriter writer, string name) => writer.ColorWrite(name, ConsoleColor.Cyan);
-        private static void WriteFunction(this IndentedTextWriter writer, string name) => writer.ColorWrite(name, ConsoleColor.Yellow);
-        private static void WriteString(this IndentedTextWriter writer, string content) => writer.ColorWrite($"\"{content}\"", ConsoleColor.DarkCyan);
-        private static void WriteMagentaKeyword(this IndentedTextWriter writer, string keyword) => writer.ColorWrite(keyword, ConsoleColor.Magenta);
-        private static void WriteBlueKeyword(this IndentedTextWriter writer, string keyword) => writer.ColorWrite(keyword, ConsoleColor.Blue);
-        private static void WriteSpace(this IndentedTextWriter writer, int len = 1) => writer.Write(new string(' ', len));
+    }
+
+    public static class SyntaxNodePrinter
+    {
+        
     }
 }

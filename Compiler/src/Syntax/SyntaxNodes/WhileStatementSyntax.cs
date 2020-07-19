@@ -14,7 +14,5 @@ namespace Compiler.Syntax
         public SyntaxToken WhileToken { get; }
         public ExpressionSyntax Condition { get; }
         public StatementSyntax Body { get; }
-
-        public override string ToString() => $"while {Condition}\n{Body}";
     }
 }

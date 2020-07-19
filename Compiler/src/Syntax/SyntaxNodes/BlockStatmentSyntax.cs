@@ -18,20 +18,5 @@ namespace Compiler.Syntax
         public SyntaxToken OpenCurly { get; }
         public ImmutableArray<StatementSyntax> Statements { get; }
         public SyntaxToken CloseCurly { get; }
-
-        public override string ToString()
-        {
-            var builder = new StringBuilder();
-            builder.Append('{');
-            builder.AppendLine();
-            foreach (var stmt in Statements)
-            {
-                builder.Append(stmt);
-                builder.AppendLine();
-            }
-            builder.AppendLine();
-            builder.Append('}');
-            return builder.ToString();
-        }
     }
 }

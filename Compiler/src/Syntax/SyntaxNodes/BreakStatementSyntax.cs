@@ -12,7 +12,5 @@ namespace Compiler.Syntax
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.BreakStatementSyntax;
         public SyntaxToken BreakToken { get; }
-        
-        public override string ToString() => BreakToken.ToString();
     }
 }

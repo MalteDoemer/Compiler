@@ -14,7 +14,5 @@ namespace Compiler.Syntax
         public bool IsExplicit { get; }
         public SyntaxToken ColonToken { get; }
         public SyntaxToken TypeToken { get; }
-
-        public override string ToString() => $" : {TypeToken.Value}";
     }
 }

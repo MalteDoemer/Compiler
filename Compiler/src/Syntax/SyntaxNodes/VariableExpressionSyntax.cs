@@ -11,7 +11,5 @@ namespace Compiler.Syntax
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.VariableExpressionSyntax;
         public SyntaxToken Name { get; }
-
-        public override string ToString() => Name.Value.ToString();
     }
 }

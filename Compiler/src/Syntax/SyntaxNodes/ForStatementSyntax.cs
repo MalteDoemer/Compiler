@@ -21,7 +21,5 @@ namespace Compiler.Syntax
         public ExpressionSyntax Condition { get; }
         public ExpressionSyntax Increment { get; }
         public StatementSyntax Body { get; }
-
-        public override string ToString() => $"for {VariableDeclaration}, {Condition}, {Increment}\n{Body}";
     }
 }

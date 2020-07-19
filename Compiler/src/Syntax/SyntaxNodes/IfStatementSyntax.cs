@@ -16,7 +16,5 @@ namespace Compiler.Syntax
         public ExpressionSyntax Condition { get; }
         public StatementSyntax Body { get; }
         public ElseStatementSyntax ElseStatement { get; }
-
-        public override string ToString() => $"{IfToken.Value} ({Condition} {Body} {(ElseStatement == null ? "" : ElseStatement.ToString())})";
     }
 }

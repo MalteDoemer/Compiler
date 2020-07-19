@@ -12,6 +12,5 @@ namespace Compiler.Syntax
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ContinueStatementSyntax;
         public SyntaxToken ContinueToken { get; }
-        public override string ToString() => ContinueToken.ToString();
     }
 }

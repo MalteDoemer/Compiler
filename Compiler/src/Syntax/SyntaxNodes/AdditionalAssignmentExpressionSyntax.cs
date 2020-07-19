@@ -17,8 +17,5 @@ namespace Compiler.Syntax
         public SyntaxToken Identifier { get; }
         public SyntaxToken Op { get; }
         public ExpressionSyntax Expression { get; }
-
-
-        public override string ToString() => $"({Identifier} {Op.Value} {Expression})";
     }
 }

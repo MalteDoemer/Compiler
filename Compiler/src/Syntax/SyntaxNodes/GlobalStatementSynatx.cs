@@ -10,8 +10,5 @@ namespace Compiler.Syntax
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.GlobalStatementSynatx;
         public StatementSyntax Statement { get; }
-
-        public override string ToString() => Statement.ToString();
     }
-
 }

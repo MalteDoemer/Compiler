@@ -13,14 +13,5 @@ namespace Compiler.Syntax
         }
         public override SyntaxNodeKind Kind => SyntaxNodeKind.CompilationUnitSyntax;
         public ImmutableArray<MemberSyntax> Members { get; }
-
-        public override string ToString()
-        {
-            var builder = new StringBuilder();
-            foreach (var m in Members)
-                builder.Append(m.ToString() + '\n');
-            return builder.ToString();
-        }
     }
-
 }

@@ -22,8 +22,5 @@ namespace Compiler.Syntax
         public SeperatedSyntaxList<ParameterSyntax> Parameters { get; }
         public SyntaxToken RightParenthesis { get; }
         public BlockStatmentSyntax Body { get; }
-
-        public override string ToString() => $"{FunctionKeyword.Value} {Identifier.Value}({Parameters}){ReturnType}\n{Body}";
     }
-
 }

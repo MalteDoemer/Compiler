@@ -14,7 +14,5 @@ namespace Compiler.Syntax
         public override SyntaxNodeKind Kind => SyntaxNodeKind.PostIncDecExpressionSyntax;
         public SyntaxToken Identifier { get; }
         public SyntaxToken Op { get; }
-
-        public override string ToString() => $"({Identifier.Value}{Op.Value})";
     }
 }

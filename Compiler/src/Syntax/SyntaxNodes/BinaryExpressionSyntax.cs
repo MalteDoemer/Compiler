@@ -14,7 +14,5 @@ namespace Compiler.Syntax
         public SyntaxToken Op { get; }
         public ExpressionSyntax Left { get; }
         public ExpressionSyntax Right { get; }
-
-        public override string ToString() => $"({Left} {Op.Value} {Right})";
     }
 }

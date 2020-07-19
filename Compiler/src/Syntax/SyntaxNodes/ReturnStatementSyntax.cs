@@ -17,7 +17,5 @@ namespace Compiler.Syntax
         public SyntaxToken ReturnToken { get; }
         public ExpressionSyntax ReturnExpression { get; }
         public SyntaxToken VoidToken { get; }
-
-        public override string ToString() => $"return {(ReturnExpression == null ? " void" : ReturnExpression.ToString())}";
     }
 }
