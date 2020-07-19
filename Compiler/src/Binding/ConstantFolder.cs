@@ -270,8 +270,7 @@ namespace Compiler.Binding
                     case ("float", "any"):
                     case ("bool", "any"):
                     case ("str", "any"):
-                        res = value;
-                        break;
+                        return null;
                     default: throw new Exception($"Unexpected type ${typeToConvert}");
                 }
 
