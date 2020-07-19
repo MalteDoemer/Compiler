@@ -28,8 +28,10 @@ namespace Compiler.Text
 
         public override bool Equals(object obj) => obj is TextLocation location && Text == location.Text && Span == location.Span;
         public override int GetHashCode() => HashCode.Combine(Text, Span, StartLine, EndLine, StartCharacter, EndCharacter);
+        public override string ToString() => Text.ToString(Span);
 
         public static bool operator ==(TextLocation l, TextLocation r) => l.Text == r.Text && l.Span == r.Span;
         public static bool operator !=(TextLocation l, TextLocation r) => l.Text != r.Text || r.Span != r.Span;
+
     }
 }

@@ -21,8 +21,10 @@ namespace Compiler.Symbols
             Syntax = syntax;
         }
 
+
         public ImmutableArray<ParameterSymbol> Parameters { get; }
         public TypeSymbol ReturnType { get; }
         internal FunctionDeclarationSyntax Syntax { get; }
+        public bool Exists { get => this != Invalid; }
     }
 }

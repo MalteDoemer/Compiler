@@ -8,8 +8,14 @@ using Compiler.Syntax;
 
 namespace Compiler.Text
 {
-    public sealed class Colorizer
+    public sealed class ColorizedText : IEnumerable<ColorizedSpan>
     {
+        public ColorizedText(SourceText text, ImmutableArray<ColorizedSpan> spans)
+        {
+            Text = text;
+            Spans = spans;
+        }
+
         public static ColorizedText ColorizeTokens(SourceText text)
         {
             var lexer = new Lexer(text, true);
@@ -70,15 +76,6 @@ namespace Compiler.Text
             }
 
             return new ColorizedText(text, builder.MoveToImmutable());
-        }
-    }
-
-    public sealed class ColorizedText : IEnumerable<ColorizedSpan>
-    {
-        public ColorizedText(SourceText text, ImmutableArray<ColorizedSpan> spans)
-        {
-            Text = text;
-            Spans = spans;
         }
 
         public SourceText Text { get; }

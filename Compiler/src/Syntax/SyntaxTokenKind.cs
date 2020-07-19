@@ -3,7 +3,7 @@ namespace Compiler.Syntax
     public enum SyntaxTokenKind
     {
         // Special
-        End,
+        EndOfFile,
         Invalid,
         Int,
         Float,

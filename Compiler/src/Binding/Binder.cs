@@ -105,13 +105,23 @@ namespace Compiler.Binding
             else
             {
                 mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
-                var mainBody = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(new BoundReturnStatement(null, isProgramValid)), isProgramValid);
+                var mainBody = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
+                    new BoundNopStatement(isProgramValid),
+                    new BoundReturnStatement(null, isProgramValid)), isProgramValid);
                 functions.Add(mainFunction, mainBody);
             }
 
-            var globalStatements = Lowerer.Lower(null, new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid));
+            var globalFunction = FunctionSymbol.Invalid;
 
-            return new BoundProgram(declaredVariables, globalStatements.Statements, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
+            if (globalStatementBuilder.Count > 0)
+            {
+                globalFunction = new FunctionSymbol("$global", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
+                var globalBody = Lowerer.Lower(globalFunction, new BoundBlockStatement(globalStatementBuilder.ToImmutable(), isProgramValid));
+                functions.Add(globalFunction, globalBody);
+            }
+
+
+            return new BoundProgram(declaredVariables, globalFunction, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
         }
 
         private static BoundScope CreateRootScope()

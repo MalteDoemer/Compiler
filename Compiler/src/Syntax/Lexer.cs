@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
@@ -150,6 +151,14 @@ namespace Compiler.Syntax
                                 break;
 
                             default:
+                                if (ahead == '\0')
+                                {
+                                    diagnostics.ReportError(ErrorMessage.NeverClosedStringLiteral, new TextLocation(text, TextSpan.FromBounds(quoteStart, pos)));
+                                    valid = false;
+                                    done = true;
+                                    break;
+                                }
+
                                 var escapeStart = pos;
                                 var escapeEnd = pos + 2;
                                 var character = ahead;
@@ -213,7 +222,7 @@ namespace Compiler.Syntax
             var singleChar = LexSingleChar();
             if (singleChar != null) return singleChar;
 
-            if (current == '\0') return new SyntaxToken(SyntaxTokenKind.End, new TextLocation(text, pos, 0), "End");
+            if (current == '\0') return new SyntaxToken(SyntaxTokenKind.EndOfFile, new TextLocation(text, pos, 0), "End");
             else if (current == '"' || current == '\'') return LexString();
             else if (char.IsNumber(current)) return LexNumber();
             else if (char.IsWhiteSpace(current)) return LexSpace();
@@ -232,7 +241,7 @@ namespace Compiler.Syntax
                 var shouldYield = verbose ? true : (token.Kind != SyntaxTokenKind.Space && token.Kind != SyntaxTokenKind.Comment);
                 if (shouldYield)
                     yield return token;
-            } while (token.Kind != SyntaxTokenKind.End);
+            } while (token.Kind != SyntaxTokenKind.EndOfFile);
         }
     }
 }

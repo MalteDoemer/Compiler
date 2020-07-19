@@ -6,6 +6,7 @@ namespace Compiler.Symbols
     internal static class BuiltInFunctions
     {
         public static readonly FunctionSymbol Print = new FunctionSymbol("print", ImmutableArray.Create<ParameterSymbol>(new ParameterSymbol("text", 0, TypeSymbol.Any)), TypeSymbol.Void);
+        public static readonly FunctionSymbol PrintLine = new FunctionSymbol("println", ImmutableArray.Create<ParameterSymbol>(new ParameterSymbol("text", 0, TypeSymbol.Any)), TypeSymbol.Void);
         public static readonly FunctionSymbol Input = new FunctionSymbol("input", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.String);
         public static readonly FunctionSymbol Len = new FunctionSymbol("len", ImmutableArray.Create<ParameterSymbol>(new ParameterSymbol("str", 0, TypeSymbol.String)), TypeSymbol.Int);
         public static readonly FunctionSymbol Clear = new FunctionSymbol("clear", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
@@ -16,6 +17,7 @@ namespace Compiler.Symbols
         public static IEnumerable<FunctionSymbol> GetAll()
         {
             yield return Print;
+            yield return PrintLine;
             yield return Input;
             yield return Len;
             yield return Clear;

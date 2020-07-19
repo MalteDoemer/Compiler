@@ -73,7 +73,6 @@ namespace Compiler
                 ms.Seek(0, SeekOrigin.Begin);
                 var data = ms.ToArray();
                 var assembly = System.Reflection.Assembly.Load(data);
-                //var assembly = System.Reflection.Assembly.Load(ms.ToArray());
                 assembly.EntryPoint.Invoke(null, null);
             }
         }
@@ -108,5 +107,20 @@ namespace Compiler
 
         public static Compilation CompileScript(SourceText text, string[] referencePaths) => new Compilation(new[] { text }, referencePaths, true);
 
+        public string[] GetFunctionDeclarations()
+        {
+
+            var declarations = program.Functions.Keys.Where(f => f.Syntax != null).ToArray();
+            var res = new string[declarations.Length];
+
+            for (int i = 0; i < declarations.Length; i++)
+            {
+                var decl = declarations[i];
+                var location = decl.Syntax.Location;
+                res[i] = location.ToString();
+            }
+
+            return res;
+        }
     }
 }

@@ -79,7 +79,7 @@ namespace Compiler.Syntax
         {
             var builder = ImmutableArray.CreateBuilder<MemberSyntax>();
 
-            while (current.Kind != SyntaxTokenKind.End)
+            while (current.Kind != SyntaxTokenKind.EndOfFile)
             {
                 var member = ParseMember();
                 builder.Add(member);
@@ -245,7 +245,7 @@ namespace Compiler.Syntax
             var builder = ImmutableArray.CreateBuilder<StatementSyntax>();
             while (current.Kind != SyntaxTokenKind.RCurly)
             {
-                if (current.Kind == SyntaxTokenKind.End)
+                if (current.Kind == SyntaxTokenKind.EndOfFile)
                 {
                     ReportError(ErrorMessage.NeverClosedCurlyBrackets, new TextLocation(source, TextSpan.FromBounds(lcurly.Location.Span.Start, current.Location.Span.Start)));
                     break;
@@ -417,7 +417,7 @@ namespace Compiler.Syntax
 
             while (true)
             {
-                if (current.Kind == SyntaxTokenKind.End)
+                if (current.Kind == SyntaxTokenKind.EndOfFile)
                 {
                     ReportError(ErrorMessage.UnexpectedToken, current.Location, current.Kind);
                     break;

@@ -29,6 +29,7 @@ namespace Compiler.Emit
         private readonly MethodReference randomNextDoubleReference;
 
         private readonly MethodReference consoleWriteReference;
+        private readonly MethodReference consoleWriteLineReference;
         private readonly MethodReference cosnoleReadLineReference;
         private readonly MethodReference cosnoleClearReference;
         private readonly MethodReference stringConcatReference;
@@ -43,7 +44,7 @@ namespace Compiler.Emit
         private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
 
         private FieldDefinition randomDefiniton;
-        private MethodDefinition staticCtor;
+        private bool needsRandom;
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
@@ -85,6 +86,7 @@ namespace Compiler.Emit
 
             mainClass = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.Public, builtInTypes[TypeSymbol.Any]);
             consoleWriteReference = ResolveMethod("System.Console", "Write", "System.Void", "System.Object");
+            consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", "System.Void", "System.Object");
             cosnoleReadLineReference = ResolveMethod("System.Console", "ReadLine", "System.String");
             cosnoleClearReference = ResolveMethod("System.Console", "Clear", "System.Void");
             stringConcatReference = ResolveMethod("System.String", "Concat", "System.String", "System.String", "System.String");
@@ -98,12 +100,7 @@ namespace Compiler.Emit
             randomNextReference = ResolveMethod("System.Random", "Next", "System.Int32", "System.Int32", "System.Int32");
             randomNextDoubleReference = ResolveMethod("System.Random", "NextDouble", "System.Double");
 
-            const MethodAttributes attrs = MethodAttributes.SpecialName | MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.RTSpecialName;
-            staticCtor = new MethodDefinition(".cctor", attrs, builtInTypes[TypeSymbol.Void]);
-            mainClass.Methods.Add(staticCtor);
 
-            randomDefiniton = new FieldDefinition("random", FieldAttributes.Static | FieldAttributes.Private, randomTypeReference);
-            mainClass.Fields.Add(randomDefiniton);
         }
 
         public void Emit()
@@ -117,21 +114,32 @@ namespace Compiler.Emit
             foreach (var func in program.Functions.Keys)
                 EmitFunctionDecleration(func);
 
-            var ctorProcessor = staticCtor.Body.GetILProcessor();
-            ctorProcessor.Emit(OpCodes.Newobj, randomCtorReference);
-            ctorProcessor.Emit(OpCodes.Stsfld, randomDefiniton);
-
-            foreach (var stmt in program.GlobalStatements)
-                EmitStatement(ctorProcessor, stmt);
-
-            ctorProcessor.Emit(OpCodes.Ret);
-
-
             foreach (var func in program.Functions)
                 EmitFunctionBody(func.Key, func.Value);
 
+
+            if (program.GlobalFunction != FunctionSymbol.Invalid || needsRandom)
+            {
+                const MethodAttributes attrs = MethodAttributes.SpecialName | MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.RTSpecialName;
+                var staticCtor = new MethodDefinition(".cctor", attrs, builtInTypes[TypeSymbol.Void]);
+                mainClass.Methods.Add(staticCtor);
+                var ilProcessor = staticCtor.Body.GetILProcessor();
+
+                if (needsRandom)
+                {
+                    ilProcessor.Emit(OpCodes.Newobj, randomCtorReference);
+                    ilProcessor.Emit(OpCodes.Stsfld, randomDefiniton);
+                }
+
+                if (program.GlobalFunction.Exists)
+                    ilProcessor.Emit(OpCodes.Call, functions[program.GlobalFunction]);
+
+                ilProcessor.Emit(OpCodes.Ret);
+            }
+
             mainAssebly.MainModule.Types.Add(mainClass);
-            mainAssebly.EntryPoint = functions[program.MainFunction];
+            if (program.MainFunction.Exists)
+                mainAssebly.EntryPoint = functions[program.MainFunction];
         }
 
         public void WriteTo(string outputPath) => mainAssebly.Write(outputPath);
@@ -173,17 +181,16 @@ namespace Compiler.Emit
             locals.Clear();
             fixups.Clear();
             labels.Clear();
-            var ilProcesser = function.Body.GetILProcessor();
+            var ilProcessor = function.Body.GetILProcessor();
 
             foreach (var statement in body.Statements)
-                EmitStatement(ilProcesser, statement);
+                EmitStatement(ilProcessor, statement);
 
             foreach (var (index, label) in fixups)
             {
-                var targetInst = ilProcesser.Body.Instructions[labels[label]];
-                var instToFix = ilProcesser.Body.Instructions[index];
+                var targetInst = ilProcessor.Body.Instructions[labels[label]];
+                var instToFix = ilProcessor.Body.Instructions[index];
                 instToFix.Operand = targetInst;
-
             }
         }
 
@@ -500,6 +507,12 @@ namespace Compiler.Emit
         {
             if (node.Symbol == BuiltInFunctions.Random || node.Symbol == BuiltInFunctions.RandomFloat)
             {
+                if (randomDefiniton == null)
+                {
+                    randomDefiniton = new FieldDefinition("$random", FieldAttributes.Static | FieldAttributes.Private, randomTypeReference);
+                    mainClass.Fields.Add(randomDefiniton);
+                    needsRandom = true;
+                }
 
                 ilProcesser.Emit(OpCodes.Ldsfld, randomDefiniton);
             }
@@ -509,6 +522,8 @@ namespace Compiler.Emit
 
             if (node.Symbol == BuiltInFunctions.Print)
                 ilProcesser.Emit(OpCodes.Call, consoleWriteReference);
+            else if (node.Symbol == BuiltInFunctions.PrintLine)
+                ilProcesser.Emit(OpCodes.Call, consoleWriteLineReference);
             else if (node.Symbol == BuiltInFunctions.Input)
                 ilProcesser.Emit(OpCodes.Call, cosnoleReadLineReference);
             else if (node.Symbol == BuiltInFunctions.Len)
@@ -582,6 +597,7 @@ namespace Compiler.Emit
             {
                 var field = globalVariables[globalVariable];
                 EmitExpression(ilProcesser, node.Expression);
+                ilProcesser.Emit(OpCodes.Dup);
                 ilProcesser.Emit(OpCodes.Stsfld, field);
             }
             else if (node.Variable is LocalVariableSymbol localVariable)
