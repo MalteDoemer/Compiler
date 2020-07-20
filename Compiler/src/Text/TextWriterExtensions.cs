@@ -193,8 +193,21 @@ namespace Compiler.Text
                 case bool b:
                     writer.WriteBlueKeyword(b.ToString().ToLower()); break;
                 case string s:
-                    writer.WriteString(s); break;
+                    writer.WriteStringWithoutEscapeSequences(s);
+                    break;
             }
+        }
+
+        private static void WriteStringWithoutEscapeSequences(this IndentedTextWriter writer, string s)
+        {
+            s = s.Replace("\\", "\\\\");
+            s = s.Replace("\0", "\\0");
+            s = s.Replace("\n", "\\n");
+            s = s.Replace("\r", "\\r");
+            s = s.Replace("\t", "\\t");
+            s = s.Replace("\"", "\\\"");
+            s = s.Replace("\'", "\\'");
+            writer.WriteString(s);
         }
 
         private static void WriteBoundVariableExpression(this IndentedTextWriter writer, BoundVariableExpression node)
@@ -335,11 +348,4 @@ namespace Compiler.Text
 
     }
 
-    public static class SyntaxNodePrinter
-    {
-        internal static void WriteSyntaxNode(this TextWriter writer, SyntaxNode node)
-        {
-            
-        }
-    }
 }

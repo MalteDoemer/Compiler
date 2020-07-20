@@ -32,7 +32,7 @@ namespace Compiler.Syntax
 
             writer.ColorWrite(indent, ConsoleColor.White);
             writer.ColorWrite(marker, ConsoleColor.White);
-            if (token != null)
+            if (token is null)
             {
                 writer.ColorWrite(node.Kind, ConsoleColor.White);
             }

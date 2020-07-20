@@ -1,7 +1,9 @@
-var c = 36
-var text = input()
+def main() {
+    const c = 36
 
-def main()
-{
+    for var i = 0 i < c i++ {
+        print("Fett: " + i + "\n")
+    }
+
     input()
 }
