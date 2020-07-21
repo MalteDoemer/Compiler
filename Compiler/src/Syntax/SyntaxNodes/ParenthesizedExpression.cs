@@ -5,9 +5,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class ParenthesizedExpression : ExpressionSyntax
+    public sealed class ParenthesizedExpression : ExpressionSyntax
     {
-        public ParenthesizedExpression(SyntaxToken leftParenthesis, ExpressionSyntax expression, SyntaxToken rightParenthesis, bool isValid, TextLocation location) : base(isValid, location)
+        internal ParenthesizedExpression(SyntaxToken leftParenthesis, ExpressionSyntax expression, SyntaxToken rightParenthesis, bool isValid, TextLocation location) : base(isValid, location)
         {
             LeftParenthesis = leftParenthesis;
             Expression = expression;

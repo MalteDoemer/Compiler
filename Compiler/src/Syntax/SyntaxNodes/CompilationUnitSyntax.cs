@@ -6,9 +6,9 @@ using System.Collections.Generic;
 
 namespace Compiler.Syntax
 {
-    internal sealed class CompilationUnitSyntax : SyntaxNode
+    public sealed class CompilationUnitSyntax : SyntaxNode
     {
-        public CompilationUnitSyntax(ImmutableArray<MemberSyntax> members, bool isValid, TextLocation location) : base(isValid, location)
+        internal CompilationUnitSyntax(ImmutableArray<MemberSyntax> members, bool isValid, TextLocation location) : base(isValid, location)
         {
             Members = members;
         }

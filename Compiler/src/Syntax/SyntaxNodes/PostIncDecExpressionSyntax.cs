@@ -5,9 +5,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class PostIncDecExpressionSyntax : ExpressionSyntax
+    public sealed class PostIncDecExpressionSyntax : ExpressionSyntax
     {
-        public PostIncDecExpressionSyntax(SyntaxToken identifier, SyntaxToken op, bool isValid, TextLocation location) : base(isValid, location)
+        internal PostIncDecExpressionSyntax(SyntaxToken identifier, SyntaxToken op, bool isValid, TextLocation location) : base(isValid, location)
         {
             Identifier = identifier;
             Op = op;

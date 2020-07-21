@@ -5,9 +5,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class ContinueStatementSyntax : StatementSyntax
+    public sealed class ContinueStatementSyntax : StatementSyntax
     {
-        public ContinueStatementSyntax(SyntaxToken continueToken, bool isValid, TextLocation location) : base(isValid, location)
+        internal ContinueStatementSyntax(SyntaxToken continueToken, bool isValid, TextLocation location) : base(isValid, location)
         {
             ContinueToken = continueToken;
         }

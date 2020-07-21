@@ -5,9 +5,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class DoWhileStatementSyntax : StatementSyntax
+    public sealed class DoWhileStatementSyntax : StatementSyntax
     {
-        public DoWhileStatementSyntax(SyntaxToken doToken, StatementSyntax body, SyntaxToken whileToken, ExpressionSyntax condition, bool isValid, TextLocation location) : base(isValid, location)
+        internal DoWhileStatementSyntax(SyntaxToken doToken, StatementSyntax body, SyntaxToken whileToken, ExpressionSyntax condition, bool isValid, TextLocation location) : base(isValid, location)
         {
             DoToken = doToken;
             Body = body;

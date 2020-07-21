@@ -3,9 +3,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class ElseStatementSyntax : StatementSyntax
+    public sealed class ElseStatementSyntax : StatementSyntax
     {
-        public ElseStatementSyntax(SyntaxToken elseToken, StatementSyntax thenStatement, bool isValid, TextLocation location) : base(isValid, location)
+        internal ElseStatementSyntax(SyntaxToken elseToken, StatementSyntax thenStatement, bool isValid, TextLocation location) : base(isValid, location)
         {
             ElseToken = elseToken;
             Body = thenStatement;

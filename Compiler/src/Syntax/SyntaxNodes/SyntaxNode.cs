@@ -6,7 +6,7 @@ using Compiler.Text;
 namespace Compiler.Syntax
 {
 
-    internal abstract class SyntaxNode
+    public abstract class SyntaxNode
     {
         protected SyntaxNode(bool isValid, TextLocation location)
         {
@@ -17,7 +17,7 @@ namespace Compiler.Syntax
         public TextLocation Location { get; }
         public bool IsValid { get; }
         public abstract SyntaxNodeKind Kind { get; }
-
+        
         public abstract IEnumerable<SyntaxNode> GetChildren();
     }
 }

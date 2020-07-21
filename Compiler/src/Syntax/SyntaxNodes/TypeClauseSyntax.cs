@@ -3,9 +3,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class TypeClauseSyntax : SyntaxNode
+    public sealed class TypeClauseSyntax : SyntaxNode
     {
-        public TypeClauseSyntax(SyntaxToken colonToken, SyntaxToken typeToken, bool isExplicit, bool isValid, TextLocation location) : base(isValid, location)
+        internal TypeClauseSyntax(SyntaxToken colonToken, SyntaxToken typeToken, bool isExplicit, bool isValid, TextLocation location) : base(isValid, location)
         {
             ColonToken = colonToken;
             TypeToken = typeToken;

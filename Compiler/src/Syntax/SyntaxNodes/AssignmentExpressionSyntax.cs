@@ -3,9 +3,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class AssignmentExpressionSyntax : ExpressionSyntax
+    public sealed class AssignmentExpressionSyntax : ExpressionSyntax
     {
-        public AssignmentExpressionSyntax(SyntaxToken identifier, SyntaxToken equalToken, ExpressionSyntax expression, bool isValid, TextLocation location) : base(isValid, location)
+        internal AssignmentExpressionSyntax(SyntaxToken identifier, SyntaxToken equalToken, ExpressionSyntax expression, bool isValid, TextLocation location) : base(isValid, location)
         {
             Identifier = identifier;
             EqualToken = equalToken;

@@ -3,9 +3,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class GlobalStatementSynatx : MemberSyntax
+    public sealed class GlobalStatementSynatx : MemberSyntax
     {
-        public GlobalStatementSynatx(StatementSyntax statement, bool isValid, TextLocation location) : base(isValid, location)
+        internal GlobalStatementSynatx(StatementSyntax statement, bool isValid, TextLocation location) : base(isValid, location)
         {
             Statement = statement;
         }

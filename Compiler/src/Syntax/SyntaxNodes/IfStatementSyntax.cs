@@ -3,9 +3,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class IfStatementSyntax : StatementSyntax
+    public sealed class IfStatementSyntax : StatementSyntax
     {
-        public IfStatementSyntax(SyntaxToken ifToken, ExpressionSyntax condition, StatementSyntax body, ElseStatementSyntax elseStatement, bool isValid, TextLocation location) : base(isValid, location)
+        internal IfStatementSyntax(SyntaxToken ifToken, ExpressionSyntax condition, StatementSyntax body, ElseStatementSyntax elseStatement, bool isValid, TextLocation location) : base(isValid, location)
         {
             IfToken = ifToken;
             Condition = condition;

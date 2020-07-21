@@ -4,9 +4,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class VariableDeclarationStatementSyntax : StatementSyntax
+    public sealed class VariableDeclarationStatementSyntax : StatementSyntax
     {
-        public VariableDeclarationStatementSyntax(SyntaxToken varKeyword, SyntaxToken identifier, TypeClauseSyntax typeClause, SyntaxToken equalToken, ExpressionSyntax expression, bool isValid, TextLocation location) : base(isValid, location)
+        internal VariableDeclarationStatementSyntax(SyntaxToken varKeyword, SyntaxToken identifier, TypeClauseSyntax typeClause, SyntaxToken equalToken, ExpressionSyntax expression, bool isValid, TextLocation location) : base(isValid, location)
         {
             VarKeyword = varKeyword;
             Identifier = identifier;

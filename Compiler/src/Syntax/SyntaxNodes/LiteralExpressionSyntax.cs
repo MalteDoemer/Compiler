@@ -3,9 +3,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class LiteralExpressionSyntax : ExpressionSyntax
+    public sealed class LiteralExpressionSyntax : ExpressionSyntax
     {
-        public LiteralExpressionSyntax(SyntaxToken literal, bool isValid, TextLocation location) : base(isValid, location)
+        internal LiteralExpressionSyntax(SyntaxToken literal, bool isValid, TextLocation location) : base(isValid, location)
         {
             Literal = literal;
         }

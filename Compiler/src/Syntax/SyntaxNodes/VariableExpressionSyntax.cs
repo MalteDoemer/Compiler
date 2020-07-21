@@ -3,10 +3,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class VariableExpressionSyntax : ExpressionSyntax
+    public sealed class VariableExpressionSyntax : ExpressionSyntax
     {
-
-        public VariableExpressionSyntax(SyntaxToken name, bool isValid, TextLocation location) : base(isValid, location)
+        internal VariableExpressionSyntax(SyntaxToken name, bool isValid, TextLocation location) : base(isValid, location)
         {
             Name = name;
         }

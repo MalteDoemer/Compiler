@@ -5,9 +5,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class ReturnStatementSyntax : StatementSyntax
+    public sealed class ReturnStatementSyntax : StatementSyntax
     {
-        public ReturnStatementSyntax(SyntaxToken returnToken, ExpressionSyntax returnExpression, SyntaxToken voidToken, bool isValid, TextLocation location) : base(isValid, location)
+        internal ReturnStatementSyntax(SyntaxToken returnToken, ExpressionSyntax returnExpression, SyntaxToken voidToken, bool isValid, TextLocation location) : base(isValid, location)
         {
             ReturnToken = returnToken;
             ReturnExpression = returnExpression;

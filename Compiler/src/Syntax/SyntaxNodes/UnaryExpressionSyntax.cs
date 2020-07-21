@@ -3,9 +3,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class UnaryExpressionSyntax : ExpressionSyntax
+    public sealed class UnaryExpressionSyntax : ExpressionSyntax
     {
-        public UnaryExpressionSyntax(SyntaxToken op, ExpressionSyntax expression, bool isValid, TextLocation location) : base(isValid, location)
+        internal UnaryExpressionSyntax(SyntaxToken op, ExpressionSyntax expression, bool isValid, TextLocation location) : base(isValid, location)
         {
             Op = op;
             Expression = expression;

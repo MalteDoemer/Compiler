@@ -3,9 +3,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class ParameterSyntax : SyntaxNode
+    public sealed class ParameterSyntax : SyntaxNode
     {
-        public ParameterSyntax(SyntaxToken identifier, TypeClauseSyntax typeClause, bool isValid, TextLocation location) : base(isValid, location)
+        internal ParameterSyntax(SyntaxToken identifier, TypeClauseSyntax typeClause, bool isValid, TextLocation location) : base(isValid, location)
         {
             Identifier = identifier;
             TypeClause = typeClause;

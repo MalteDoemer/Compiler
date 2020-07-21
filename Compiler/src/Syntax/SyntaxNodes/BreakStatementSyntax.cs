@@ -5,9 +5,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class BreakStatementSyntax : StatementSyntax
+    public sealed class BreakStatementSyntax : StatementSyntax
     {
-        public BreakStatementSyntax(SyntaxToken breakToken, bool isValid, TextLocation location) : base(isValid, location)
+        internal BreakStatementSyntax(SyntaxToken breakToken, bool isValid, TextLocation location) : base(isValid, location)
         {
             BreakToken = breakToken;
         }

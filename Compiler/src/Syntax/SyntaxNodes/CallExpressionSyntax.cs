@@ -5,9 +5,9 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    internal sealed class CallExpressionSyntax : ExpressionSyntax
+    public sealed class CallExpressionSyntax : ExpressionSyntax
     {
-        public CallExpressionSyntax(SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ExpressionSyntax> arguments, SyntaxToken rightParenthesis, bool isValid, TextLocation location) : base(isValid, location)
+        internal CallExpressionSyntax(SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ExpressionSyntax> arguments, SyntaxToken rightParenthesis, bool isValid, TextLocation location) : base(isValid, location)
         {
             Identifier = identifier;
             LeftParenthesis = leftParenthesis;
@@ -17,8 +17,8 @@ namespace Compiler.Syntax
         public override SyntaxNodeKind Kind => SyntaxNodeKind.CallExpressionSyntax;
         public SyntaxToken Identifier { get; }
         public SyntaxToken LeftParenthesis { get; }
-        public SyntaxToken RightParenthesis { get; }
         public SeperatedSyntaxList<ExpressionSyntax> Arguments { get; }
+        public SyntaxToken RightParenthesis { get; }
 
         public override IEnumerable<SyntaxNode> GetChildren()
         {

@@ -7,9 +7,9 @@ using System.Collections.Generic;
 
 namespace Compiler.Syntax
 {
-    internal sealed class BlockStatmentSyntax : StatementSyntax
+    public sealed class BlockStatmentSyntax : StatementSyntax
     {
-        public BlockStatmentSyntax(SyntaxToken openCurly, ImmutableArray<StatementSyntax> statements, SyntaxToken closeCurly, bool isValid, TextLocation location) : base(isValid, location)
+        internal BlockStatmentSyntax(SyntaxToken openCurly, ImmutableArray<StatementSyntax> statements, SyntaxToken closeCurly, bool isValid, TextLocation location) : base(isValid, location)
         {
             OpenCurly = openCurly;
             Statements = statements;
