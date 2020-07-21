@@ -278,7 +278,7 @@ namespace Compiler.Syntax
 
             var loc = new TextLocation(source, current.Location.Span.Start, 0);
             var colon = new SyntaxToken(SyntaxTokenKind.Colon, loc, ':');
-            var typeToken = new SyntaxToken(SyntaxTokenKind.AnyKeyword, loc, SyntaxTokenKind.AnyKeyword.GetStringRepresentation());
+            var typeToken = new SyntaxToken(SyntaxTokenKind.AnyKeyword, loc, SyntaxTokenKind.AnyKeyword.GetText());
             return new TypeClauseSyntax(colon, typeToken, isExplicit: false, isValid: isTreeValid, loc);
         }
 

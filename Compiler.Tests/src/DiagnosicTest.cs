@@ -147,7 +147,7 @@ namespace Compiler.Test
 
             var typeText1 = GetSampleText(t1);
             var typeText2 = GetSampleText(t2);
-            var operatorText = SyntaxFacts.GetStringRepresentation(op);
+            var operatorText = SyntaxFacts.GetText(op);
             var text = $"{typeText1} [{operatorText}] {typeText2}";
 
             AssertDiagnostic(text, ErrorMessage.UnsupportedBinaryOperator, operatorText, t1, t2);
@@ -166,7 +166,7 @@ namespace Compiler.Test
                 return;
 
             var typeText = GetSampleText(type);
-            var operatorText = SyntaxFacts.GetStringRepresentation(op);
+            var operatorText = SyntaxFacts.GetText(op);
             var text = $"[{operatorText}]{typeText}";
 
             AssertDiagnostic(text, ErrorMessage.UnsupportedUnaryOperator, operatorText, type);

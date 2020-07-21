@@ -14,8 +14,8 @@ namespace Compiler.Test
         [MemberData(nameof(GetBinaryOperatorData))]
         public static void Parser_Honors_Binary_Precedence(SyntaxTokenKind op1, SyntaxTokenKind op2)
         {
-            var op1Text = op1.GetStringRepresentation();
-            var op2Text = op2.GetStringRepresentation();
+            var op1Text = op1.GetText();
+            var op2Text = op2.GetText();
 
             var op1Precedence = op1.GetBinaryPrecedence();
             var op2Precedence = op2.GetBinaryPrecedence();

@@ -163,7 +163,7 @@ namespace Compiler.Syntax
 
         }
 
-        public static string GetStringRepresentation(this SyntaxTokenKind kind)
+        public static string GetText(this SyntaxTokenKind kind)
         {
             switch (kind)
             {
