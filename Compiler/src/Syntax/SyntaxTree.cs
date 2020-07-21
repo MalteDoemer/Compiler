@@ -22,7 +22,7 @@ namespace Compiler.Syntax
         }
 
         public SourceText Text { get; }
-        internal CompilationUnitSyntax Root { get; }
+        public CompilationUnitSyntax Root { get; }
 
         private void PrettyPrint(TextWriter writer, SyntaxNode node, string indent = "", bool isLast = true)
         {
@@ -64,10 +64,10 @@ namespace Compiler.Syntax
 
         public static SyntaxTree ParseSyntaxTree(SourceText sourceText, bool isScript) => new SyntaxTree(sourceText, isScript);
 
-        public static ImmutableArray<SyntaxTokenKind> Tokenize(SourceText sourceText)
+        public static ImmutableArray<SyntaxToken> Tokenize(SourceText sourceText)
         {
             var lexer = new Lexer(sourceText, true);
-            return lexer.Tokenize().Select(t => t.TokenKind).ToImmutableArray();
+            return lexer.Tokenize().ToImmutableArray();
         }
     }
 }

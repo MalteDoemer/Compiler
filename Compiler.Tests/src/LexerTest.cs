@@ -16,8 +16,8 @@ namespace Compiler.Test
         {
             var tokens = SyntaxTree.Tokenize(new SourceText(text,null));
             Assert.Equal(2, tokens.Length);
-            Assert.Equal(kind, tokens[0]);
-            Assert.Equal(SyntaxTokenKind.EndOfFile, tokens[1]);
+            Assert.Equal(kind, tokens[0].TokenKind);
+            Assert.Equal(SyntaxTokenKind.EndOfFile, tokens[1].TokenKind);
         }
 
         public static IEnumerable<object[]> GetAllTokenData()
