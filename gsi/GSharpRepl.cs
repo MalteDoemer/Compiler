@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Compiler;
 using Compiler.Text;
 using Compiler.Syntax;
+using System.IO;
 
 namespace gsi
 {
@@ -19,13 +20,15 @@ namespace gsi
 
         private readonly Stack<string> history = new Stack<string>();
         private string previous = "";
-        private string text = "";
+        private Compilation compilation;
+
+        private string outDir = Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]);
 
         protected override void EvaluateSubmission(string text)
         {
-            this.text = previous + text;
-            var src = new SourceText(this.text, "<stdin>");
-            var compilation = Compilation.CompileScript(src, Compilation.StandardReferencePaths);
+            text = previous + text;
+            var src = new SourceText(text, "<stdin>");
+            compilation = Compilation.CompileScript(src, Compilation.StandardReferencePaths);
             Console.WriteLine();
             compilation.Evaluate();
             compilation.Diagnostics.WriteTo(Console.Out);
@@ -74,7 +77,6 @@ namespace gsi
         [MetaCommand("dumpf", "Displays the bound tree of the specified function")]
         private void DumpfCommand(string function)
         {
-            var compilation = Compilation.CompileScript(new SourceText(text, "<stdin>"), Compilation.StandardReferencePaths);
             Console.WriteLine();
             compilation.Diagnostics.WriteTo(Console.Out);
 
@@ -85,7 +87,6 @@ namespace gsi
         [MetaCommand("dump", "Displays the bound tree")]
         private void DumpCommand()
         {
-            var compilation = Compilation.CompileScript(new SourceText(text, "<stdin>"), Compilation.StandardReferencePaths);
             Console.WriteLine();
             compilation.Diagnostics.WriteTo(Console.Out);
 
@@ -97,9 +98,28 @@ namespace gsi
         private void PrintCommand()
         {
             Console.WriteLine();
-            var src = new SourceText(text, "<stdin>");
+            var src = compilation.SourceTexts.Single();
             var tree = SyntaxTree.ParseSyntaxTree(src, true);
             tree.WriteTo(Console.Out);
+        }
+
+        [MetaCommand("graph", "Outputs the control-flow graph")]
+        private void GraphCommand(string function)
+        {
+            using (var writer = new StreamWriter(outDir + $"\\{function}.dot"))
+                compilation.WriteControlFlowGraph(writer, function);
+        }
+
+        [MetaCommand("set-out", "Sets the output directory for various functions")]
+        private void GraphPathCommand(string path)
+        {
+            outDir = path;
+        }
+
+        [MetaCommand("emit", "Writes the assembly to disk")]
+        private void EmitCommand()
+        {
+            compilation.Emit("Main", outDir + "\\Main.dll");
         }
     }
 }

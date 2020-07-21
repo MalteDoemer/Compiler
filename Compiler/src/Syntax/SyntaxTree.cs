@@ -38,7 +38,7 @@ namespace Compiler.Syntax
             }
             else
             {
-                writer.ColorWrite(token.Kind);
+                writer.ColorWrite(token.TokenKind);
                 var colorized = ColorizedText.ColorizeToken(token, null);
                 writer.ColorWrite(" ");
                 writer.ColorWrite(token.Location.ToString(), colorized.Color);
