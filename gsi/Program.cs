@@ -1,11 +1,21 @@
-﻿namespace gsi
+﻿using System;
+
+namespace gsi
 {
     public static class Program
     {
         private static void Main(string[] args)
         {
-            var repl = new GSharpRepl();
-            repl.Run();
+            try
+            {
+                var repl = new GSharpRepl();
+                repl.Run();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.ReadLine();
+            }
         }
     }
 }

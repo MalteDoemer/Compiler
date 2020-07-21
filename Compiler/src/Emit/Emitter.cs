@@ -76,7 +76,7 @@ namespace Compiler.Emit
                 }
             }
 
-            builtInTypes.Add(TypeSymbol.Any, ResolveType("System.Object"));
+            builtInTypes.Add(TypeSymbol.Obj, ResolveType("System.Object"));
             builtInTypes.Add(TypeSymbol.Int, ResolveType("System.Int32"));
             builtInTypes.Add(TypeSymbol.Float, ResolveType("System.Double"));
             builtInTypes.Add(TypeSymbol.Bool, ResolveType("System.Boolean"));
@@ -84,7 +84,7 @@ namespace Compiler.Emit
             builtInTypes.Add(TypeSymbol.Void, ResolveType("System.Void"));
             randomTypeReference = ResolveType("System.Random");
 
-            mainClass = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.Public, builtInTypes[TypeSymbol.Any]);
+            mainClass = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.Public, builtInTypes[TypeSymbol.Obj]);
             consoleWriteReference = ResolveMethod("System.Console", "Write", "System.Void", "System.Object");
             consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", "System.Void", "System.Object");
             cosnoleReadLineReference = ResolveMethod("System.Console", "ReadLine", "System.String");
@@ -352,6 +352,10 @@ namespace Compiler.Emit
             {
                 ilProcesser.Emit(OpCodes.Ldstr, s);
             }
+            else if (value is null) 
+            {
+                ilProcesser.Emit(OpCodes.Ldnull);
+            }
             else throw new Exception($"Unexpected constant type ${value.GetType()}");
         }
 
@@ -418,7 +422,7 @@ namespace Compiler.Emit
                 return;
             }
 
-            if (node.Op == BoundBinaryOperator.EqualEqual && leftType == TypeSymbol.Any && rightType == TypeSymbol.Any)
+            if (node.Op == BoundBinaryOperator.EqualEqual && leftType == TypeSymbol.Obj && rightType == TypeSymbol.Obj)
             {
                 ilProcesser.Emit(OpCodes.Call, objectEqualsReference);
                 return;
@@ -432,7 +436,7 @@ namespace Compiler.Emit
                 return;
             }
 
-            if (node.Op == BoundBinaryOperator.NotEqual && leftType == TypeSymbol.Any && rightType == TypeSymbol.Any)
+            if (node.Op == BoundBinaryOperator.NotEqual && leftType == TypeSymbol.Obj && rightType == TypeSymbol.Obj)
             {
                 ilProcesser.Emit(OpCodes.Callvirt, objectEqualsReference);
                 ilProcesser.Emit(OpCodes.Ldc_I4_0);

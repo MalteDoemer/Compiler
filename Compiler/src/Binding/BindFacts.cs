@@ -59,8 +59,8 @@ namespace Compiler.Binding
             {(TypeSymbol.String, TypeSymbol.String, BoundBinaryOperator.NotEqual), TypeSymbol.Bool},
             {(TypeSymbol.String, TypeSymbol.String, BoundBinaryOperator.EqualEqual), TypeSymbol.Bool},
 
-            {(TypeSymbol.Any, TypeSymbol.Any, BoundBinaryOperator.NotEqual), TypeSymbol.Bool},
-            {(TypeSymbol.Any, TypeSymbol.Any, BoundBinaryOperator.EqualEqual), TypeSymbol.Bool},
+            {(TypeSymbol.Obj, TypeSymbol.Obj, BoundBinaryOperator.NotEqual), TypeSymbol.Bool},
+            {(TypeSymbol.Obj, TypeSymbol.Obj, BoundBinaryOperator.EqualEqual), TypeSymbol.Bool},
 
             {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.EqualEqual), TypeSymbol.Bool},
             {(TypeSymbol.Bool, TypeSymbol.Bool, BoundBinaryOperator.NotEqual), TypeSymbol.Bool},
@@ -123,7 +123,7 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.StringKeyword: return TypeSymbol.String;
                 case SyntaxTokenKind.BoolKeyword: return TypeSymbol.Bool;
                 case SyntaxTokenKind.VoidKeyword: return TypeSymbol.Void;
-                case SyntaxTokenKind.ObjKeyword: return TypeSymbol.Any;
+                case SyntaxTokenKind.ObjKeyword: return TypeSymbol.Obj;
                 default: return TypeSymbol.ErrorType;
             }
         }
@@ -134,7 +134,7 @@ namespace Compiler.Binding
 
             if (from == to) return ConversionType.Identety;
 
-            if (to == TypeSymbol.Any || from == TypeSymbol.Any) return ConversionType.Implicit;
+            if (to == TypeSymbol.Obj || from == TypeSymbol.Obj) return ConversionType.Implicit;
 
             switch (from.Name, to.Name)
             {
