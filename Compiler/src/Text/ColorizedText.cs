@@ -58,7 +58,7 @@ namespace Compiler.Text
                 case SyntaxTokenKind.FloatKeyword:
                 case SyntaxTokenKind.StringKeyword:
                 case SyntaxTokenKind.BoolKeyword:
-                case SyntaxTokenKind.ConstKeyword:
+                case SyntaxTokenKind.LetKeyword:
                 case SyntaxTokenKind.FuncKeyword:
                     return new ColorizedToken(token, ConsoleColor.Blue);
                 case SyntaxTokenKind.String:

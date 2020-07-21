@@ -8,7 +8,7 @@ namespace Compiler.Binding
         public BoundVariableExpression(VariableSymbol variable, bool isValid) : base(isValid)
         {
             Variable = variable;
-            if (isValid)
+            if (isValid && variable != null)
                 Constant = variable.Constant;
         }
 

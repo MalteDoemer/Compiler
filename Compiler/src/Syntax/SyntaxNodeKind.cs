@@ -31,5 +31,7 @@ namespace Compiler.Syntax
         ReturnStatementSyntax,
         SyntaxToken,
         ParenthesizedExpression,
+        SwitchStatementSyntax,
+        CaseStatementSyntax,
     }
 }

@@ -25,7 +25,7 @@ namespace Compiler.Binding
                 return true;
             else if (Parent == null)
             {
-                value = VariableSymbol.Invalid;
+                value = null;
                 return false;
             }
             return Parent.TryLookUpVariable(identifier, out value);

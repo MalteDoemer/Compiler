@@ -33,16 +33,6 @@ namespace Compiler.Syntax
             }
         }
 
-        internal static IEnumerable<SyntaxTokenKind> GetTypeKeywords()
-        {
-            yield return SyntaxTokenKind.IntKeyword;
-            yield return SyntaxTokenKind.FloatKeyword;
-            yield return SyntaxTokenKind.BoolKeyword;
-            yield return SyntaxTokenKind.StringKeyword;
-            yield return SyntaxTokenKind.ObjKeyword;
-            yield return SyntaxTokenKind.VoidKeyword;
-        }
-
         internal static bool IsTypeKeyword(this SyntaxTokenKind kind)
         {
             switch (kind)
@@ -128,10 +118,13 @@ namespace Compiler.Syntax
                 case "do": return SyntaxTokenKind.DoKeyword;
                 case "for": return SyntaxTokenKind.ForKeyword;
                 case "func": return SyntaxTokenKind.FuncKeyword;
-                case "const": return SyntaxTokenKind.ConstKeyword;
+                case "let": return SyntaxTokenKind.LetKeyword;
                 case "continue": return SyntaxTokenKind.ContinueKeyword;
                 case "break": return SyntaxTokenKind.BreakKewyword;
                 case "return": return SyntaxTokenKind.ReturnKeyword;
+                case "switch": return SyntaxTokenKind.SwitchKeyword;
+                case "case": return SyntaxTokenKind.CaseKeyword;
+                case "default": return SyntaxTokenKind.DefaultKeyword;
                 default: return null;
             }
         }
@@ -218,10 +211,13 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.WhileKeyword: return "while";
                 case SyntaxTokenKind.ForKeyword: return "for";
                 case SyntaxTokenKind.FuncKeyword: return "func";
-                case SyntaxTokenKind.ConstKeyword: return "const";
+                case SyntaxTokenKind.LetKeyword: return "let";
                 case SyntaxTokenKind.ContinueKeyword: return "continue";
                 case SyntaxTokenKind.BreakKewyword: return "break";
                 case SyntaxTokenKind.ReturnKeyword: return "return";
+                case SyntaxTokenKind.SwitchKeyword: return "switch";
+                case SyntaxTokenKind.CaseKeyword: return "case";
+                case SyntaxTokenKind.DefaultKeyword: return "default";
                 default: return null;
             }
         }

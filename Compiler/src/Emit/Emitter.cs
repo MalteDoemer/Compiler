@@ -225,7 +225,7 @@ namespace Compiler.Emit
 
         private void EmitVariableDeclarationStatement(ILProcessor ilProcesser, BoundVariableDeclarationStatement node)
         {
-            if (node.Variable.IsConst)
+            if (node.Variable.Constant != null)
                 return;
 
             if (node.Variable is GlobalVariableSymbol globalVariable)
@@ -590,7 +590,7 @@ namespace Compiler.Emit
 
         private void EmitAssignmentExpression(ILProcessor ilProcesser, BoundAssignmentExpression node)
         {
-            if (node.Variable.IsConst)
+            if (node.Variable.IsReadOnly)
                 return;
 
             if (node.Variable is GlobalVariableSymbol globalVariable)

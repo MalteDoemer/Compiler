@@ -42,15 +42,14 @@ namespace Compiler.Syntax
             isTreeValid = false;
         }
 
-        private SyntaxToken MatchToken(SyntaxTokenKind kind, params SyntaxTokenKind[] others)
+        private SyntaxToken MatchToken(params SyntaxTokenKind[] kinds)
         {
-            if (current.TokenKind == kind) return Advance();
+            foreach (var kind in kinds)
+                if (current.TokenKind == kind) return Advance();
 
-            foreach (var kind2 in others)
-                if (current.TokenKind == kind2) return Advance();
 
-            ReportError(ErrorMessage.ExpectedToken, current.Location, kind);
-            var res = new SyntaxToken(kind, current.Location, current.Value, false);
+            ReportError(ErrorMessage.ExpectedToken, current.Location, string.Join("/", kinds));
+            var res = new SyntaxToken(kinds.FirstOrDefault(), current.Location, current.Value, false);
             pos++;
             return res;
         }
@@ -149,7 +148,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.DoKeyword:
                     return ParseDoWhileStatement();
                 case SyntaxTokenKind.VarKeyword:
-                case SyntaxTokenKind.ConstKeyword:
+                case SyntaxTokenKind.LetKeyword:
                     return ParseVariableDeclaration();
                 case SyntaxTokenKind.BreakKewyword:
                     return ParseBreakStatement();
@@ -157,9 +156,32 @@ namespace Compiler.Syntax
                     return ParseContinueStatement();
                 case SyntaxTokenKind.ReturnKeyword:
                     return ParseReturnStatement();
+                //case SyntaxTokenKind.SwitchKeyword:
+                    //return ParseSwitchStatement();
                 default:
                     return ParseExpressionStatement();
             }
+        }
+
+        private StatementSyntax ParseSwitchStatement()
+        {
+            var switchToken = MatchToken(SyntaxTokenKind.SwitchKeyword);
+            var switchOn = ParseExpression();
+            var lcurly = MatchToken(SyntaxTokenKind.LCurly);
+            var cases = ParseCaseStatements();
+            var rcurly = MatchToken(SyntaxTokenKind.RCurly);
+            var span = TextSpan.FromBounds(switchOn.Location.Span.Start, rcurly.Location.Span.End);
+            return new SwitchStatementSyntax(switchToken, switchOn, lcurly, cases, rcurly, isTreeValid, new TextLocation(source, span)); ;
+        }
+
+        private ImmutableArray<CaseStatementSyntax> ParseCaseStatements()
+        {
+            throw new NotImplementedException();
+        }
+
+        private CaseStatementSyntax ParseCaseStatement()
+        {
+            throw new NotImplementedException();
         }
 
         private StatementSyntax ParseReturnStatement()
@@ -262,7 +284,7 @@ namespace Compiler.Syntax
 
         private VariableDeclarationStatementSyntax ParseVariableDeclaration()
         {
-            var declareKeyword = MatchToken(SyntaxTokenKind.VarKeyword, SyntaxTokenKind.ConstKeyword);
+            var declareKeyword = MatchToken(SyntaxTokenKind.VarKeyword, SyntaxTokenKind.LetKeyword);
             var identifier = MatchToken(SyntaxTokenKind.Identifier);
             var type = ParseOptionalTypeClause();
             var equalToken = MatchToken(SyntaxTokenKind.Equal);
@@ -273,7 +295,7 @@ namespace Compiler.Syntax
 
         private TypeClauseSyntax ParseOptionalTypeClause()
         {
-            if (current.TokenKind == SyntaxTokenKind.Colon && Peak(1).TokenKind.IsTypeKeyword())
+            if (current.TokenKind == SyntaxTokenKind.Colon)
                 return ParseTypeClause();
 
             var loc = new TextLocation(source, current.Location.Span.Start, 0);
@@ -285,7 +307,13 @@ namespace Compiler.Syntax
         private TypeClauseSyntax ParseTypeClause()
         {
             var colon = MatchToken(SyntaxTokenKind.Colon);
-            var typeToken = MatchToken(SyntaxTokenKind.ObjKeyword, SyntaxFacts.GetTypeKeywords().ToArray());
+            var typeToken = MatchToken(SyntaxTokenKind.ObjKeyword,
+                                       SyntaxTokenKind.IntKeyword,
+                                       SyntaxTokenKind.FloatKeyword,
+                                       SyntaxTokenKind.BoolKeyword,
+                                       SyntaxTokenKind.StringKeyword,
+                                       SyntaxTokenKind.VoidKeyword);
+
             var span = TextSpan.FromBounds(colon.Location.Span.Start, typeToken.Location.Span.End);
             return new TypeClauseSyntax(colon, typeToken, isExplicit: true, isTreeValid, new TextLocation(source, span));
         }

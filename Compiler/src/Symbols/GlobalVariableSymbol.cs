@@ -5,7 +5,7 @@ namespace Compiler.Symbols
 {
     public sealed class GlobalVariableSymbol : VariableSymbol
     {
-        internal GlobalVariableSymbol(string name, TypeSymbol type, bool isConst = false, BoundConstant constant = null) : base(name, type, isConst, constant)
+        internal GlobalVariableSymbol(string name, TypeSymbol type, bool isReadOnly = false, BoundConstant constant = null) : base(name, type, isReadOnly, constant)
         {
         }
     }

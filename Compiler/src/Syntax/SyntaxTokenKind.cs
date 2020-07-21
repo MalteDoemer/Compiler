@@ -73,7 +73,7 @@ namespace Compiler.Syntax
 
         // Declaring keywords
         VarKeyword,
-        ConstKeyword,
+        LetKeyword,
         FuncKeyword,
 
         // Control flow keywords
@@ -85,5 +85,8 @@ namespace Compiler.Syntax
         ContinueKeyword,
         BreakKewyword,
         ReturnKeyword,
+        SwitchKeyword,
+        CaseKeyword,
+        DefaultKeyword,
     }
 }

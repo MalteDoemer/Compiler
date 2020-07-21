@@ -17,7 +17,7 @@ namespace Compiler.Syntax
         public TextLocation Location { get; }
         public bool IsValid { get; }
         public abstract SyntaxNodeKind Kind { get; }
-        
+
         public abstract IEnumerable<SyntaxNode> GetChildren();
     }
 }

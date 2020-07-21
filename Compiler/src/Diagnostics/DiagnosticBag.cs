@@ -28,7 +28,7 @@ namespace Compiler.Diagnostics
            "Duplicated parameter '{0}'.",
            "Function '{0}' is already declared",
            "Statement isn't a global statement.",
-           "Cannot assign a value to the constant '{0}'.",
+           "Cannot assing to read-only variable '{0}'",
            "The keyword '{0}' can only be used inside a loop.",
            "The keyword 'return' can only be used inside a function.",
            "Not all paths return a value.",

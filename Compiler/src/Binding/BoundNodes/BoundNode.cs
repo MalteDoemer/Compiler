@@ -11,10 +11,8 @@ namespace Compiler.Binding
         }
 
         public abstract BoundNodeKind Kind { get; }
-        public virtual BoundConstant Constant { get; }
         
         public bool IsValid { get; }
-        public bool HasConstant => Constant != null;
 
         public override string ToString()
         {

@@ -237,7 +237,7 @@ namespace Compiler.Binding
                 type = expr.ResultType;
             }
 
-            bool isConst = syntax.VarKeyword.TokenKind == SyntaxTokenKind.ConstKeyword;
+            bool isConst = syntax.VarKeyword.TokenKind == SyntaxTokenKind.LetKeyword;
 
 
 
@@ -463,7 +463,7 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable(syntax.Identifier.Value.ToString(), out var variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, syntax.Identifier.Value.ToString());
 
-            if (variable.IsConst)
+            if (variable.IsReadOnly)
                 ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
 
             var expr = CheckTypeAndConversion(variable.Type, syntax.Expression);
@@ -475,7 +475,7 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable(syntax.Identifier.Value.ToString(), out VariableSymbol variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, syntax.Identifier.Value.ToString());
 
-            if (variable.IsConst)
+            if (variable.IsReadOnly)
                 ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
 
 
@@ -497,7 +497,7 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out VariableSymbol variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, (string)syntax.Identifier.Value);
 
-            if (variable.IsConst)
+            if (variable.IsReadOnly)
                 ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
 
             var left = new BoundVariableExpression(variable, isTreeValid);

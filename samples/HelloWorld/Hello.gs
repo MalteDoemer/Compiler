@@ -1,9 +1,13 @@
 func main() {
-    const c = 36
-
-    for var i = 0 i < c i++ {
-        print("Fett: " + i + "\n")
-    }
+    
+    let inp = prompt("Fett? ")
+    println(inp)
 
     input()
+}
+
+
+func prompt(text: str): str{
+    print(text)
+    return input()
 }
