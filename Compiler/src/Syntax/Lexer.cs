@@ -187,7 +187,7 @@ namespace Compiler.Syntax
             return new SyntaxToken(SyntaxTokenKind.String, new TextLocation(text, quoteStart, pos - quoteStart), t, valid);
         }
 
-        private SyntaxToken LexSingleChar()
+        private SyntaxToken? LexSingleChar()
         {
             var kind = SyntaxFacts.IsSingleCharacter(current);
             if (kind != null)
@@ -195,7 +195,7 @@ namespace Compiler.Syntax
             return null;
         }
 
-        private SyntaxToken LexDoubleChar()
+        private SyntaxToken? LexDoubleChar()
         {
             var kind = SyntaxFacts.IsDoubleCharacter(current, ahead);
             string value = "" + current + ahead;

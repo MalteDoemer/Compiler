@@ -9,7 +9,7 @@ namespace Compiler.Syntax
 {
     public sealed class BlockStatmentSyntax : StatementSyntax
     {
-        internal BlockStatmentSyntax(SyntaxToken openCurly, ImmutableArray<StatementSyntax> statements, SyntaxToken closeCurly, bool isValid, TextLocation location) : base(isValid, location)
+        internal BlockStatmentSyntax(SyntaxToken openCurly, ImmutableArray<StatementSyntax> statements, SyntaxToken closeCurly, bool isValid, TextLocation? location) : base(isValid, location)
         {
             OpenCurly = openCurly;
             Statements = statements;

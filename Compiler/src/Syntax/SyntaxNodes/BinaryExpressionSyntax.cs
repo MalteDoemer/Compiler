@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     public sealed class BinaryExpressionSyntax : ExpressionSyntax
     {
-        internal BinaryExpressionSyntax(SyntaxToken op, ExpressionSyntax left, ExpressionSyntax right, bool isValid, TextLocation location) : base(isValid, location)
+        internal BinaryExpressionSyntax(SyntaxToken op, ExpressionSyntax left, ExpressionSyntax right, bool isValid, TextLocation? location) : base(isValid, location)
         {
             Op = op;
             Left = left;

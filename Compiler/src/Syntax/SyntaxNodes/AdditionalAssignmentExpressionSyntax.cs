@@ -7,7 +7,7 @@ namespace Compiler.Syntax
 {
     public sealed class AdditionalAssignmentExpressionSyntax : ExpressionSyntax
     {
-        internal AdditionalAssignmentExpressionSyntax(SyntaxToken identifier, SyntaxToken op, ExpressionSyntax expression, bool isValid, TextLocation location) : base(isValid, location)
+        internal AdditionalAssignmentExpressionSyntax(SyntaxToken identifier, SyntaxToken op, ExpressionSyntax expression, bool isValid, TextLocation? location) : base(isValid, location)
         {
             Identifier = identifier;
             Op = op;

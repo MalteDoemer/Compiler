@@ -7,7 +7,7 @@ namespace Compiler.Syntax
 {
     public sealed class ContinueStatementSyntax : StatementSyntax
     {
-        internal ContinueStatementSyntax(SyntaxToken continueToken, bool isValid, TextLocation location) : base(isValid, location)
+        internal ContinueStatementSyntax(SyntaxToken continueToken, bool isValid, TextLocation? location) : base(isValid, location)
         {
             ContinueToken = continueToken;
         }

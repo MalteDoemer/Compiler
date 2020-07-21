@@ -33,7 +33,7 @@ namespace Compiler.Text
             return new ColorizedText(text, builder.MoveToImmutable());
         }
 
-        internal static ColorizedToken ColorizeToken(SyntaxToken token, SyntaxToken next)
+        internal static ColorizedToken ColorizeToken(SyntaxToken token, SyntaxToken? next)
         {
             switch (token.TokenKind)
             {

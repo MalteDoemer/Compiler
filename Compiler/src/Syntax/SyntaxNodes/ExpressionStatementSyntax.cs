@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     public sealed class ExpressionStatementSyntax : StatementSyntax
     {
-        internal ExpressionStatementSyntax(ExpressionSyntax expression, bool isValid, TextLocation location) : base(isValid, location)
+        internal ExpressionStatementSyntax(ExpressionSyntax expression, bool isValid, TextLocation? location) : base(isValid, location)
         {
             Expression = expression;
         }

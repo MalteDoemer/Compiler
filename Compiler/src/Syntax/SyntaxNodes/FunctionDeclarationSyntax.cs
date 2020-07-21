@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     public sealed class FunctionDeclarationSyntax : MemberSyntax
     {
-        internal FunctionDeclarationSyntax(SyntaxToken functionKeyword, SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ParameterSyntax> parameters, SyntaxToken rightParenthesis, TypeClauseSyntax returnType, BlockStatmentSyntax body, bool isValid, TextLocation location) : base(isValid, location)
+        internal FunctionDeclarationSyntax(SyntaxToken functionKeyword, SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ParameterSyntax> parameters, SyntaxToken rightParenthesis, TypeClauseSyntax returnType, BlockStatmentSyntax body, bool isValid, TextLocation? location) : base(isValid, location)
         {
             FunctionKeyword = functionKeyword;
             Identifier = identifier;

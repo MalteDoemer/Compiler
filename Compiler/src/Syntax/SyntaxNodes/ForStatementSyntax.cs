@@ -7,7 +7,7 @@ namespace Compiler.Syntax
 {
     public sealed class ForStatementSyntax : StatementSyntax
     {
-        internal ForStatementSyntax(SyntaxToken forToken, StatementSyntax variableDacleration, ExpressionSyntax condition, ExpressionSyntax increment, StatementSyntax body, bool isValid, TextLocation location) : base(isValid, location)
+        internal ForStatementSyntax(SyntaxToken forToken, StatementSyntax variableDacleration, ExpressionSyntax condition, ExpressionSyntax increment, StatementSyntax body, bool isValid, TextLocation? location) : base(isValid, location)
         {
             ForToken = forToken;
             VariableDeclaration = variableDacleration;

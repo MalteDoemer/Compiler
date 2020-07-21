@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     public sealed class GlobalStatementSynatx : MemberSyntax
     {
-        internal GlobalStatementSynatx(StatementSyntax statement, bool isValid, TextLocation location) : base(isValid, location)
+        internal GlobalStatementSynatx(StatementSyntax statement, bool isValid, TextLocation? location) : base(isValid, location)
         {
             Statement = statement;
         }

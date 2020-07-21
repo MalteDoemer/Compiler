@@ -10,12 +10,12 @@ namespace Compiler.Syntax
 {
     public sealed class SeperatedSyntaxList<T> : IEnumerable<T> where T : SyntaxNode
     {
-        public static readonly SeperatedSyntaxList<T> Empty = new SeperatedSyntaxList<T>(ImmutableArray<T>.Empty, ImmutableArray<SyntaxToken>.Empty, true, TextLocation.Undefined);
+        public static readonly SeperatedSyntaxList<T> Empty = new SeperatedSyntaxList<T>(ImmutableArray<T>.Empty, ImmutableArray<SyntaxToken>.Empty, true, null);
 
         private readonly ImmutableArray<T> nodes;
         private readonly ImmutableArray<SyntaxToken> seperators;
 
-        internal SeperatedSyntaxList(ImmutableArray<T> nodes, ImmutableArray<SyntaxToken> seperators, bool isValid, TextLocation location)
+        internal SeperatedSyntaxList(ImmutableArray<T> nodes, ImmutableArray<SyntaxToken> seperators, bool isValid, TextLocation? location)
         {
             this.nodes = nodes;
             this.seperators = seperators;
@@ -26,7 +26,7 @@ namespace Compiler.Syntax
 
         public bool IsValid { get; }
         public int Length { get; }
-        public TextLocation Location { get; }
+        public TextLocation? Location { get; }
 
         public T this[int index] { get => nodes[index]; }
         public ImmutableArray<T> GetNodes() => nodes;

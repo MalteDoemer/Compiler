@@ -7,7 +7,7 @@ namespace Compiler.Syntax
 {
     public sealed class BreakStatementSyntax : StatementSyntax
     {
-        internal BreakStatementSyntax(SyntaxToken breakToken, bool isValid, TextLocation location) : base(isValid, location)
+        internal BreakStatementSyntax(SyntaxToken breakToken, bool isValid, TextLocation? location) : base(isValid, location)
         {
             BreakToken = breakToken;
         }

@@ -24,7 +24,7 @@ namespace Compiler.Binding
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
-        private void ReportError(ErrorMessage message, TextLocation span, params object[] values)
+        private void ReportError(ErrorMessage message, TextLocation? span, params object[] values)
         {
             if (isStatementValid)
                 diagnostics.ReportError(message, span, values);
@@ -90,7 +90,7 @@ namespace Compiler.Binding
 
             if (mainFunction != FunctionSymbol.Invalid)
             {
-                void Report(string message, TextLocation location)
+                void Report(string message, TextLocation?location)
                 {
                     if (isProgramValid)
                         diagnostics.Add(new Diagnostic(message, location, ErrorLevel.Error));

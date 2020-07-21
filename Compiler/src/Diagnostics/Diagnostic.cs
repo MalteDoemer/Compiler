@@ -14,11 +14,11 @@ namespace Compiler.Diagnostics
         public string Message { get; }
         public ErrorLevel Level { get; }
         
-        public TextLocation Location { get; }
+        public TextLocation? Location { get; }
         public TextSpan Span => Location.Span;
         public bool HasPositon => Span != TextSpan.Undefined;
 
-        public Diagnostic(string message, TextLocation location, ErrorLevel level)
+        public Diagnostic(string message, TextLocation? location, ErrorLevel level)
         {
             Message = message;
             Location = location;

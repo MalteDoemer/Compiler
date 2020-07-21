@@ -8,7 +8,7 @@ namespace Compiler.Syntax
 {
     public sealed class CompilationUnitSyntax : SyntaxNode
     {
-        internal CompilationUnitSyntax(ImmutableArray<MemberSyntax> members, bool isValid, TextLocation location) : base(isValid, location)
+        internal CompilationUnitSyntax(ImmutableArray<MemberSyntax> members, bool isValid, TextLocation? location) : base(isValid, location)
         {
             Members = members;
         }

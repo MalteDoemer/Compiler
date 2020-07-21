@@ -22,7 +22,7 @@ namespace Compiler.Text
         public int Length { get; }
         public int End => Start + Length;
 
-        public override bool Equals(object obj) => obj is TextSpan span && Start == span.Start && Length == span.Length;
+        public override bool Equals(object? obj) => obj is TextSpan span && Start == span.Start && Length == span.Length;
         public override int GetHashCode() => HashCode.Combine(Start, Length, End);
 
         public static TextSpan operator +(TextSpan l, TextSpan r) => FromBounds(l.Start, r.End);

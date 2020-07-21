@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     public sealed class WhileStatementSyntax : StatementSyntax
     {
-        internal WhileStatementSyntax(SyntaxToken whileToken, ExpressionSyntax condition, StatementSyntax body, bool isValid, TextLocation location) : base(isValid, location)
+        internal WhileStatementSyntax(SyntaxToken whileToken, ExpressionSyntax condition, StatementSyntax body, bool isValid, TextLocation? location) : base(isValid, location)
         {
             WhileToken = whileToken;
             Condition = condition;
