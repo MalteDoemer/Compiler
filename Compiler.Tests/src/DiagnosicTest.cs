@@ -43,7 +43,7 @@ namespace Compiler.Test
         public static void Report_Wrong_Return_Type()
         {
             var text = @"
-                def test() : int {
+                func test() : int {
                     return [false]
                 }
             ";
@@ -54,7 +54,7 @@ namespace Compiler.Test
         public static void Report_Cannot_Return_Void()
         {
             var text = @"
-                def test() : int {
+                func test() : int {
                     return [void]
                 }
             ";
@@ -65,7 +65,7 @@ namespace Compiler.Test
         public static void Report_Wrong_Return_Type_Void()
         {
             var text = @"
-                def test() {
+                func test() {
                     return [23]
                 }
             ";
@@ -76,7 +76,7 @@ namespace Compiler.Test
         public static void Report_Cannot_Assing_To_Const_As_Local()
         {
             var text = @"
-                def test() {
+                func test() {
                     const c = false
                     [c] = true
                 }
@@ -88,7 +88,7 @@ namespace Compiler.Test
         public static void Report_Not_All_Paths_Return()
         {
             var text = @"
-                def [test](n: int) : int {
+                func [test](n: int) : int {
                     while true{
                         if n == 36 
                             break

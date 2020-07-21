@@ -89,7 +89,7 @@ namespace Compiler.Syntax
 
         private MemberSyntax ParseMember()
         {
-            if (current.TokenKind == SyntaxTokenKind.FunctionDefinitionKeyword)
+            if (current.TokenKind == SyntaxTokenKind.FuncKeyword)
                 return ParseFunctionDeclaration();
             else return ParseGlobalStatement();
         }
@@ -278,14 +278,14 @@ namespace Compiler.Syntax
 
             var loc = new TextLocation(source, current.Location.Span.Start, 0);
             var colon = new SyntaxToken(SyntaxTokenKind.Colon, loc, ':');
-            var typeToken = new SyntaxToken(SyntaxTokenKind.AnyKeyword, loc, SyntaxTokenKind.AnyKeyword.GetText());
+            var typeToken = new SyntaxToken(SyntaxTokenKind.ObjKeyword, loc, SyntaxTokenKind.ObjKeyword.GetText());
             return new TypeClauseSyntax(colon, typeToken, isExplicit: false, isValid: isTreeValid, loc);
         }
 
         private TypeClauseSyntax ParseTypeClause()
         {
             var colon = MatchToken(SyntaxTokenKind.Colon);
-            var typeToken = MatchToken(SyntaxTokenKind.AnyKeyword, SyntaxFacts.GetTypeKeywords().ToArray());
+            var typeToken = MatchToken(SyntaxTokenKind.ObjKeyword, SyntaxFacts.GetTypeKeywords().ToArray());
             var span = TextSpan.FromBounds(colon.Location.Span.Start, typeToken.Location.Span.End);
             return new TypeClauseSyntax(colon, typeToken, isExplicit: true, isTreeValid, new TextLocation(source, span));
         }

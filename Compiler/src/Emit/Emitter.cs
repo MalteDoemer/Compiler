@@ -560,7 +560,7 @@ namespace Compiler.Emit
                 case ("float", "int"):
                     ilProcesser.Emit(OpCodes.Conv_I8);
                     break;
-                case ("any", "str"):
+                case ("obj", "str"):
                     ilProcesser.Emit(OpCodes.Call, convertToStringReference);
                     break;
                 case ("int", "str"):
@@ -570,17 +570,17 @@ namespace Compiler.Emit
                     ilProcesser.Emit(OpCodes.Box, type1);
                     ilProcesser.Emit(OpCodes.Call, convertToStringReference);
                     break;
-                case ("int", "any"):
-                case ("float", "any"):
-                case ("bool", "any"):
+                case ("int", "obj"):
+                case ("float", "obj"):
+                case ("bool", "obj"):
                     var type2 = builtInTypes[node.Expression.ResultType];
                     ilProcesser.Emit(OpCodes.Box, type2);
                     break;
-                case ("str", "any"):
+                case ("str", "obj"):
                     break;
-                case ("any", "int"):
-                case ("any", "float"):
-                case ("any", "bool"):
+                case ("obj", "int"):
+                case ("obj", "float"):
+                case ("obj", "bool"):
                     var type3 = builtInTypes[node.Type];
                     ilProcesser.Emit(OpCodes.Unbox_Any, type3);
                     break;

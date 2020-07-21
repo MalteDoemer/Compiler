@@ -53,13 +53,13 @@ namespace Compiler.Text
                 case SyntaxTokenKind.False:
                 case SyntaxTokenKind.VarKeyword:
                 case SyntaxTokenKind.VoidKeyword:
-                case SyntaxTokenKind.AnyKeyword:
+                case SyntaxTokenKind.ObjKeyword:
                 case SyntaxTokenKind.IntKeyword:
                 case SyntaxTokenKind.FloatKeyword:
                 case SyntaxTokenKind.StringKeyword:
                 case SyntaxTokenKind.BoolKeyword:
                 case SyntaxTokenKind.ConstKeyword:
-                case SyntaxTokenKind.FunctionDefinitionKeyword:
+                case SyntaxTokenKind.FuncKeyword:
                     return new ColorizedToken(token, ConsoleColor.Blue);
                 case SyntaxTokenKind.String:
                     return new ColorizedToken(token, ConsoleColor.DarkCyan);

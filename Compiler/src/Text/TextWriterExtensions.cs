@@ -162,7 +162,7 @@ namespace Compiler.Text
 
         private static void WriteFunctionSymbol(this IndentedTextWriter writer, FunctionSymbol symbol)
         {
-            writer.WriteBlueKeyword("def");
+            writer.WriteBlueKeyword("func");
             writer.WriteSpace();
             writer.WriteFunction(symbol.Name);
             writer.ColorWrite("(");

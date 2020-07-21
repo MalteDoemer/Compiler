@@ -7,7 +7,7 @@ namespace Compiler.Symbols
         public static readonly TypeSymbol Float = new TypeSymbol("float");
         public static readonly TypeSymbol Bool = new TypeSymbol("bool");
         public static readonly TypeSymbol String = new TypeSymbol("str");
-        public static readonly TypeSymbol Any = new TypeSymbol("any");
+        public static readonly TypeSymbol Any = new TypeSymbol("obj");
         public static readonly TypeSymbol Void = new TypeSymbol("void");
         public static readonly TypeSymbol ErrorType = new TypeSymbol("Error-Type");
 
@@ -24,7 +24,7 @@ namespace Compiler.Symbols
                 case "float": return Float;
                 case "bool": return Bool;
                 case "str": return String;
-                case "any": return Any;
+                case "obj": return Any;
                 case "void": return Void;
                 default: return null;
             }

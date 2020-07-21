@@ -39,7 +39,7 @@ namespace Compiler.Syntax
             yield return SyntaxTokenKind.FloatKeyword;
             yield return SyntaxTokenKind.BoolKeyword;
             yield return SyntaxTokenKind.StringKeyword;
-            yield return SyntaxTokenKind.AnyKeyword;
+            yield return SyntaxTokenKind.ObjKeyword;
             yield return SyntaxTokenKind.VoidKeyword;
         }
 
@@ -51,7 +51,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.FloatKeyword:
                 case SyntaxTokenKind.BoolKeyword:
                 case SyntaxTokenKind.StringKeyword:
-                case SyntaxTokenKind.AnyKeyword:
+                case SyntaxTokenKind.ObjKeyword:
                 case SyntaxTokenKind.VoidKeyword:
                     return true;
                 default: return false;
@@ -120,14 +120,14 @@ namespace Compiler.Syntax
                 case "bool": return SyntaxTokenKind.BoolKeyword;
                 case "str": return SyntaxTokenKind.StringKeyword;
                 case "void": return SyntaxTokenKind.VoidKeyword;
-                case "any": return SyntaxTokenKind.AnyKeyword;
+                case "obj": return SyntaxTokenKind.ObjKeyword;
                 case "var": return SyntaxTokenKind.VarKeyword;
                 case "if": return SyntaxTokenKind.IfKeyword;
                 case "else": return SyntaxTokenKind.ElseKeyword;
                 case "while": return SyntaxTokenKind.WhileKeyword;
                 case "do": return SyntaxTokenKind.DoKeyword;
                 case "for": return SyntaxTokenKind.ForKeyword;
-                case "def": return SyntaxTokenKind.FunctionDefinitionKeyword;
+                case "func": return SyntaxTokenKind.FuncKeyword;
                 case "const": return SyntaxTokenKind.ConstKeyword;
                 case "continue": return SyntaxTokenKind.ContinueKeyword;
                 case "break": return SyntaxTokenKind.BreakKewyword;
@@ -208,7 +208,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.True: return "true";
                 case SyntaxTokenKind.False: return "false";
                 case SyntaxTokenKind.VarKeyword: return "var";
-                case SyntaxTokenKind.AnyKeyword: return "any";
+                case SyntaxTokenKind.ObjKeyword: return "obj";
                 case SyntaxTokenKind.IntKeyword: return "int";
                 case SyntaxTokenKind.FloatKeyword: return "float";
                 case SyntaxTokenKind.BoolKeyword: return "bool";
@@ -217,7 +217,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.ElseKeyword: return "else";
                 case SyntaxTokenKind.WhileKeyword: return "while";
                 case SyntaxTokenKind.ForKeyword: return "for";
-                case SyntaxTokenKind.FunctionDefinitionKeyword: return "def";
+                case SyntaxTokenKind.FuncKeyword: return "func";
                 case SyntaxTokenKind.ConstKeyword: return "const";
                 case SyntaxTokenKind.ContinueKeyword: return "continue";
                 case SyntaxTokenKind.BreakKewyword: return "break";

@@ -253,23 +253,23 @@ namespace Compiler.Binding
                     case ("float", "str"):
                     case ("int", "str"):
                     case ("bool", "str"):
-                    case ("any", "str"):
+                    case ("obj", "str"):
                         res = Convert.ToString(value);
                         break;
 
-                    case ("any", "int"):
+                    case ("obj", "int"):
                         res = Convert.ToInt32(value);
                         break;
-                    case ("any", "float"):
+                    case ("obj", "float"):
                         res = Convert.ToDouble(value);
                         break;
-                    case ("any", "bool"):
+                    case ("obj", "bool"):
                         res = Convert.ToBoolean(value);
                         break;
-                    case ("int", "any"):
-                    case ("float", "any"):
-                    case ("bool", "any"):
-                    case ("str", "any"):
+                    case ("int", "obj"):
+                    case ("float", "obj"):
+                    case ("bool", "obj"):
+                    case ("str", "obj"):
                         return null;
                     default: throw new Exception($"Unexpected type ${typeToConvert}");
                 }

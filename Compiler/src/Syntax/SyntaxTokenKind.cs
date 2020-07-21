@@ -68,13 +68,13 @@ namespace Compiler.Syntax
         BoolKeyword,
         StringKeyword,
         IntKeyword,
-        AnyKeyword,
+        ObjKeyword,
         VoidKeyword,
 
         // Declaring keywords
         VarKeyword,
         ConstKeyword,
-        FunctionDefinitionKeyword,
+        FuncKeyword,
 
         // Control flow keywords
         IfKeyword,
