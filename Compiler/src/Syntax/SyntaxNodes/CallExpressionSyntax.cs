@@ -7,7 +7,7 @@ namespace Compiler.Syntax
 {
     public sealed class CallExpressionSyntax : ExpressionSyntax
     {
-        internal CallExpressionSyntax(SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ExpressionSyntax> arguments, SyntaxToken rightParenthesis, bool isValid, TextLocation? location) : base(isValid, location)
+        internal CallExpressionSyntax(SyntaxToken identifier, SyntaxToken leftParenthesis, SeperatedSyntaxList<ExpressionSyntax> arguments, SyntaxToken rightParenthesis, bool isValid, TextLocation location) : base(isValid, location)
         {
             Identifier = identifier;
             LeftParenthesis = leftParenthesis;

@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     public sealed class TypeClauseSyntax : SyntaxNode
     {
-        internal TypeClauseSyntax(SyntaxToken colonToken, SyntaxToken typeToken, bool isExplicit, bool isValid, TextLocation? location) : base(isValid, location)
+        internal TypeClauseSyntax(SyntaxToken colonToken, SyntaxToken typeToken, bool isExplicit, bool isValid, TextLocation location) : base(isValid, location)
         {
             ColonToken = colonToken;
             TypeToken = typeToken;

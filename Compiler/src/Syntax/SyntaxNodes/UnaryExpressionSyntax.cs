@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     public sealed class UnaryExpressionSyntax : ExpressionSyntax
     {
-        internal UnaryExpressionSyntax(SyntaxToken op, ExpressionSyntax expression, bool isValid, TextLocation? location) : base(isValid, location)
+        internal UnaryExpressionSyntax(SyntaxToken op, ExpressionSyntax expression, bool isValid, TextLocation location) : base(isValid, location)
         {
             Op = op;
             Expression = expression;

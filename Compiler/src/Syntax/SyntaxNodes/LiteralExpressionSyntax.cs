@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     public sealed class LiteralExpressionSyntax : ExpressionSyntax
     {
-        internal LiteralExpressionSyntax(SyntaxToken literal, bool isValid, TextLocation? location) : base(isValid, location)
+        internal LiteralExpressionSyntax(SyntaxToken literal, bool isValid, TextLocation location) : base(isValid, location)
         {
             Literal = literal;
         }

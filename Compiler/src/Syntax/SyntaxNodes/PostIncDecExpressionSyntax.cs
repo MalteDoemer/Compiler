@@ -7,7 +7,7 @@ namespace Compiler.Syntax
 {
     public sealed class PostIncDecExpressionSyntax : ExpressionSyntax
     {
-        internal PostIncDecExpressionSyntax(SyntaxToken identifier, SyntaxToken op, bool isValid, TextLocation? location) : base(isValid, location)
+        internal PostIncDecExpressionSyntax(SyntaxToken identifier, SyntaxToken op, bool isValid, TextLocation location) : base(isValid, location)
         {
             Identifier = identifier;
             Op = op;

@@ -5,7 +5,7 @@ namespace Compiler.Text
 {
     public struct TextLocation
     {
-        //public static readonly TextLocation Undefined = new TextLocation(new SourceText(string.Empty, null), TextSpan.Undefined);
+        public static readonly TextLocation Undefined = new TextLocation(new SourceText(string.Empty, null), TextSpan.Undefined);
 
         public TextLocation(SourceText text, TextSpan span)
         {
@@ -26,7 +26,7 @@ namespace Compiler.Text
         public int StartCharacter { get => Text.GetCharacterOffset(Span.Start); }
         public int EndCharacter { get => Text.GetCharacterOffset(Span.End); }
 
-        public override bool Equals(object? obj) => obj is TextLocation location && Text == location.Text && Span == location.Span;
+        public override bool Equals(object obj) => obj is TextLocation location && Text == location.Text && Span == location.Span;
         public override int GetHashCode() => HashCode.Combine(Text, Span, StartLine, EndLine, StartCharacter, EndCharacter);
         public override string ToString() => Text.ToString(Span);
 

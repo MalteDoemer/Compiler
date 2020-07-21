@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     public sealed class ParameterSyntax : SyntaxNode
     {
-        internal ParameterSyntax(SyntaxToken identifier, TypeClauseSyntax typeClause, bool isValid, TextLocation? location) : base(isValid, location)
+        internal ParameterSyntax(SyntaxToken identifier, TypeClauseSyntax typeClause, bool isValid, TextLocation location) : base(isValid, location)
         {
             Identifier = identifier;
             TypeClause = typeClause;

@@ -5,7 +5,7 @@ namespace Compiler.Text
 {
     public sealed class SourceText
     {
-        public SourceText(string text, string? file)
+        public SourceText(string text, string file)
         {
             Text = text;
             File = file;
@@ -13,9 +13,8 @@ namespace Compiler.Text
         }
 
         public ImmutableArray<SourceLine> Lines { get; }
+        public string File { get; }
         public string Text { get; }
-        public string? File { get; }
-
         public int Length => Text.Length;
         public char this[int i] { get => Text[i]; }
 
@@ -114,7 +113,7 @@ namespace Compiler.Text
             return 0;
         }
 
-        public override bool Equals(object? obj) => obj is SourceText text && Text == text.Text;
+        public override bool Equals(object obj) => obj is SourceText text && Text == text.Text;
         public override int GetHashCode() => HashCode.Combine(Lines, Text, Length);
 
         public static bool operator ==(SourceText l, SourceText r) => l.Text == r.Text && l.File == r.File;

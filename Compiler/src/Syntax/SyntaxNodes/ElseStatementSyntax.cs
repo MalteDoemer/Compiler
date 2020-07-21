@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     public sealed class ElseStatementSyntax : StatementSyntax
     {
-        internal ElseStatementSyntax(SyntaxToken elseToken, StatementSyntax thenStatement, bool isValid, TextLocation? location) : base(isValid, location)
+        internal ElseStatementSyntax(SyntaxToken elseToken, StatementSyntax thenStatement, bool isValid, TextLocation location) : base(isValid, location)
         {
             ElseToken = elseToken;
             Body = thenStatement;

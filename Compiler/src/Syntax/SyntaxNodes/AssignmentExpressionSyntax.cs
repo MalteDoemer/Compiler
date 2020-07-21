@@ -5,7 +5,7 @@ namespace Compiler.Syntax
 {
     public sealed class AssignmentExpressionSyntax : ExpressionSyntax
     {
-        internal AssignmentExpressionSyntax(SyntaxToken identifier, SyntaxToken equalToken, ExpressionSyntax expression, bool isValid, TextLocation? location) : base(isValid, location)
+        internal AssignmentExpressionSyntax(SyntaxToken identifier, SyntaxToken equalToken, ExpressionSyntax expression, bool isValid, TextLocation location) : base(isValid, location)
         {
             Identifier = identifier;
             EqualToken = equalToken;

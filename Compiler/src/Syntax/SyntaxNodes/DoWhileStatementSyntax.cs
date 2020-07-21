@@ -7,7 +7,7 @@ namespace Compiler.Syntax
 {
     public sealed class DoWhileStatementSyntax : StatementSyntax
     {
-        internal DoWhileStatementSyntax(SyntaxToken doToken, StatementSyntax body, SyntaxToken whileToken, ExpressionSyntax condition, bool isValid, TextLocation? location) : base(isValid, location)
+        internal DoWhileStatementSyntax(SyntaxToken doToken, StatementSyntax body, SyntaxToken whileToken, ExpressionSyntax condition, bool isValid, TextLocation location) : base(isValid, location)
         {
             DoToken = doToken;
             Body = body;

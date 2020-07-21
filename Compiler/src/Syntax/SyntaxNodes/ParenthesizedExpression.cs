@@ -7,7 +7,7 @@ namespace Compiler.Syntax
 {
     public sealed class ParenthesizedExpression : ExpressionSyntax
     {
-        internal ParenthesizedExpression(SyntaxToken leftParenthesis, ExpressionSyntax expression, SyntaxToken rightParenthesis, bool isValid, TextLocation? location) : base(isValid, location)
+        internal ParenthesizedExpression(SyntaxToken leftParenthesis, ExpressionSyntax expression, SyntaxToken rightParenthesis, bool isValid, TextLocation location) : base(isValid, location)
         {
             LeftParenthesis = leftParenthesis;
             Expression = expression;

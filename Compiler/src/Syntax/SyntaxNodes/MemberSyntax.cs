@@ -4,7 +4,7 @@ namespace Compiler.Syntax
 {
     public abstract class MemberSyntax : SyntaxNode
     {
-        protected MemberSyntax(bool isValid, TextLocation? location) : base(isValid, location)
+        protected MemberSyntax(bool isValid, TextLocation location) : base(isValid, location)
         {
         }
     }

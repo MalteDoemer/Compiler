@@ -73,12 +73,11 @@ namespace Compiler
                 ms.Seek(0, SeekOrigin.Begin);
                 var data = ms.ToArray();
                 var assembly = System.Reflection.Assembly.Load(data);
-                if (assembly.EntryPoint is not null)
-                    assembly.EntryPoint.Invoke(null, null);
+                assembly.EntryPoint.Invoke(null, null);
             }
         }
 
-        public void WriteBoundTree(TextWriter writer, string? functionName = null)
+        public void WriteBoundTree(TextWriter writer, string functionName = null)
         {
             if (functionName == null)
                 writer.WriteBoundNode(program);

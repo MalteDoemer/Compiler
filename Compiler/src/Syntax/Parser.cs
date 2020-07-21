@@ -34,7 +34,7 @@ namespace Compiler.Syntax
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics.Concat(lexerDiagnosics);
 
-        private void ReportError(ErrorMessage message, TextLocation? location, params object[] values)
+        private void ReportError(ErrorMessage message, TextLocation location, params object[] values)
         {
             if (isStatementValid)
                 diagnostics.ReportError(message, location, values);
@@ -399,7 +399,7 @@ namespace Compiler.Syntax
             return new CallExpressionSyntax(identifier, lparen, arguments, rparen, isTreeValid, new TextLocation(source, span));
         }
 
-        private ElseStatementSyntax? ParseElseClause()
+        private ElseStatementSyntax ParseElseClause()
         {
             if (current.TokenKind != SyntaxTokenKind.ElseKeyword)
                 return null;
