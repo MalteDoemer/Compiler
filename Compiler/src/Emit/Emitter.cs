@@ -132,14 +132,14 @@ namespace Compiler.Emit
                     ilProcessor.Emit(OpCodes.Stsfld, randomDefiniton);
                 }
 
-                if (program.GlobalFunction is not null)
+                if (!(program.GlobalFunction is null))
                     ilProcessor.Emit(OpCodes.Call, functions[program.GlobalFunction]);
 
                 ilProcessor.Emit(OpCodes.Ret);
             }
 
             mainAssebly.MainModule.Types.Add(mainClass);
-            if (program.MainFunction is not null)
+            if (!(program.MainFunction is null))
                 mainAssebly.EntryPoint = functions[program.MainFunction];
         }
 
@@ -226,7 +226,7 @@ namespace Compiler.Emit
 
         private void EmitVariableDeclarationStatement(ILProcessor ilProcesser, BoundVariableDeclarationStatement node)
         {
-            if (node.Variable.Constant is not null)
+            if (!(node.Variable.Constant is null))
                 return;
 
             if (node.Variable is GlobalVariableSymbol globalVariable)
@@ -270,8 +270,8 @@ namespace Compiler.Emit
 
         private void EmitReturnStatement(ILProcessor ilProcesser, BoundReturnStatement node)
         {
-            if (node.Expression is not null)
-                EmitExpression(ilProcesser, node.Expression);
+            if (node.Expression is null) { }
+            else EmitExpression(ilProcesser, node.Expression);
             ilProcesser.Emit(OpCodes.Ret);
         }
 
@@ -285,38 +285,36 @@ namespace Compiler.Emit
 
         private void EmitExpression(ILProcessor ilProcesser, BoundExpression node)
         {
-            if (node.Constant is not null)
-            {
-                EmitConstatnt(ilProcesser, node);
-                return;
-            }
+            if (node.Constant is null)
+                switch (node.Kind)
+                {
+                    case BoundNodeKind.BoundVariableExpression:
+                        EmitVariableExpression(ilProcesser, (BoundVariableExpression)node);
+                        break;
+                    case BoundNodeKind.BoundUnaryExpression:
+                        EmitUnaryExpression(ilProcesser, (BoundUnaryExpression)node);
+                        break;
+                    case BoundNodeKind.BoundBinaryExpression:
+                        EmitBinaryExpression(ilProcesser, (BoundBinaryExpression)node);
+                        break;
+                    case BoundNodeKind.BoundCallExpression:
+                        EmitCallExpression(ilProcesser, (BoundCallExpression)node);
+                        break;
+                    case BoundNodeKind.BoundConversionExpression:
+                        EmitConversionExpression(ilProcesser, (BoundConversionExpression)node);
+                        break;
+                    case BoundNodeKind.BoundAssignmentExpression:
+                        EmitAssignmentExpression(ilProcesser, (BoundAssignmentExpression)node);
+                        break;
+                }
+            else
+                EmitConstatnt(ilProcesser, node.Constant);
 
-            switch (node.Kind)
-            {
-                case BoundNodeKind.BoundVariableExpression:
-                    EmitVariableExpression(ilProcesser, (BoundVariableExpression)node);
-                    break;
-                case BoundNodeKind.BoundUnaryExpression:
-                    EmitUnaryExpression(ilProcesser, (BoundUnaryExpression)node);
-                    break;
-                case BoundNodeKind.BoundBinaryExpression:
-                    EmitBinaryExpression(ilProcesser, (BoundBinaryExpression)node);
-                    break;
-                case BoundNodeKind.BoundCallExpression:
-                    EmitCallExpression(ilProcesser, (BoundCallExpression)node);
-                    break;
-                case BoundNodeKind.BoundConversionExpression:
-                    EmitConversionExpression(ilProcesser, (BoundConversionExpression)node);
-                    break;
-                case BoundNodeKind.BoundAssignmentExpression:
-                    EmitAssignmentExpression(ilProcesser, (BoundAssignmentExpression)node);
-                    break;
-            }
         }
 
-        private void EmitConstatnt(ILProcessor ilProcesser, BoundExpression node)
+        private void EmitConstatnt(ILProcessor ilProcesser, BoundConstant constant)
         {
-            var value = node.Constant!.Value;
+            var value = constant.Value;
 
             if (value is int i)
             {
@@ -353,7 +351,7 @@ namespace Compiler.Emit
             {
                 ilProcesser.Emit(OpCodes.Ldstr, s);
             }
-            else if (value is null) 
+            else if (value is null)
             {
                 ilProcesser.Emit(OpCodes.Ldnull);
             }
@@ -595,7 +593,7 @@ namespace Compiler.Emit
 
         private void EmitAssignmentExpression(ILProcessor ilProcesser, BoundAssignmentExpression node)
         {
-            if (node.Variable!.Constant is not null)
+            if (!(node.Variable!.Constant is null))
                 return;
 
             if (node.Variable is GlobalVariableSymbol globalVariable)

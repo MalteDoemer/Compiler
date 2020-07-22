@@ -45,7 +45,7 @@ namespace Compiler.Lowering
                     builder.Add(current);
                 }
             }
-            if (function is not null && function.ReturnType == TypeSymbol.Void)
+            if (!(function is null) && function.ReturnType == TypeSymbol.Void)
                 if (builder.Count == 0 || CanFallThrough(builder.Last()))
                     builder.Add(new BoundReturnStatement(null, true));
 
@@ -228,7 +228,7 @@ namespace Compiler.Lowering
 
         protected override BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
         {
-            if (node.Condition.Constant is not null && node.Condition.Constant.Value is bool val)
+            if (!(node.Condition.Constant is null) && node.Condition.Constant.Value is bool val)
             {
                 val = node.JumpIfFalse ? !val : val;
                 if (val)
@@ -242,7 +242,7 @@ namespace Compiler.Lowering
 
         protected override BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)
         {
-            if (node.Constant is not null)
+            if (!(node.Constant is null))
                 return node;
 
             var left = RewriteExpression(node.Left);

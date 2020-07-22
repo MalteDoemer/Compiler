@@ -88,7 +88,7 @@ namespace Compiler.Syntax
             var tokenText = text.ToString(start, pos - start);
             var isKeyword = SyntaxFacts.IsKeyWord(tokenText);
 
-            if (isKeyword is not null)
+            if (!(isKeyword is null))
                 return new SyntaxToken((SyntaxTokenKind)isKeyword, new TextLocation(text, start, pos - start), SyntaxFacts.GetKeywordValue(tokenText));
             else return new SyntaxToken(SyntaxTokenKind.Identifier, new TextLocation(text, start, pos - start), tokenText);
         }
@@ -190,7 +190,7 @@ namespace Compiler.Syntax
         private SyntaxToken? LexSingleChar()
         {
             var kind = SyntaxFacts.IsSingleCharacter(current);
-            if (kind is not null)
+            if (!(kind is null))
                 return new SyntaxToken((SyntaxTokenKind)kind, new TextLocation(text, pos, 1), Advance());
             return null;
         }
@@ -199,7 +199,7 @@ namespace Compiler.Syntax
         {
             var kind = SyntaxFacts.IsDoubleCharacter(current, ahead);
             string value = "" + current + ahead;
-            if (kind is not null) return new SyntaxToken((SyntaxTokenKind)kind, new TextLocation(text, (pos += 2) - 2, 2), value);
+            if (!(kind is null)) return new SyntaxToken((SyntaxTokenKind)kind, new TextLocation(text, (pos += 2) - 2, 2), value);
             return null;
         }
 
@@ -217,10 +217,10 @@ namespace Compiler.Syntax
         private SyntaxToken NextToken()
         {
             var doubleChar = LexDoubleChar();
-            if (doubleChar is not null) return doubleChar;
+            if (!(doubleChar is null)) return doubleChar;
 
             var singleChar = LexSingleChar();
-            if (singleChar is not null) return singleChar;
+            if (!(singleChar is null)) return singleChar;
 
             if (current == '\0') return new SyntaxToken(SyntaxTokenKind.EndOfFile, new TextLocation(text, pos, 0), "End");
             else if (current == '"' || current == '\'') return LexString();

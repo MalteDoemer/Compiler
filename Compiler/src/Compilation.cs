@@ -73,7 +73,7 @@ namespace Compiler
                 ms.Seek(0, SeekOrigin.Begin);
                 var data = ms.ToArray();
                 var assembly = System.Reflection.Assembly.Load(data);
-                if (assembly.EntryPoint is not null)
+                if (!(assembly.EntryPoint is null))
                     assembly.EntryPoint.Invoke(null, null);
             }
         }
@@ -111,7 +111,7 @@ namespace Compiler
         public string[] GetFunctionDeclarations()
         {
 
-            var locations = program.Functions.Keys.Where(f => f.Syntax is not null).ToArray();
+            var locations = program.Functions.Keys.Where(f => !(f.Syntax is null)).ToArray();
             var res = new string[locations.Length];
 
             for (int i = 0; i < locations.Length; i++)

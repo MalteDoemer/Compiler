@@ -92,7 +92,7 @@ namespace Compiler.Test
             foreach (var kind in kinds)
             {
                 var text = SyntaxFacts.GetText(kind);
-                if (text is not null)
+                if (!(text is null))
                     yield return (text, kind);
             }
         }

@@ -42,7 +42,7 @@ namespace Compiler.Binding
             this.scope = new BoundScope(parentScope);
             this.diagnostics = new DiagnosticBag();
 
-            if (function is not null)
+            if (function is FunctionSymbol)
                 foreach (var param in function.Parameters)
                     scope.TryDeclareVariable(param);
         }
@@ -88,7 +88,7 @@ namespace Compiler.Binding
 
             globalBinder.scope.TryLookUpFunction("main", out var mainFunction);
 
-            if (mainFunction is not null)
+            if (!(mainFunction is null))
             {
                 void Report(string message, TextLocation location)
                 {
@@ -315,15 +315,23 @@ namespace Compiler.Binding
 
         private BoundStatement BindReturnStatementSyntax(ReturnStatementSyntax syntax)
         {
-            var expr = (BoundExpression?)null;
+            BoundExpression? expr;
 
             if (function is null)
+            {
                 ReportError(ErrorMessage.ReturnOnlyInFunction, syntax.Location);
-            else if (syntax.VoidToken is not null)
+                expr = null;
+            }
+            else if (syntax.ReturnExpression is null)
+            {
                 if (function.ReturnType != TypeSymbol.Void)
-                    ReportError(ErrorMessage.IncompatibleTypes, syntax.VoidToken.Location, function.ReturnType, TypeSymbol.Void);
-                else if (syntax.ReturnExpression is not null)
-                    expr = CheckTypeAndConversion(function.ReturnType, syntax.ReturnExpression);
+                    ReportError(ErrorMessage.IncompatibleTypes, syntax.VoidToken!.Location, function.ReturnType, TypeSymbol.Void);
+                expr = null;
+            }
+            else
+            {
+                expr = CheckTypeAndConversion(function.ReturnType, syntax.ReturnExpression);
+            }
 
             return new BoundReturnStatement(expr, isTreeValid);
         }
@@ -464,8 +472,8 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable(name, out var variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, name);
 
-            if (variable is not null && variable.IsReadOnly)
-                ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
+            if (!(variable is null) && variable.IsReadOnly)
+                ReportError(ErrorMessage.CannotAssignToReadOnly, syntax.Identifier.Location, syntax.Identifier.Value);
 
             var expr = CheckTypeAndConversion(variable?.Type, syntax.Expression);
 
@@ -479,8 +487,8 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable(name, out var variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, name);
 
-            if (variable is not null && variable.IsReadOnly)
-                ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
+            if (!(variable is null) && variable.IsReadOnly)
+                ReportError(ErrorMessage.CannotAssignToReadOnly, syntax.Identifier.Location, syntax.Identifier.Value);
 
 
             var left = new BoundVariableExpression(variable, isTreeValid);
@@ -501,8 +509,8 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out var variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, (string)syntax.Identifier.Value);
 
-            if (variable is not null && variable.IsReadOnly)
-                ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
+            if (!(variable is null) && variable.IsReadOnly)
+                ReportError(ErrorMessage.CannotAssignToReadOnly, syntax.Identifier.Location, syntax.Identifier.Value);
 
             var left = new BoundVariableExpression(variable, isTreeValid);
             var right = new BoundLiteralExpression(1, TypeSymbol.Int, isTreeValid);

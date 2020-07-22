@@ -71,7 +71,7 @@ namespace Compiler.Text
                     return new ColorizedToken(token, ConsoleColor.DarkGray);
                 case SyntaxTokenKind.Identifier:
                     ConsoleColor color;
-                    if (next is not null && next.TokenKind == SyntaxTokenKind.LParen)
+                    if (!(next is null) && next.TokenKind == SyntaxTokenKind.LParen)
                         color = ConsoleColor.Yellow;
                     else
                         color = ConsoleColor.Cyan;

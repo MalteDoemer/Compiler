@@ -128,7 +128,7 @@ namespace Compiler.Binding
                     }
                 }
 
-                if (builder is not null)
+                if (!(builder is null))
                     builder.Add(newStatement);
             }
 
@@ -197,7 +197,7 @@ namespace Compiler.Binding
                     }
                 }
 
-                if (builder is not null)
+                if (!(builder is null))
                     builder.Add(newStatement);
             }
 

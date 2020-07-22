@@ -71,7 +71,7 @@ namespace Compiler.Syntax
         {
             yield return UnderlyingType;
             yield return LeftBracket;
-            if (Size is not null)
+            if (!(Size is null))
                 yield return Size;
             yield return RightBracket;
         }

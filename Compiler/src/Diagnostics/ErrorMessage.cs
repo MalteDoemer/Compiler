@@ -21,7 +21,7 @@ namespace Compiler.Diagnostics
         DuplicatedParameters,
         FunctionAlreadyDeclared,
         InvalidGlobalStatement,
-        CannotAssignToConst,
+        CannotAssignToReadOnly,
         InvalidBreakOrContinue,
         ReturnOnlyInFunction,
         AllPathsMustReturn,

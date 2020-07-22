@@ -8,7 +8,7 @@ namespace Compiler.Binding
         {
             ResultType = type is null ? TypeSymbol.ErrorType : type;
             Expression = expression;
-            if (isValid && type is not null)
+            if (isValid && !(type is null))
                 Constant = ConstantFolder.FoldConversion(ResultType, expression);
         }
         public override BoundNodeKind Kind => BoundNodeKind.BoundConversionExpression;

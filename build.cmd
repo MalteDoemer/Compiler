@@ -3,6 +3,6 @@
 set sln=%~dp0
 
 pushd %sln%
-dotnet build
+dotnet build || exit /b
 dotnet test
 popd

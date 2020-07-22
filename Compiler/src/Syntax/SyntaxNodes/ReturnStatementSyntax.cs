@@ -22,9 +22,9 @@ namespace Compiler.Syntax
         public override IEnumerable<SyntaxNode> GetChildren()
         {
             yield return ReturnToken;
-            if (ReturnExpression is not null)
+            if (!(ReturnExpression is null))
                 yield return ReturnExpression;
-            if (VoidToken is not null)
+            if (!(VoidToken is null))
                 yield return VoidToken;
         }
     }

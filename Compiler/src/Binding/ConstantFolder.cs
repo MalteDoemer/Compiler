@@ -7,7 +7,7 @@ namespace Compiler.Binding
     {
         public static BoundConstant? FoldUnary(BoundUnaryOperator op, BoundExpression operand)
         {
-            if (operand.Constant is not null)
+            if (!(operand.Constant is null))
             {
                 var value = operand.Constant.Value;
                 object? res;
@@ -45,15 +45,15 @@ namespace Compiler.Binding
         public static BoundConstant? FoldBinary(BoundBinaryOperator op, BoundExpression left, BoundExpression right)
         {
             if (op == BoundBinaryOperator.LogicalAnd)
-                if (left.Constant is not null && left.Constant.Value is bool b1 && !b1 || right.Constant is not null && right.Constant.Value is bool b2 && !b2)
+                if (!(left.Constant is null) && left.Constant.Value is bool b1 && !b1 || !(right.Constant is null) && right.Constant.Value is bool b2 && !b2)
                     return new BoundConstant(false);
 
 
             if (op == BoundBinaryOperator.LogicalAnd)
-                if (left.Constant is not null && left.Constant.Value is bool b1 && b1 || right.Constant is not null && right.Constant.Value is bool b2 && b2)
+                if (!(left.Constant is null) && left.Constant.Value is bool b1 && b1 || !(right.Constant is null) && right.Constant.Value is bool b2 && b2)
                     return new BoundConstant(true);
 
-            if (left.Constant is not null && right.Constant is not null)
+            if (!(left.Constant is null) && !(right.Constant is null))
             {
                 var leftVal = left.Constant.Value;
                 var rightVal = right.Constant.Value;
@@ -232,7 +232,7 @@ namespace Compiler.Binding
 
         public static BoundConstant? FoldConversion(TypeSymbol typeToConvert, BoundExpression expression)
         {
-            if (expression.Constant is not null)
+            if (!(expression.Constant is null))
             {
                 var value = expression.Constant.Value;
                 object? res;

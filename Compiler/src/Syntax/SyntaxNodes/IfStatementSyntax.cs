@@ -23,7 +23,7 @@ namespace Compiler.Syntax
             yield return IfToken;
             yield return Condition;
             yield return Body;
-            if (ElseStatement is not null)
+            if (!(ElseStatement is null))
                 yield return ElseStatement;
         }
     }

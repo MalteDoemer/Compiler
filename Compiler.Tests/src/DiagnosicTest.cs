@@ -24,10 +24,10 @@ namespace Compiler.Test
         public static void Report_Cannot_Assing_To_Const_As_Global()
         {
             var text = @"
-                const c = 0
+                let c = 0
                 [c] = 20
             ";
-            AssertDiagnostic(text, ErrorMessage.CannotAssignToConst, "c");
+            AssertDiagnostic(text, ErrorMessage.CannotAssignToReadOnly, "c");
         }
 
         [Fact]
@@ -73,15 +73,15 @@ namespace Compiler.Test
         }
 
         [Fact]
-        public static void Report_Cannot_Assing_To_Const_As_Local()
+        public static void Report_Cannot_Assing_To_Read_Only_As_Local()
         {
             var text = @"
                 func test() {
-                    const c = false
+                    let c = false
                     [c] = true
                 }
             ";
-            AssertDiagnostic(text, ErrorMessage.CannotAssignToConst, "c");
+            AssertDiagnostic(text, ErrorMessage.CannotAssignToReadOnly, "c");
         }
 
         [Fact]
@@ -142,7 +142,7 @@ namespace Compiler.Test
 
             var resType = BindFacts.ResolveBinaryType((BoundBinaryOperator)boundOp, t1, t2);
 
-            if (resType is not null)
+            if (!(resType is null))
                 return;
 
             var typeText1 = GetSampleText(t1);
@@ -162,7 +162,7 @@ namespace Compiler.Test
 
             var resType = BindFacts.ResolveUnaryType(boundOp, type);
 
-            if (resType is not null)
+            if (!(resType is null))
                 return;
 
             var typeText = GetSampleText(type);

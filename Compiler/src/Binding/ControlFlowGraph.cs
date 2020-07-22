@@ -184,7 +184,7 @@ namespace Compiler.Binding
 
             private BoundExpression LogicalNot(BoundExpression expr)
             {
-                if (expr.Constant is not null)
+                if (!(expr.Constant is null))
                     return new BoundLiteralExpression(expr.Constant.Value, expr.ResultType, expr.IsValid);
 
                 return new BoundUnaryExpression(BoundUnaryOperator.LogicalNot, expr, TypeSymbol.Bool, expr.IsValid);
