@@ -147,7 +147,7 @@ namespace Compiler.Binding
             for (var i = 0; i < func.Parameters.Length; i++)
             {
                 var parameterSyntax = func.Parameters[i];
-                var type = BindFacts.GetTypeSymbol(parameterSyntax.TypeClause.TypeToken.TokenKind);
+                var type = BindType(parameterSyntax.TypeClause);
                 var name = parameterSyntax.Identifier.Value.ToString();
 
                 if (!seenParameters.Add(name))
@@ -157,7 +157,7 @@ namespace Compiler.Binding
 
             TypeSymbol returnType;
             if (func.ReturnType.IsExplicit)
-                returnType = BindFacts.GetTypeSymbol(func.ReturnType.TypeToken.TokenKind);
+                returnType = BindType(func.ReturnType);
             else
                 returnType = TypeSymbol.Void;
 
@@ -228,7 +228,7 @@ namespace Compiler.Binding
 
             if (syntax.TypeClause.IsExplicit)
             {
-                type = BindFacts.GetTypeSymbol(syntax.TypeClause.TypeToken.TokenKind);
+                type = BindType(syntax.TypeClause);
                 expr = CheckTypeAndConversion(type, syntax.Expression);
             }
             else
@@ -390,7 +390,6 @@ namespace Compiler.Binding
                 default: throw new Exception($"Unexpected SyntaxKind <{syntax.Kind}>");
             }
         }
-
         private BoundExpression BindLiteralExpressionSyntax(LiteralExpressionSyntax syntax)
         {
             var value = syntax.Literal.Value;
@@ -582,6 +581,16 @@ namespace Compiler.Binding
                 ReportError(ErrorMessage.CannotConvert, syntax.Location, expr.ResultType, type);
 
             return new BoundConversionExpression(type, expr, isTreeValid);
+        }
+
+        private TypeSymbol BindType(TypeClauseSyntax syntax)
+        {
+            var type = BindFacts.GetTypeSymbol(syntax.TypeToken.TokenKind);
+
+            for (var i = 0; i < syntax.Brackets.Length; i += 2)
+                type = type.CreateArray();
+
+            return type;
         }
     }
 }

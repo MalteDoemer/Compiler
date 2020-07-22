@@ -1,6 +1,8 @@
+using System;
+using System.Collections.Generic;
+
 namespace Compiler.Symbols
 {
-
     public sealed class TypeSymbol : Symbol
     {
         public static readonly TypeSymbol Int = new TypeSymbol("int");
@@ -13,8 +15,20 @@ namespace Compiler.Symbols
 
         private TypeSymbol(string name) : base(name)
         {
-
+            Type = this;
+            IsArray = false;
         }
+
+        private TypeSymbol(TypeSymbol type) : base(type.Name + "[]")
+        {
+            Type = type;
+            IsArray = true;
+        }
+
+        public TypeSymbol Type { get; }
+        public bool IsArray { get; }
+
+        public TypeSymbol CreateArray() => new TypeSymbol(this);
 
         public static TypeSymbol Lookup(string name)
         {
@@ -29,5 +43,11 @@ namespace Compiler.Symbols
                 default: return null;
             }
         }
+
+        public override bool Equals(object obj) => obj is TypeSymbol symbol && Name == symbol.Name;
+        public override int GetHashCode() => HashCode.Combine(Name);
+
+        public static bool operator ==(TypeSymbol l, TypeSymbol r) => l.Name == r.Name;
+        public static bool operator !=(TypeSymbol l, TypeSymbol r) => l.Name != r.Name;
     }
 }

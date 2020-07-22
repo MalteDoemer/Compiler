@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 
 namespace Compiler.Syntax
 {
@@ -71,6 +70,8 @@ namespace Compiler.Syntax
                 case '^': return SyntaxTokenKind.Hat;
                 case ',': return SyntaxTokenKind.Comma;
                 case ':': return SyntaxTokenKind.Colon;
+                case '[': return SyntaxTokenKind.LSquare;
+                case ']': return SyntaxTokenKind.RSquare;
                 default: return null;
             }
         }
@@ -122,6 +123,7 @@ namespace Compiler.Syntax
                 case "continue": return SyntaxTokenKind.ContinueKeyword;
                 case "break": return SyntaxTokenKind.BreakKewyword;
                 case "return": return SyntaxTokenKind.ReturnKeyword;
+                case "new": return SyntaxTokenKind.NewKeyWord;
                 case "switch": return SyntaxTokenKind.SwitchKeyword;
                 case "case": return SyntaxTokenKind.CaseKeyword;
                 case "default": return SyntaxTokenKind.DefaultKeyword;
@@ -179,6 +181,8 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.Hat: return "^";
                 case SyntaxTokenKind.Comma: return ",";
                 case SyntaxTokenKind.Colon: return ":";
+                case SyntaxTokenKind.LSquare: return "[";
+                case SyntaxTokenKind.RSquare: return "]";
 
                 case SyntaxTokenKind.StarStar: return "**";
                 case SyntaxTokenKind.SlashSlah: return "//";
@@ -215,6 +219,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.ContinueKeyword: return "continue";
                 case SyntaxTokenKind.BreakKewyword: return "break";
                 case SyntaxTokenKind.ReturnKeyword: return "return";
+                case SyntaxTokenKind.NewKeyWord: return "new";
                 case SyntaxTokenKind.SwitchKeyword: return "switch";
                 case SyntaxTokenKind.CaseKeyword: return "case";
                 case SyntaxTokenKind.DefaultKeyword: return "default";

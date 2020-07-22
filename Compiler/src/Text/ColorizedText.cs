@@ -54,6 +54,7 @@ namespace Compiler.Text
                     return new ColorizedToken(token, ConsoleColor.Magenta);
                 case SyntaxTokenKind.True:
                 case SyntaxTokenKind.False:
+                case SyntaxTokenKind.NewKeyWord:
                 case SyntaxTokenKind.VarKeyword:
                 case SyntaxTokenKind.VoidKeyword:
                 case SyntaxTokenKind.ObjKeyword:

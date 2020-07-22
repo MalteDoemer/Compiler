@@ -52,12 +52,17 @@ namespace Compiler.Syntax
         SlashEqual,
         AmpersandEqual,
         PipeEqual,
+        
+        // Keyword operators
+        NewKeyWord,
 
         // Brackets
         LParen,
         RParen,
         LCurly,
         RCurly,
+        LSquare,
+        RSquare,
 
         // Sperators
         Comma,
