@@ -47,7 +47,6 @@ namespace Compiler.Symbols
         public override bool Equals(object obj) => obj is TypeSymbol symbol && Name == symbol.Name;
         public override int GetHashCode() => HashCode.Combine(Name);
 
-        public static bool operator ==(TypeSymbol l, TypeSymbol r) => l.Name == r.Name;
-        public static bool operator !=(TypeSymbol l, TypeSymbol r) => l.Name != r.Name;
+        
     }
 }

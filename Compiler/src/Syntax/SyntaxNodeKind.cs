@@ -33,5 +33,7 @@ namespace Compiler.Syntax
         ParenthesizedExpression,
         SwitchStatementSyntax,
         CaseStatementSyntax,
+        PreDefinedTypeSyntax,
+        ArrayTypeSyntax,
     }
 }

@@ -5,7 +5,15 @@ namespace Compiler.Symbols
 {
     public abstract class VariableSymbol : Symbol
     {
-        //internal static readonly VariableSymbol Invalid = new GlobalVariableSymbol("$invalid", TypeSymbol.ErrorType);
+        internal static readonly VariableSymbol Invalid = new InvalidVariableSymbol();
+
+        private sealed class InvalidVariableSymbol : VariableSymbol
+        {
+            public InvalidVariableSymbol() : base("$invalid", TypeSymbol.ErrorType, false, null)
+            {
+            }
+        }
+
 
         internal VariableSymbol(string name, TypeSymbol type, bool isReadonly = false, BoundConstant constant = null) : base(name)
         {

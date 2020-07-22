@@ -7,26 +7,74 @@ namespace Compiler.Syntax
 {
     public sealed class TypeClauseSyntax : SyntaxNode
     {
-        internal TypeClauseSyntax(SyntaxToken colonToken, SyntaxToken typeToken, ImmutableArray<SyntaxToken> brackets, bool isExplicit, bool isValid, TextLocation location) : base(isValid, location)
+        internal TypeClauseSyntax(SyntaxToken colonToken, TypeSyntax typeSyntax, bool isExplicit, bool isValid, TextLocation location) : base(isValid, location)
         {
             ColonToken = colonToken;
-            TypeToken = typeToken;
-            Brackets = brackets;
+            TypeSyntax = typeSyntax;
             IsExplicit = isExplicit;
         }
 
         public override SyntaxNodeKind Kind => SyntaxNodeKind.TypeClauseSyntax;
         public bool IsExplicit { get; }
         public SyntaxToken ColonToken { get; }
-        public SyntaxToken TypeToken { get; }
-        public ImmutableArray<SyntaxToken> Brackets { get; }
+        public TypeSyntax TypeSyntax { get; }
 
         public override IEnumerable<SyntaxNode> GetChildren()
         {
             yield return ColonToken;
-            yield return TypeToken;
-            foreach (var bracket in Brackets)
-                yield return bracket;
+            yield return TypeSyntax;
         }
     }
+
+    public abstract class TypeSyntax : SyntaxNode
+    {
+        protected TypeSyntax(bool isValid, TextLocation location) : base(isValid, location)
+        {
+        }
+    }
+
+    public sealed class PreDefinedTypeSyntax : TypeSyntax
+    {
+        public PreDefinedTypeSyntax(SyntaxToken typeToken, bool isValid, TextLocation location) : base(isValid, location)
+        {
+            TypeToken = typeToken;
+        }
+
+        public SyntaxToken TypeToken { get; }
+
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.PreDefinedTypeSyntax;
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return TypeToken;
+        }
+    }
+
+    public sealed class ArrayTypeSyntax : TypeSyntax
+    {
+        public ArrayTypeSyntax(TypeSyntax underlyingType, SyntaxToken leftBracket, ExpressionSyntax size, SyntaxToken rightBracket, bool isValid, TextLocation location) : base(isValid, location)
+        {
+            UnderlyingType = underlyingType;
+            LeftBracket = leftBracket;
+            Size = size;
+            RightBracket = rightBracket;
+        }
+
+        public TypeSyntax UnderlyingType { get; }
+        public SyntaxToken LeftBracket { get; }
+        public ExpressionSyntax Size { get; }
+        public SyntaxToken RightBracket { get; }
+
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.ArrayTypeSyntax;
+
+        public override IEnumerable<SyntaxNode> GetChildren()
+        {
+            yield return UnderlyingType;
+            yield return LeftBracket;
+            if (Size != null)
+                yield return Size;
+            yield return RightBracket;
+        }
+    }
+
 }

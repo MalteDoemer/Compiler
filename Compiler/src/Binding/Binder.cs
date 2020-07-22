@@ -585,11 +585,9 @@ namespace Compiler.Binding
 
         private TypeSymbol BindType(TypeClauseSyntax syntax)
         {
-            var type = BindFacts.GetTypeSymbol(syntax.TypeToken.TokenKind);
+            var pre = (PreDefinedTypeSyntax)syntax.TypeSyntax;
 
-            for (var i = 0; i < syntax.Brackets.Length; i += 2)
-                type = type.CreateArray();
-
+            var type = BindFacts.GetTypeSymbol(pre.TypeToken.TokenKind);
             return type;
         }
     }

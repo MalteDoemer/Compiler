@@ -278,7 +278,7 @@ namespace Compiler.Syntax
             var loc = new TextLocation(source, current.Location.Span.Start, 0);
             var colon = new SyntaxToken(SyntaxTokenKind.Colon, loc, ':');
             var typeToken = new SyntaxToken(SyntaxTokenKind.ObjKeyword, loc, SyntaxTokenKind.ObjKeyword.GetText());
-            return new TypeClauseSyntax(colon, typeToken, isExplicit: false, isValid: isTreeValid, loc);
+            return new TypeClauseSyntax(colon, new PreDefinedTypeSyntax(typeToken, isTreeValid, typeToken.Location), false, isTreeValid, loc);
         }
 
         private TypeClauseSyntax ParseTypeClause()
@@ -292,7 +292,7 @@ namespace Compiler.Syntax
                                        SyntaxTokenKind.VoidKeyword);
 
             var span = TextSpan.FromBounds(colon.Location.Span.Start, typeToken.Location.Span.End);
-            return new TypeClauseSyntax(colon, typeToken, isExplicit: true, isTreeValid, new TextLocation(source, span));
+            return new TypeClauseSyntax(colon, new PreDefinedTypeSyntax(typeToken, isTreeValid, typeToken.Location), isExplicit: true, isTreeValid, new TextLocation(source, span));
         }
 
         private ExpressionSyntax ParseExpression() => ParseExpression(SyntaxFacts.MaxPrecedence);
