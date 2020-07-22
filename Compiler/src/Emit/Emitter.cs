@@ -8,6 +8,7 @@ using Compiler.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.IO;
+using System.Diagnostics;
 
 namespace Compiler.Emit
 {
@@ -16,34 +17,34 @@ namespace Compiler.Emit
         private readonly BoundProgram program;
         private readonly DiagnosticBag diagnostics;
         private readonly AssemblyDefinition mainAssebly;
-        private readonly TypeDefinition mainClass;
+        private readonly TypeDefinition? mainClass;
         private readonly List<AssemblyDefinition> references;
-        private readonly Dictionary<TypeSymbol, TypeReference> builtInTypes;
-        private readonly Dictionary<FunctionSymbol, MethodDefinition> functions;
+        private readonly Dictionary<TypeSymbol, TypeReference?> builtInTypes;
+        private readonly Dictionary<FunctionSymbol, MethodDefinition?> functions;
         private readonly Dictionary<BoundLabel, int> labels;
         private readonly List<(int, BoundLabel)> fixups;
 
-        private readonly TypeReference randomTypeReference;
-        private readonly MethodReference randomCtorReference;
-        private readonly MethodReference randomNextReference;
-        private readonly MethodReference randomNextDoubleReference;
+        private readonly TypeReference? randomTypeReference;
+        private readonly MethodReference? randomCtorReference;
+        private readonly MethodReference? randomNextReference;
+        private readonly MethodReference? randomNextDoubleReference;
 
-        private readonly MethodReference consoleWriteReference;
-        private readonly MethodReference consoleWriteLineReference;
-        private readonly MethodReference cosnoleReadLineReference;
-        private readonly MethodReference cosnoleClearReference;
-        private readonly MethodReference stringConcatReference;
-        private readonly MethodReference mathPowReference;
-        private readonly MethodReference convertToStringReference;
-        private readonly MethodReference stringEqualsReference;
-        private readonly MethodReference objectEqualsReference;
-        private readonly MethodReference environmentExitReference;
-        private readonly MethodReference stringGetLengthReference;
+        private readonly MethodReference? consoleWriteReference;
+        private readonly MethodReference? consoleWriteLineReference;
+        private readonly MethodReference? cosnoleReadLineReference;
+        private readonly MethodReference? cosnoleClearReference;
+        private readonly MethodReference? stringConcatReference;
+        private readonly MethodReference? mathPowReference;
+        private readonly MethodReference? convertToStringReference;
+        private readonly MethodReference? stringEqualsReference;
+        private readonly MethodReference? objectEqualsReference;
+        private readonly MethodReference? environmentExitReference;
+        private readonly MethodReference? stringGetLengthReference;
 
         private readonly Dictionary<VariableSymbol, FieldDefinition> globalVariables;
         private readonly Dictionary<LocalVariableSymbol, VariableDefinition> locals;
 
-        private FieldDefinition randomDefiniton;
+        private FieldDefinition? randomDefiniton;
         private bool needsRandom;
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
@@ -52,8 +53,8 @@ namespace Compiler.Emit
         {
             this.program = program;
             this.diagnostics = new DiagnosticBag();
-            this.functions = new Dictionary<FunctionSymbol, MethodDefinition>();
-            this.builtInTypes = new Dictionary<TypeSymbol, TypeReference>();
+            this.functions = new Dictionary<FunctionSymbol, MethodDefinition?>();
+            this.builtInTypes = new Dictionary<TypeSymbol, TypeReference?>();
             this.globalVariables = new Dictionary<VariableSymbol, FieldDefinition>();
             this.locals = new Dictionary<LocalVariableSymbol, VariableDefinition>();
             this.labels = new Dictionary<BoundLabel, int>();
@@ -122,7 +123,7 @@ namespace Compiler.Emit
             {
                 const MethodAttributes attrs = MethodAttributes.SpecialName | MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.RTSpecialName;
                 var staticCtor = new MethodDefinition(".cctor", attrs, builtInTypes[TypeSymbol.Void]);
-                mainClass.Methods.Add(staticCtor);
+                mainClass!.Methods.Add(staticCtor);
                 var ilProcessor = staticCtor.Body.GetILProcessor();
 
                 if (needsRandom)
@@ -131,14 +132,14 @@ namespace Compiler.Emit
                     ilProcessor.Emit(OpCodes.Stsfld, randomDefiniton);
                 }
 
-                if (program.GlobalFunction.Exists)
+                if (program.GlobalFunction is not null)
                     ilProcessor.Emit(OpCodes.Call, functions[program.GlobalFunction]);
 
                 ilProcessor.Emit(OpCodes.Ret);
             }
 
             mainAssebly.MainModule.Types.Add(mainClass);
-            if (program.MainFunction.Exists)
+            if (program.MainFunction is not null)
                 mainAssebly.EntryPoint = functions[program.MainFunction];
         }
 
@@ -148,13 +149,13 @@ namespace Compiler.Emit
 
         private void AddGlobalVariable(VariableSymbol variable)
         {
-            if (variable.Constant == null)
+            if (variable.Constant is null)
             {
                 const FieldAttributes attrs = FieldAttributes.Static | FieldAttributes.Private;
                 var type = builtInTypes[variable.Type];
                 var field = new FieldDefinition(variable.Name, attrs, type);
                 globalVariables.Add(variable, field);
-                mainClass.Fields.Add(field);
+                mainClass!.Fields.Add(field);
             }
         }
 
@@ -172,7 +173,7 @@ namespace Compiler.Emit
             }
 
             functions.Add(symbol, function);
-            mainClass.Methods.Add(function);
+            mainClass!.Methods.Add(function);
         }
 
         private void EmitFunctionBody(FunctionSymbol symbol, BoundBlockStatement body)
@@ -181,7 +182,7 @@ namespace Compiler.Emit
             locals.Clear();
             fixups.Clear();
             labels.Clear();
-            var ilProcessor = function.Body.GetILProcessor();
+            var ilProcessor = function!.Body.GetILProcessor();
 
             foreach (var statement in body.Statements)
                 EmitStatement(ilProcessor, statement);
@@ -225,7 +226,7 @@ namespace Compiler.Emit
 
         private void EmitVariableDeclarationStatement(ILProcessor ilProcesser, BoundVariableDeclarationStatement node)
         {
-            if (node.Variable.Constant != null)
+            if (node.Variable.Constant is not null)
                 return;
 
             if (node.Variable is GlobalVariableSymbol globalVariable)
@@ -269,7 +270,7 @@ namespace Compiler.Emit
 
         private void EmitReturnStatement(ILProcessor ilProcesser, BoundReturnStatement node)
         {
-            if (node.Expression != null)
+            if (node.Expression is not null)
                 EmitExpression(ilProcesser, node.Expression);
             ilProcesser.Emit(OpCodes.Ret);
         }
@@ -284,7 +285,7 @@ namespace Compiler.Emit
 
         private void EmitExpression(ILProcessor ilProcesser, BoundExpression node)
         {
-            if (node.HasConstant)
+            if (node.Constant is not null)
             {
                 EmitConstatnt(ilProcesser, node);
                 return;
@@ -315,7 +316,7 @@ namespace Compiler.Emit
 
         private void EmitConstatnt(ILProcessor ilProcesser, BoundExpression node)
         {
-            var value = node.Constant.Value;
+            var value = node.Constant!.Value;
 
             if (value is int i)
             {
@@ -511,10 +512,10 @@ namespace Compiler.Emit
         {
             if (node.Symbol == BuiltInFunctions.Random || node.Symbol == BuiltInFunctions.RandomFloat)
             {
-                if (randomDefiniton == null)
+                if (randomDefiniton is null)
                 {
                     randomDefiniton = new FieldDefinition("$random", FieldAttributes.Static | FieldAttributes.Private, randomTypeReference);
-                    mainClass.Fields.Add(randomDefiniton);
+                    mainClass!.Fields.Add(randomDefiniton);
                     needsRandom = true;
                 }
 
@@ -542,7 +543,7 @@ namespace Compiler.Emit
                 ilProcesser.Emit(OpCodes.Callvirt, randomNextDoubleReference);
             else
             {
-                var function = functions[node.Symbol];
+                var function = functions[node.Symbol!];
                 ilProcesser.Emit(OpCodes.Call, function);
             }
 
@@ -551,7 +552,7 @@ namespace Compiler.Emit
         private void EmitConversionExpression(ILProcessor ilProcesser, BoundConversionExpression node)
         {
             var from = node.Expression.ResultType.Name;
-            var to = node.Type.Name;
+            var to = node.ResultType.Name;
 
             EmitExpression(ilProcesser, node.Expression);
 
@@ -585,7 +586,7 @@ namespace Compiler.Emit
                 case ("obj", "int"):
                 case ("obj", "float"):
                 case ("obj", "bool"):
-                    var type3 = builtInTypes[node.Type];
+                    var type3 = builtInTypes[node.ResultType];
                     ilProcesser.Emit(OpCodes.Unbox_Any, type3);
                     break;
                 default: throw new Exception($"Unexpected conversion from {from} to {to}");
@@ -594,7 +595,7 @@ namespace Compiler.Emit
 
         private void EmitAssignmentExpression(ILProcessor ilProcesser, BoundAssignmentExpression node)
         {
-            if (node.Variable.IsReadOnly)
+            if (node.Variable!.Constant is not null)
                 return;
 
             if (node.Variable is GlobalVariableSymbol globalVariable)
@@ -620,15 +621,15 @@ namespace Compiler.Emit
             else throw new Exception("Unexpected VariableSymbol");
         }
 
-        private TypeReference ResolveType(string metadataName)
+        private TypeReference? ResolveType(string metadataName)
         {
             var definition = ResolveTypeDefinition(metadataName);
-            if (definition == null)
+            if (definition is null)
                 return null;
             return mainAssebly.MainModule.ImportReference(definition);
         }
 
-        private TypeDefinition ResolveTypeDefinition(string metadataName)
+        private TypeDefinition? ResolveTypeDefinition(string metadataName)
         {
             var foundTypes = references.SelectMany(a => a.Modules)
                                            .SelectMany(m => m.Types)
@@ -652,41 +653,39 @@ namespace Compiler.Emit
             }
         }
 
-        private MethodReference ResolveMethod(string type, string name, string returnType, params string[] parameterTypes)
+        private MethodReference? ResolveMethod(string type, string name, string returnType, params string[] parameterTypes)
         {
             var definition = ResolveMethodDefinition(type, name, returnType, parameterTypes);
-            if (definition == null)
+            if (definition is null)
                 return null;
             return mainAssebly.MainModule.ImportReference(definition);
         }
 
-        private MethodDefinition ResolveMethodDefinition(string type, string name, string returnType, params string[] parameterTypes)
+        private MethodDefinition? ResolveMethodDefinition(string type, string name, string returnType, params string[] parameterTypes)
         {
             var returnTypeDef = ResolveTypeDefinition(returnType);
             var typeDef = ResolveTypeDefinition(type);
 
-            if (returnTypeDef == null || typeDef == null)
+            if (returnTypeDef is null || typeDef is null)
             {
-                var missingName = typeDef == null ? type : returnType;
+                var missingName = typeDef is null ? type : returnType;
                 diagnostics.ReportError(ErrorMessage.MissingRequiredType, TextLocation.Undefined, missingName);
                 return null;
             }
 
-            var fullName = $"{returnTypeDef.FullName} {typeDef.FullName}::{name}({string.Join(",", parameterTypes.Select(p => ResolveTypeDefinition(p).FullName))})";
+            var fullName = $"{returnTypeDef.FullName} {typeDef.FullName}::{name}({string.Join(",", parameterTypes)})";
             var foundMethods = typeDef.Methods.Where(m => m.FullName == fullName);
 
             if (foundMethods.Count() == 1)
                 return foundMethods.Single();
             else if (foundMethods.Count() == 0)
             {
-                var parameterTypeNames = parameterTypes.Select(p => ResolveTypeDefinition(p).FullName);
-                diagnostics.ReportError(ErrorMessage.MissingRequiredMethod, TextLocation.Undefined, $"{typeDef.FullName}.{name}({string.Join(", ", parameterTypeNames)})");
+                diagnostics.ReportError(ErrorMessage.MissingRequiredMethod, TextLocation.Undefined, $"{typeDef.FullName}.{name}({string.Join(", ", parameterTypes)})");
                 return null;
             }
             else
             {
-                var parameterTypeNames = parameterTypes.Select(p => ResolveTypeDefinition(p).FullName);
-                var methodDecl = $"{typeDef.FullName}.{name}({string.Join(", ", parameterTypeNames)})";
+                var methodDecl = $"{typeDef.FullName}.{name}({string.Join(", ", parameterTypes)})";
                 var names = foundMethods.Select(t => t.Module.Assembly.Name.Name);
                 diagnostics.ReportError(ErrorMessage.AmbiguousRequiredMethod, TextLocation.Undefined, methodDecl, string.Join(", ", names));
                 return null;

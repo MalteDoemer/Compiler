@@ -91,18 +91,18 @@ namespace Compiler.Binding
 
         };
 
-        public static TypeSymbol ResolveUnaryType(BoundUnaryOperator? op, TypeSymbol type)
+        public static TypeSymbol? ResolveUnaryType(BoundUnaryOperator? op, TypeSymbol type)
         {
-            if (op == null) return null;
+            if (op is null) return null;
 
             foreach (var pair in UnaryResultTypes)
                 if (pair.Key.Item2 == op && pair.Key.Item1 == type) return pair.Value;
             return null;
         }
 
-        public static TypeSymbol ResolveBinaryType(BoundBinaryOperator? op, TypeSymbol left, TypeSymbol right)
+        public static TypeSymbol? ResolveBinaryType(BoundBinaryOperator? op, TypeSymbol left, TypeSymbol right)
         {
-            if (op == null) return null;
+            if (op is null) return null;
 
             foreach (var pair in BinaryResultTypes)
                 if (((pair.Key.Item1 == left && pair.Key.Item2 == right) || (pair.Key.Item2 == left && pair.Key.Item1 == right)) && pair.Key.Item3 == op) return pair.Value;
@@ -128,9 +128,9 @@ namespace Compiler.Binding
             }
         }
 
-        internal static ConversionType ClassifyConversion(TypeSymbol from, TypeSymbol to)
+        internal static ConversionType ClassifyConversion(TypeSymbol? from, TypeSymbol? to)
         {
-            if (from == null || to == null) return ConversionType.None;
+            if (from is null || to is null) return ConversionType.None;
 
             if (from == to) return ConversionType.Identety;
 

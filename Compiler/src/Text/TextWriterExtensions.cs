@@ -212,7 +212,7 @@ namespace Compiler.Text
 
         private static void WriteBoundVariableExpression(this IndentedTextWriter writer, BoundVariableExpression node)
         {
-            writer.WriteVariable(node.Variable.Name);
+            writer.WriteVariable(node.Variable!.Name);
         }
 
         private static void WriteBoundUnaryExpression(this IndentedTextWriter writer, BoundUnaryExpression node)
@@ -236,7 +236,7 @@ namespace Compiler.Text
 
         private static void WriteBoundCallExpression(this IndentedTextWriter writer, BoundCallExpression node)
         {
-            writer.WriteFunction(node.Symbol.Name);
+            writer.WriteFunction(node.Symbol!.Name);
             writer.Write('(');
 
             for (var i = 0; i < node.Arguments.Length; i++)
@@ -251,7 +251,7 @@ namespace Compiler.Text
 
         private static void WriteBoundConversionExpression(this IndentedTextWriter writer, BoundConversionExpression node)
         {
-            writer.WriteBlueKeyword(node.Type.Name);
+            writer.WriteBlueKeyword(node.ResultType.Name);
             writer.ColorWrite('(');
             writer.WriteBoundNode(node.Expression);
             writer.ColorWrite(')');
@@ -259,7 +259,7 @@ namespace Compiler.Text
 
         private static void WriteBoundAssignmentExpression(this IndentedTextWriter writer, BoundAssignmentExpression node)
         {
-            writer.WriteVariable(node.Variable.Name);
+            writer.WriteVariable(node.Variable!.Name);
             writer.WriteSpace();
             writer.ColorWrite("=");
             writer.WriteSpace();
@@ -341,7 +341,7 @@ namespace Compiler.Text
         {
             writer.WriteMagentaKeyword("return");
             writer.WriteSpace();
-            if (node.Expression == null)
+            if (node.Expression is null)
                 writer.WriteBlueKeyword("void");
             else writer.WriteBoundNode(node.Expression);
         }

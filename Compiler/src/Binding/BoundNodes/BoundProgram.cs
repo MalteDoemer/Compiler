@@ -8,7 +8,7 @@ namespace Compiler.Binding
 {
     internal class BoundProgram : BoundNode
     {
-        public BoundProgram(ImmutableArray<VariableSymbol> globalVariables, FunctionSymbol globalFunction, FunctionSymbol mainFunction, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, DiagnosticReport diagnostics, bool isValid) : base(isValid)
+        public BoundProgram(ImmutableArray<VariableSymbol> globalVariables, FunctionSymbol? globalFunction, FunctionSymbol? mainFunction, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, DiagnosticReport diagnostics, bool isValid) : base(isValid)
         {
             GlobalVariables = globalVariables;
             GlobalFunction = globalFunction;
@@ -18,9 +18,9 @@ namespace Compiler.Binding
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundProgram;
-        public FunctionSymbol MainFunction { get; }
+        public FunctionSymbol? MainFunction { get; }
+        public FunctionSymbol? GlobalFunction { get; }
         public ImmutableArray<VariableSymbol> GlobalVariables { get; }
-        public FunctionSymbol GlobalFunction { get; }
         public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> Functions { get; }
         public DiagnosticReport Diagnostics { get; }
     }

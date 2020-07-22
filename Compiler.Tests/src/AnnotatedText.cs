@@ -62,7 +62,7 @@ namespace Compiler.Test
             using (var reader = new StringReader(text))
             {
                 string line;
-                while ((line = reader.ReadLine()) != null)
+                while ((line = reader.ReadLine()) is not null)
                     lines.Add(line);
             }
 

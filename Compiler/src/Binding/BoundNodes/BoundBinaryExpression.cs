@@ -12,12 +12,12 @@ namespace Compiler.Binding
             Left = left;
             Right = right;
             if (isValid)
-                Constant = ConstantFolder.ComputeConstantBinary(op, left, right);
+                Constant = ConstantFolder.FoldBinary(op, left, right);
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundBinaryExpression;
         public override TypeSymbol ResultType { get; }
-        public override BoundConstant Constant { get; }
+        public override BoundConstant? Constant { get; }
         public BoundBinaryOperator Op { get; }
         public BoundExpression Left { get; }
         public BoundExpression Right { get; }

@@ -277,7 +277,7 @@ namespace Compiler.Syntax
 
             var loc = new TextLocation(source, current.Location.Span.Start, 0);
             var colon = new SyntaxToken(SyntaxTokenKind.Colon, loc, ':');
-            var typeToken = new SyntaxToken(SyntaxTokenKind.ObjKeyword, loc, SyntaxTokenKind.ObjKeyword.GetText());
+            var typeToken = new SyntaxToken(SyntaxTokenKind.ObjKeyword, loc, SyntaxTokenKind.ObjKeyword.GetText()!);
             return new TypeClauseSyntax(colon, new PreDefinedTypeSyntax(typeToken, isTreeValid, typeToken.Location), false, isTreeValid, loc);
         }
 
@@ -404,7 +404,7 @@ namespace Compiler.Syntax
             return new CallExpressionSyntax(identifier, lparen, arguments, rparen, isTreeValid, new TextLocation(source, span));
         }
 
-        private ElseStatementSyntax ParseElseClause()
+        private ElseStatementSyntax? ParseElseClause()
         {
             if (current.TokenKind != SyntaxTokenKind.ElseKeyword)
                 return null;

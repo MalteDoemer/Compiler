@@ -5,12 +5,12 @@ namespace Compiler.Binding
 {
     internal sealed class ConstantFolder
     {
-        public static BoundConstant ComputeConstantUnary(BoundUnaryOperator op, BoundExpression operand)
+        public static BoundConstant? FoldUnary(BoundUnaryOperator op, BoundExpression operand)
         {
-            if (operand.HasConstant)
+            if (operand.Constant is not null)
             {
                 var value = operand.Constant.Value;
-                object res;
+                object? res;
 
                 switch (op)
                 {
@@ -42,17 +42,18 @@ namespace Compiler.Binding
             return null;
         }
 
-        public static BoundConstant ComputeConstantBinary(BoundBinaryOperator op, BoundExpression left, BoundExpression right)
+        public static BoundConstant? FoldBinary(BoundBinaryOperator op, BoundExpression left, BoundExpression right)
         {
             if (op == BoundBinaryOperator.LogicalAnd)
-                if (left.HasConstant && !(bool)left.Constant.Value || right.HasConstant && !(bool)right.Constant.Value)
+                if (left.Constant is not null && left.Constant.Value is bool b1 && !b1 || right.Constant is not null && right.Constant.Value is bool b2 && !b2)
                     return new BoundConstant(false);
 
-            if (op == BoundBinaryOperator.LogicalOr)
-                if (left.HasConstant && (bool)left.Constant.Value || right.HasConstant && (bool)right.Constant.Value)
+
+            if (op == BoundBinaryOperator.LogicalAnd)
+                if (left.Constant is not null && left.Constant.Value is bool b1 && b1 || right.Constant is not null && right.Constant.Value is bool b2 && b2)
                     return new BoundConstant(true);
 
-            if (left.HasConstant && right.HasConstant)
+            if (left.Constant is not null && right.Constant is not null)
             {
                 var leftVal = left.Constant.Value;
                 var rightVal = right.Constant.Value;
@@ -134,7 +135,7 @@ namespace Compiler.Binding
                             else if (leftVal is double d3 && rightVal is double d4) res = d3 == d4;
                             else if (leftVal is bool b1 && rightVal is bool b2) res = b1 == b2;
                             else if (leftVal is string s1 && rightVal is string s2) res = s1 == s2;
-                            else res = leftVal.Equals(rightVal);
+                            else res = object.Equals(leftVal, rightVal);
                             break;
                         }
                     case BoundBinaryOperator.NotEqual:
@@ -145,7 +146,7 @@ namespace Compiler.Binding
                             else if (leftVal is double d3 && rightVal is double d4) res = d3 != d4;
                             else if (leftVal is bool b1 && rightVal is bool b2) res = b1 != b2;
                             else if (leftVal is string s1 && rightVal is string s2) res = s1 != s2;
-                            else res = !leftVal.Equals(rightVal);
+                            else res = !object.Equals(leftVal, rightVal);
                             break;
                         }
                     case BoundBinaryOperator.LessThan:
@@ -229,24 +230,24 @@ namespace Compiler.Binding
             return null;
         }
 
-        public static BoundConstant ComputeConstantConversion(TypeSymbol typeToConvert, BoundExpression expression)
+        public static BoundConstant? FoldConversion(TypeSymbol typeToConvert, BoundExpression expression)
         {
-            if (expression.HasConstant)
+            if (expression.Constant is not null)
             {
                 var value = expression.Constant.Value;
-                object res;
+                object? res;
 
                 switch (expression.ResultType.Name, typeToConvert.Name)
                 {
                     case ("int", "float"):
                         {
-                            var i = (int)value;
+                            var i = (int)value!;
                             res = (double)i;
                             break;
                         }
                     case ("float", "int"):
                         {
-                            var d = (double)value;
+                            var d = (double)value!;
                             res = (int)d;
                             break;
                         }

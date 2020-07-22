@@ -88,7 +88,7 @@ namespace Compiler.Syntax
             var tokenText = text.ToString(start, pos - start);
             var isKeyword = SyntaxFacts.IsKeyWord(tokenText);
 
-            if (isKeyword != null)
+            if (isKeyword is not null)
                 return new SyntaxToken((SyntaxTokenKind)isKeyword, new TextLocation(text, start, pos - start), SyntaxFacts.GetKeywordValue(tokenText));
             else return new SyntaxToken(SyntaxTokenKind.Identifier, new TextLocation(text, start, pos - start), tokenText);
         }
@@ -187,19 +187,19 @@ namespace Compiler.Syntax
             return new SyntaxToken(SyntaxTokenKind.String, new TextLocation(text, quoteStart, pos - quoteStart), t, valid);
         }
 
-        private SyntaxToken LexSingleChar()
+        private SyntaxToken? LexSingleChar()
         {
             var kind = SyntaxFacts.IsSingleCharacter(current);
-            if (kind != null)
+            if (kind is not null)
                 return new SyntaxToken((SyntaxTokenKind)kind, new TextLocation(text, pos, 1), Advance());
             return null;
         }
 
-        private SyntaxToken LexDoubleChar()
+        private SyntaxToken? LexDoubleChar()
         {
             var kind = SyntaxFacts.IsDoubleCharacter(current, ahead);
             string value = "" + current + ahead;
-            if (kind != null) return new SyntaxToken((SyntaxTokenKind)kind, new TextLocation(text, (pos += 2) - 2, 2), value);
+            if (kind is not null) return new SyntaxToken((SyntaxTokenKind)kind, new TextLocation(text, (pos += 2) - 2, 2), value);
             return null;
         }
 
@@ -217,10 +217,10 @@ namespace Compiler.Syntax
         private SyntaxToken NextToken()
         {
             var doubleChar = LexDoubleChar();
-            if (doubleChar != null) return doubleChar;
+            if (doubleChar is not null) return doubleChar;
 
             var singleChar = LexSingleChar();
-            if (singleChar != null) return singleChar;
+            if (singleChar is not null) return singleChar;
 
             if (current == '\0') return new SyntaxToken(SyntaxTokenKind.EndOfFile, new TextLocation(text, pos, 0), "End");
             else if (current == '"' || current == '\'') return LexString();

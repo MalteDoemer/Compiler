@@ -30,7 +30,7 @@ namespace Compiler.Symbols
 
         public TypeSymbol CreateArray() => new TypeSymbol(this);
 
-        public static TypeSymbol Lookup(string name)
+        public static TypeSymbol? Lookup(string name)
         {
             switch (name)
             {
@@ -44,9 +44,7 @@ namespace Compiler.Symbols
             }
         }
 
-        public override bool Equals(object obj) => obj is TypeSymbol symbol && Name == symbol.Name;
+        public override bool Equals(object? obj) => obj is TypeSymbol symbol && Name == symbol.Name;
         public override int GetHashCode() => HashCode.Combine(Name);
-
-        
     }
 }

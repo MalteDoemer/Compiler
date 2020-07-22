@@ -44,7 +44,7 @@ namespace gsi
             foreach (var method in methods)
             {
                 var attribute = method.GetCustomAttribute<MetaCommandAttribute>();
-                if (attribute == null)
+                if (attribute is null)
                     continue;
 
                 var metaCommand = new MetaCommand(attribute.Name, attribute.Description, method);
@@ -519,7 +519,7 @@ namespace gsi
                     args.RemoveAt(0);
 
                 var command = metaCommands.SingleOrDefault(mc => mc.Name == commandName);
-                if (command == null)
+                if (command is null)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"\nInvalid command {input}.");

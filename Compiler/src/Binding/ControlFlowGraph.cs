@@ -83,9 +83,9 @@ namespace Compiler.Binding
 
         internal sealed class GraphBuilder
         {
-            private Dictionary<BoundStatement, BasicBlock> blockFromStatement;
-            private Dictionary<BoundLabel, BasicBlock> blockFromLabel;
-            private List<BasicBlockBranch> branches;
+            private readonly Dictionary<BoundStatement, BasicBlock> blockFromStatement;
+            private readonly Dictionary<BoundLabel, BasicBlock> blockFromLabel;
+            private readonly List<BasicBlockBranch> branches;
 
             private BasicBlock start;
             private BasicBlock end;
@@ -95,14 +95,12 @@ namespace Compiler.Binding
                 branches = new List<BasicBlockBranch>();
                 blockFromStatement = new Dictionary<BoundStatement, BasicBlock>();
                 blockFromLabel = new Dictionary<BoundLabel, BasicBlock>();
+                start = new BasicBlock(isStart: true);
+                end = new BasicBlock(isStart: false);
             }
 
             public ControlFlowGraph Build(List<BasicBlock> blocks)
             {
-
-                start = new BasicBlock(isStart: true);
-                end = new BasicBlock(isStart: false);
-
                 if (blocks.Count == 0)
                     Connect(start, end);
                 else
@@ -186,27 +184,14 @@ namespace Compiler.Binding
 
             private BoundExpression LogicalNot(BoundExpression expr)
             {
-                if (expr is BoundLiteralExpression literalExpr)
-                {
-                    var value = !(bool)literalExpr.Value;
-                    return new BoundLiteralExpression(value, TypeSymbol.Bool, literalExpr.IsValid);
-                }
+                if (expr.Constant is not null)
+                    return new BoundLiteralExpression(expr.Constant.Value, expr.ResultType, expr.IsValid);
 
                 return new BoundUnaryExpression(BoundUnaryOperator.LogicalNot, expr, TypeSymbol.Bool, expr.IsValid);
             }
 
-            private void Connect(BasicBlock from, BasicBlock to, BoundExpression condition = null)
+            private void Connect(BasicBlock from, BasicBlock to, BoundExpression? condition = null)
             {
-                if (condition is BoundLiteralExpression l)
-                {
-                    var value = (bool)l.Value;
-                    if (value)
-                        condition = null;
-                    else
-                        return;
-                }
-
-
                 var branch = new BasicBlockBranch(from, to, condition);
                 from.Outgoing.Add(branch);
                 to.Incoming.Add(branch);
@@ -321,7 +306,7 @@ namespace Compiler.Binding
 
         internal sealed class BasicBlockBranch
         {
-            public BasicBlockBranch(BasicBlock from, BasicBlock to, BoundExpression condition)
+            public BasicBlockBranch(BasicBlock from, BasicBlock to, BoundExpression? condition)
             {
                 From = from;
                 To = to;
@@ -330,11 +315,11 @@ namespace Compiler.Binding
 
             public BasicBlock From { get; }
             public BasicBlock To { get; }
-            public BoundExpression Condition { get; }
+            public BoundExpression? Condition { get; }
 
             public override string ToString()
             {
-                if (Condition == null)
+                if (Condition is null)
                     return string.Empty;
                 return Condition.ToString();
             }

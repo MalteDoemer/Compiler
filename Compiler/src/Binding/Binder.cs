@@ -13,7 +13,7 @@ namespace Compiler.Binding
     internal sealed class Binder : IDiagnostable
     {
         private readonly DiagnosticBag diagnostics;
-        private readonly FunctionSymbol function;
+        private readonly FunctionSymbol? function;
         private readonly bool isScript;
         private readonly Stack<(BoundLabel breakLabel, BoundLabel continueLabel)> labelStack;
 
@@ -32,7 +32,7 @@ namespace Compiler.Binding
             isTreeValid = false;
         }
 
-        private Binder(BoundScope parentScope, bool isScript, FunctionSymbol function)
+        private Binder(BoundScope parentScope, bool isScript, FunctionSymbol? function)
         {
             this.isScript = isScript;
             this.function = function;
@@ -42,7 +42,7 @@ namespace Compiler.Binding
             this.scope = new BoundScope(parentScope);
             this.diagnostics = new DiagnosticBag();
 
-            if (function != null)
+            if (function is not null)
                 foreach (var param in function.Parameters)
                     scope.TryDeclareVariable(param);
         }
@@ -75,7 +75,7 @@ namespace Compiler.Binding
             foreach (var symbol in declaredFunctions)
             {
                 var binder = new Binder(currentScope, isScript, symbol);
-                var body = binder.BindBlockStatmentSyntax(symbol.Syntax.Body);
+                var body = binder.BindBlockStatmentSyntax(symbol.Syntax!.Body);
                 var loweredBody = Lowerer.Lower(symbol, body);
 
                 if (!ControlFlowGraph.AllPathsReturn(symbol, loweredBody))
@@ -88,7 +88,7 @@ namespace Compiler.Binding
 
             globalBinder.scope.TryLookUpFunction("main", out var mainFunction);
 
-            if (mainFunction != FunctionSymbol.Invalid)
+            if (mainFunction is not null)
             {
                 void Report(string message, TextLocation location)
                 {
@@ -98,9 +98,9 @@ namespace Compiler.Binding
                 }
 
                 if (mainFunction.Parameters.Length != 0)
-                    Report("Main function cannot have arguments.", mainFunction.Syntax.Parameters.Location);
+                    Report("Main function cannot have arguments.", mainFunction.Syntax!.Parameters.Location);
                 if (mainFunction.ReturnType != TypeSymbol.Void)
-                    Report("Main function must return void.", mainFunction.Syntax.ReturnType.Location);
+                    Report("Main function must return void.", mainFunction.Syntax!.ReturnType.Location);
             }
             else if (isScript)
             {
@@ -148,7 +148,7 @@ namespace Compiler.Binding
             {
                 var parameterSyntax = func.Parameters[i];
                 var type = BindType(parameterSyntax.TypeClause);
-                var name = parameterSyntax.Identifier.Value.ToString();
+                var name = parameterSyntax.Identifier.Location.ToString();
 
                 if (!seenParameters.Add(name))
                     diagnostics.ReportError(ErrorMessage.DuplicatedParameters, parameterSyntax.Location, name);
@@ -161,7 +161,7 @@ namespace Compiler.Binding
             else
                 returnType = TypeSymbol.Void;
 
-            var symbol = new FunctionSymbol(func.Identifier.Value.ToString(), parameters.ToImmutable(), returnType, func);
+            var symbol = new FunctionSymbol(func.Identifier.Location.ToString(), parameters.ToImmutable(), returnType, func);
 
             if (!scope.TryDeclareFunction(symbol))
                 diagnostics.ReportError(ErrorMessage.FunctionAlreadyDeclared, func.Identifier.Location, func.Identifier.Value);
@@ -211,7 +211,7 @@ namespace Compiler.Binding
                 var bound = BindStatement(stmt);
                 builder.Add(bound);
             }
-            scope = scope.Parent;
+            scope = scope.Parent!;
             return new BoundBlockStatement(builder.ToImmutable(), isTreeValid);
         }
 
@@ -242,10 +242,10 @@ namespace Compiler.Binding
 
 
             VariableSymbol variable;
-            if (function == null)
-                variable = new GlobalVariableSymbol(syntax.Identifier.Value.ToString(), type, isConst, expr.Constant);
+            if (function is null)
+                variable = new GlobalVariableSymbol(syntax.Identifier.Location.ToString(), type, isConst, expr.Constant);
             else
-                variable = new LocalVariableSymbol(syntax.Identifier.Value.ToString(), type, isConst, expr.Constant);
+                variable = new LocalVariableSymbol(syntax.Identifier.Location.ToString(), type, isConst, expr.Constant);
 
             if (!scope.TryDeclareVariable(variable))
                 ReportError(ErrorMessage.VariableAlreadyDeclared, syntax.Identifier.Location, variable.Name);
@@ -256,7 +256,7 @@ namespace Compiler.Binding
         {
             var condition = CheckTypeAndConversion(TypeSymbol.Bool, syntax.Condition);
             var stmt = BindStatement(syntax.Body);
-            var elseStmt = syntax.ElseStatement == null ? null : BindStatement(syntax.ElseStatement.Body);
+            var elseStmt = syntax.ElseStatement is null ? null : BindStatement(syntax.ElseStatement.Body);
             return new BoundIfStatement(condition, stmt, elseStmt, isTreeValid);
         }
 
@@ -315,23 +315,15 @@ namespace Compiler.Binding
 
         private BoundStatement BindReturnStatementSyntax(ReturnStatementSyntax syntax)
         {
-            BoundExpression expr;
+            var expr = (BoundExpression?)null;
 
-            if (function == null)
-            {
+            if (function is null)
                 ReportError(ErrorMessage.ReturnOnlyInFunction, syntax.Location);
-                expr = null;
-            }
-            else if (syntax.ReturnExpression == null)
-            {
-                expr = null;
+            else if (syntax.VoidToken is not null)
                 if (function.ReturnType != TypeSymbol.Void)
                     ReportError(ErrorMessage.IncompatibleTypes, syntax.VoidToken.Location, function.ReturnType, TypeSymbol.Void);
-            }
-            else
-            {
-                expr = CheckTypeAndConversion(function.ReturnType, syntax.ReturnExpression);
-            }
+                else if (syntax.ReturnExpression is not null)
+                    expr = CheckTypeAndConversion(function.ReturnType, syntax.ReturnExpression);
 
             return new BoundReturnStatement(expr, isTreeValid);
         }
@@ -399,8 +391,8 @@ namespace Compiler.Binding
 
         private BoundExpression BindVariableExpressionSyntax(VariableExpressionSyntax syntax)
         {
-            var identifier = syntax.Name.Value.ToString();
-            if (!scope.TryLookUpVariable(identifier, out VariableSymbol variable))
+            var identifier = syntax.Name.Location.ToString();
+            if (!scope.TryLookUpVariable(identifier, out var variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Name.Location, syntax.Name.Value);
             return new BoundVariableExpression(variable, isTreeValid);
         }
@@ -410,8 +402,8 @@ namespace Compiler.Binding
             var right = BindExpression(syntax.Expression);
             var boundOperator = BindUnaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveUnaryType(boundOperator, right.ResultType);
-            if (boundOperator == BoundUnaryOperator.Invalid || resultType == null)
-                ReportError(ErrorMessage.UnsupportedUnaryOperator, syntax.Op.Location, syntax.Op.Value.ToString(), right.ResultType);
+            if (boundOperator == BoundUnaryOperator.Invalid || resultType is null)
+                ReportError(ErrorMessage.UnsupportedUnaryOperator, syntax.Op.Location, syntax.Op.Location.ToString(), right.ResultType);
             return new BoundUnaryExpression(boundOperator, right, resultType, isTreeValid);
         }
 
@@ -422,27 +414,35 @@ namespace Compiler.Binding
             var boundOperator = BindBinaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
 
-            if (boundOperator == BoundBinaryOperator.Invalid || resultType == null)
-                ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Location, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
+            if (boundOperator == BoundBinaryOperator.Invalid || resultType is null)
+                ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Location, syntax.Op.Location.ToString(), left.ResultType, right.ResultType);
             return new BoundBinaryExpression(boundOperator, left, right, resultType, isTreeValid);
         }
 
         private BoundExpression BindCallExpressionSyntax(CallExpressionSyntax syntax)
         {
-            if (syntax.Arguments.Length == 1 && TypeSymbol.Lookup(syntax.Identifier.Value.ToString()) is TypeSymbol type)
+            var name = syntax.Identifier.Location.ToString();
+            var argLen = syntax.Arguments.Length;
+
+            if (argLen == 1 && TypeSymbol.Lookup(name) is TypeSymbol type)
                 return BindExplicitConversion(type, syntax.Arguments[0]);
 
-            if (!scope.TryLookUpFunction(syntax.Identifier.Value.ToString(), out var symbol))
-                ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, syntax.Identifier.Value.ToString());
 
-            if (syntax.Arguments.Length != symbol.Parameters.Length)
+            if (!scope.TryLookUpFunction(name, out FunctionSymbol? symbol))
+                ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, name);
+
+            if (symbol is null)
+                return new BoundCallExpression(null, ImmutableArray<BoundExpression>.Empty, isTreeValid);
+
+            var paramLen = symbol.Parameters.Length;
+
+            if (argLen != paramLen)
             {
                 var reportSpan = TextSpan.FromBounds(syntax.LeftParenthesis.Location.Span.Start, syntax.RightParenthesis.Location.Span.End);
-                ReportError(ErrorMessage.WrongAmountOfArguments, new TextLocation(syntax.Location.Text, reportSpan), symbol.Name, symbol.Parameters.Length, syntax.Arguments.Length);
+                ReportError(ErrorMessage.WrongAmountOfArguments, new TextLocation(syntax.Location.Text, reportSpan), symbol.Name, paramLen, argLen);
             }
 
-            var len = Math.Min(syntax.Arguments.Length, symbol.Parameters.Length);
-
+            var len = Math.Min(argLen, paramLen);
             var argBuilder = ImmutableArray.CreateBuilder<BoundExpression>(len);
 
             for (int i = 0; i < len; i++)
@@ -459,22 +459,27 @@ namespace Compiler.Binding
 
         private BoundExpression BindAssignmentExpressionSyntax(AssignmentExpressionSyntax syntax)
         {
-            if (!scope.TryLookUpVariable(syntax.Identifier.Value.ToString(), out var variable))
-                ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, syntax.Identifier.Value.ToString());
+            var name = syntax.Identifier.Location.ToString();
 
-            if (variable.IsReadOnly)
+            if (!scope.TryLookUpVariable(name, out var variable))
+                ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, name);
+
+            if (variable is not null && variable.IsReadOnly)
                 ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
 
-            var expr = CheckTypeAndConversion(variable.Type, syntax.Expression);
+            var expr = CheckTypeAndConversion(variable?.Type, syntax.Expression);
+
             return new BoundAssignmentExpression(variable, expr, isTreeValid);
         }
 
         private BoundExpression BindAdditionalAssignmentExpressionSyntax(AdditionalAssignmentExpressionSyntax syntax)
         {
-            if (!scope.TryLookUpVariable(syntax.Identifier.Value.ToString(), out VariableSymbol variable))
-                ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, syntax.Identifier.Value.ToString());
+            var name = syntax.Identifier.Location.ToString();
 
-            if (variable.IsReadOnly)
+            if (!scope.TryLookUpVariable(name, out var variable))
+                ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, name);
+
+            if (variable is not null && variable.IsReadOnly)
                 ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
 
 
@@ -484,8 +489,8 @@ namespace Compiler.Binding
             var op = BindBinaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
-            if (op == BoundBinaryOperator.Invalid || resultType == null)
-                ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Location, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
+            if (op == BoundBinaryOperator.Invalid || resultType is null)
+                ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Location, syntax.Op.Location.ToString(), left.ResultType, right.ResultType);
 
             var binaryExpression = new BoundBinaryExpression(op, left, right, resultType, isTreeValid);
             return new BoundAssignmentExpression(variable, binaryExpression, isTreeValid);
@@ -493,10 +498,10 @@ namespace Compiler.Binding
 
         private BoundExpression BindPostIncDecExpressionSyntax(PostIncDecExpressionSyntax syntax)
         {
-            if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out VariableSymbol variable))
+            if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out var variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, (string)syntax.Identifier.Value);
 
-            if (variable.IsReadOnly)
+            if (variable is not null && variable.IsReadOnly)
                 ReportError(ErrorMessage.CannotAssignToConst, syntax.Identifier.Location, syntax.Identifier.Value);
 
             var left = new BoundVariableExpression(variable, isTreeValid);
@@ -504,8 +509,8 @@ namespace Compiler.Binding
             var op = BindBinaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
-            if (op == BoundBinaryOperator.Invalid || resultType == null)
-                ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Location, syntax.Op.Value.ToString(), left.ResultType, right.ResultType);
+            if (op == BoundBinaryOperator.Invalid || resultType is null)
+                ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Location, syntax.Op.Location.ToString(), left.ResultType, right.ResultType);
 
             var binaryExpression = new BoundBinaryExpression(op, left, right, resultType, isTreeValid);
             return new BoundAssignmentExpression(variable, binaryExpression, isTreeValid);
@@ -557,7 +562,7 @@ namespace Compiler.Binding
             }
         }
 
-        private BoundExpression CheckTypeAndConversion(TypeSymbol type, ExpressionSyntax expression)
+        private BoundExpression CheckTypeAndConversion(TypeSymbol? type, ExpressionSyntax expression)
         {
             var expr = BindExpression(expression);
             var conversionType = BindFacts.ClassifyConversion(expr.ResultType, type);
@@ -565,9 +570,9 @@ namespace Compiler.Binding
             if (conversionType == ConversionType.Identety)
                 return expr;
             else if (conversionType == ConversionType.Explicit)
-                ReportError(ErrorMessage.MissingExplicitConversion, expression.Location, type, expr.ResultType);
+                ReportError(ErrorMessage.MissingExplicitConversion, expression.Location, type!, expr.ResultType);
             else if (conversionType == ConversionType.None)
-                ReportError(ErrorMessage.IncompatibleTypes, expression.Location, type, expr.ResultType);
+                ReportError(ErrorMessage.IncompatibleTypes, expression.Location, type!, expr.ResultType);
 
             return new BoundConversionExpression(type, expr, isTreeValid);
         }

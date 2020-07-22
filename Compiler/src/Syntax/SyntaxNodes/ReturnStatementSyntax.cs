@@ -7,7 +7,7 @@ namespace Compiler.Syntax
 {
     public sealed class ReturnStatementSyntax : StatementSyntax
     {
-        internal ReturnStatementSyntax(SyntaxToken returnToken, ExpressionSyntax returnExpression, SyntaxToken voidToken, bool isValid, TextLocation location) : base(isValid, location)
+        internal ReturnStatementSyntax(SyntaxToken returnToken, ExpressionSyntax? returnExpression, SyntaxToken? voidToken, bool isValid, TextLocation location) : base(isValid, location)
         {
             ReturnToken = returnToken;
             ReturnExpression = returnExpression;
@@ -16,15 +16,15 @@ namespace Compiler.Syntax
 
         public override SyntaxNodeKind Kind => SyntaxNodeKind.ReturnStatementSyntax;
         public SyntaxToken ReturnToken { get; }
-        public ExpressionSyntax ReturnExpression { get; }
-        public SyntaxToken VoidToken { get; }
+        public ExpressionSyntax? ReturnExpression { get; }
+        public SyntaxToken? VoidToken { get; }
 
         public override IEnumerable<SyntaxNode> GetChildren()
         {
             yield return ReturnToken;
-            if (ReturnExpression != null)
+            if (ReturnExpression is not null)
                 yield return ReturnExpression;
-            else
+            if (VoidToken is not null)
                 yield return VoidToken;
         }
     }

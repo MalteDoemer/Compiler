@@ -73,13 +73,14 @@ namespace Compiler
                 ms.Seek(0, SeekOrigin.Begin);
                 var data = ms.ToArray();
                 var assembly = System.Reflection.Assembly.Load(data);
-                assembly.EntryPoint.Invoke(null, null);
+                if (assembly.EntryPoint is not null)
+                    assembly.EntryPoint.Invoke(null, null);
             }
         }
 
-        public void WriteBoundTree(TextWriter writer, string functionName = null)
+        public void WriteBoundTree(TextWriter writer, string? functionName = null)
         {
-            if (functionName == null)
+            if (functionName is null)
                 writer.WriteBoundNode(program);
             else
             {
@@ -110,13 +111,14 @@ namespace Compiler
         public string[] GetFunctionDeclarations()
         {
 
-            var declarations = program.Functions.Keys.Where(f => f.Syntax != null).ToArray();
-            var res = new string[declarations.Length];
+            var locations = program.Functions.Keys.Where(f => f.Syntax is not null).ToArray();
+            var res = new string[locations.Length];
 
-            for (int i = 0; i < declarations.Length; i++)
+            for (int i = 0; i < locations.Length; i++)
             {
-                var decl = declarations[i];
-                var location = decl.Syntax.Location;
+                var decl = locations[i];
+
+                var location = decl.Syntax!.Location;
                 res[i] = location.ToString();
             }
 

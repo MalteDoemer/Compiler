@@ -130,7 +130,8 @@ namespace Compiler.Syntax
                 default: return null;
             }
         }
-
+        
+        // TODO optimize
         internal static bool IsExpressionStatement(ExpressionSyntax expression, bool isScripting = true)
         {
             if (isScripting) return true;
@@ -158,7 +159,7 @@ namespace Compiler.Syntax
 
         }
 
-        public static string GetText(this SyntaxTokenKind kind)
+        public static string? GetText(this SyntaxTokenKind kind)
         {
             switch (kind)
             {

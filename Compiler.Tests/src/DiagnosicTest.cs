@@ -142,7 +142,7 @@ namespace Compiler.Test
 
             var resType = BindFacts.ResolveBinaryType((BoundBinaryOperator)boundOp, t1, t2);
 
-            if (resType != null)
+            if (resType is not null)
                 return;
 
             var typeText1 = GetSampleText(t1);
@@ -162,7 +162,7 @@ namespace Compiler.Test
 
             var resType = BindFacts.ResolveUnaryType(boundOp, type);
 
-            if (resType != null)
+            if (resType is not null)
                 return;
 
             var typeText = GetSampleText(type);

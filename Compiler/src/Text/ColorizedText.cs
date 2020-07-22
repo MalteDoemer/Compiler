@@ -33,7 +33,7 @@ namespace Compiler.Text
             return new ColorizedText(text, builder.MoveToImmutable());
         }
 
-        internal static ColorizedToken ColorizeToken(SyntaxToken token, SyntaxToken next)
+        internal static ColorizedToken ColorizeToken(SyntaxToken token, SyntaxToken? next)
         {
             switch (token.TokenKind)
             {
@@ -71,7 +71,7 @@ namespace Compiler.Text
                     return new ColorizedToken(token, ConsoleColor.DarkGray);
                 case SyntaxTokenKind.Identifier:
                     ConsoleColor color;
-                    if (next != null && next.TokenKind == SyntaxTokenKind.LParen)
+                    if (next is not null && next.TokenKind == SyntaxTokenKind.LParen)
                         color = ConsoleColor.Yellow;
                     else
                         color = ConsoleColor.Cyan;

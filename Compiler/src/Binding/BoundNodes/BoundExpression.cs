@@ -9,7 +9,6 @@ namespace Compiler.Binding
         }
 
         public abstract TypeSymbol ResultType { get; }
-        public virtual BoundConstant Constant { get; }
-        public bool HasConstant => Constant != null;
+        public virtual BoundConstant? Constant { get; }
     }
 }

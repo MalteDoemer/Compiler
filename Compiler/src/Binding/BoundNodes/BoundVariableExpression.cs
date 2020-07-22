@@ -5,10 +5,10 @@ namespace Compiler.Binding
 {
     internal sealed class BoundVariableExpression : BoundExpression
     {
-        public BoundVariableExpression(VariableSymbol variable, bool isValid) : base(isValid)
+        public BoundVariableExpression(VariableSymbol? variable, bool isValid) : base(isValid)
         {
             Variable = variable;
-            if (isValid)
+            if (isValid && variable is not null)
             {
                 Constant = variable.Constant;
                 ResultType = variable.Type;
@@ -19,7 +19,7 @@ namespace Compiler.Binding
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundVariableExpression;
         public override TypeSymbol ResultType { get; }
-        public override BoundConstant Constant { get; }
-        public VariableSymbol Variable { get; }
+        public override BoundConstant? Constant { get; }
+        public VariableSymbol? Variable { get; }
     }
 }

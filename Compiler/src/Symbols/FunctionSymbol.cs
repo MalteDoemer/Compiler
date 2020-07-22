@@ -24,7 +24,7 @@ namespace Compiler.Symbols
 
         public ImmutableArray<ParameterSymbol> Parameters { get; }
         public TypeSymbol ReturnType { get; }
-        internal FunctionDeclarationSyntax Syntax { get; }
+        public FunctionDeclarationSyntax? Syntax { get; }
         public bool Exists { get => this != Invalid; }
     }
 }

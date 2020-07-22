@@ -15,7 +15,7 @@ namespace Compiler.Symbols
         }
 
 
-        internal VariableSymbol(string name, TypeSymbol type, bool isReadonly = false, BoundConstant constant = null) : base(name)
+        internal VariableSymbol(string name, TypeSymbol type, bool isReadonly = false, BoundConstant? constant = null) : base(name)
         {
             Type = type;
             IsReadOnly = isReadonly;
@@ -25,9 +25,9 @@ namespace Compiler.Symbols
 
         public TypeSymbol Type { get; }
         public bool IsReadOnly { get; }
-        internal BoundConstant Constant { get; }
+        internal BoundConstant? Constant { get; }
 
-        public override bool Equals(object obj) => obj is VariableSymbol symbol && Name == symbol.Name && Type == symbol.Type && IsReadOnly == symbol.IsReadOnly;
+        public override bool Equals(object? obj) => obj is VariableSymbol symbol && Name == symbol.Name && Type == symbol.Type && IsReadOnly == symbol.IsReadOnly;
         public override int GetHashCode() => HashCode.Combine(Name, Type, IsReadOnly);
     }
 }

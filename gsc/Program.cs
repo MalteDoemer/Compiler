@@ -48,17 +48,17 @@ namespace gsc
             }
 
             var paths = ValidatePaths(sourcePaths);
-            if (paths == null) return 5;
+            if (paths is null) return 5;
             if (paths.Length == 0)
             {
                 WriteError("No source files are provided.");
                 return 5;
             }
 
-            if (outputPath == null)
+            if (outputPath is null)
                 outputPath = Path.ChangeExtension(paths[0], ".exe");
 
-            if (moduleName == null)
+            if (moduleName is null)
                 moduleName = Path.GetFileNameWithoutExtension(outputPath);
 
             var sourceTexts = paths.Select(p => new SourceText(File.ReadAllText(p), p)).ToArray();

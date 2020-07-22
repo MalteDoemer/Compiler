@@ -45,7 +45,7 @@ namespace Compiler.Lowering
                     builder.Add(current);
                 }
             }
-            if (function != null && function.ReturnType == TypeSymbol.Void)
+            if (function is not null && function.ReturnType == TypeSymbol.Void)
                 if (builder.Count == 0 || CanFallThrough(builder.Last()))
                     builder.Add(new BoundReturnStatement(null, true));
 
@@ -75,7 +75,7 @@ namespace Compiler.Lowering
 
         protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
         {
-            if (node.ElseStatement == null)
+            if (node.ElseStatement is null)
             {
                 var endLabel = CreateLabel();
                 var gotoIfFalse = new BoundConditionalGotoStatement(endLabel, node.Condition, jumpIfFalse: true, node.IsValid);
@@ -228,9 +228,8 @@ namespace Compiler.Lowering
 
         protected override BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
         {
-            if (node.Condition.HasConstant)
+            if (node.Condition.Constant is not null && node.Condition.Constant.Value is bool val)
             {
-                var val = (bool)node.Condition.Constant.Value;
                 val = node.JumpIfFalse ? !val : val;
                 if (val)
                     return new BoundGotoStatement(node.Label, node.IsValid);
@@ -243,7 +242,7 @@ namespace Compiler.Lowering
 
         protected override BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)
         {
-            if (node.HasConstant)
+            if (node.Constant is not null)
                 return node;
 
             var left = RewriteExpression(node.Left);
@@ -251,7 +250,7 @@ namespace Compiler.Lowering
 
             var leftType = left.ResultType;
             var rightType = right.ResultType;
-            var oneLiteral = (BoundLiteralExpression)null;
+            var oneLiteral = (BoundLiteralExpression?)null;
 
             if (node.Op == BoundBinaryOperator.Root)
                 oneLiteral = new BoundLiteralExpression(1.0d, TypeSymbol.Float, true);
@@ -282,21 +281,21 @@ namespace Compiler.Lowering
                 case (BoundBinaryOperator.Root, "int", "int"):
                     left = new BoundConversionExpression(TypeSymbol.Float, left, left.IsValid);
                     right = new BoundConversionExpression(TypeSymbol.Float, right, right.IsValid);
-                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral, right, TypeSymbol.Float, right.IsValid);
+                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral!, right, TypeSymbol.Float, right.IsValid);
                     return new BoundBinaryExpression(BoundBinaryOperator.Power, left, right, TypeSymbol.Float, node.IsValid);
 
                 case (BoundBinaryOperator.Root, "float", "int"):
                     right = new BoundConversionExpression(TypeSymbol.Float, right, right.IsValid);
-                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral, right, TypeSymbol.Float, right.IsValid);
+                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral!, right, TypeSymbol.Float, right.IsValid);
                     return new BoundBinaryExpression(BoundBinaryOperator.Power, left, right, TypeSymbol.Float, node.IsValid);
 
                 case (BoundBinaryOperator.Root, "int", "float"):
                     left = new BoundConversionExpression(TypeSymbol.Float, left, left.IsValid);
-                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral, right, TypeSymbol.Float, right.IsValid);
+                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral!, right, TypeSymbol.Float, right.IsValid);
                     return new BoundBinaryExpression(BoundBinaryOperator.Power, left, right, TypeSymbol.Float, node.IsValid);
 
                 case (BoundBinaryOperator.Root, "float", "float"):
-                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral, right, TypeSymbol.Float, right.IsValid);
+                    right = new BoundBinaryExpression(BoundBinaryOperator.Division, oneLiteral!, right, TypeSymbol.Float, right.IsValid);
                     return new BoundBinaryExpression(BoundBinaryOperator.Power, left, right, TypeSymbol.Float, node.IsValid);
 
 

@@ -11,12 +11,12 @@ namespace Compiler.Binding
             Op = op;
             Expression = expression;
             if (isValid)
-                Constant = ConstantFolder.ComputeConstantUnary(op, expression);
+                Constant = ConstantFolder.FoldUnary(op, expression);
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundUnaryExpression;
         public override TypeSymbol ResultType { get; }
-        public override BoundConstant Constant { get; }
+        public override BoundConstant? Constant { get; }
         public BoundUnaryOperator Op { get; }
         public BoundExpression Expression { get; }
     }

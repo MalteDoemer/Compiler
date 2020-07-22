@@ -10,24 +10,21 @@ namespace Compiler.Binding
         private Dictionary<string, VariableSymbol> variables;
         private Dictionary<string, FunctionSymbol> functions;
 
-        public BoundScope Parent { get; }
+        public BoundScope? Parent { get; }
 
-        public BoundScope(BoundScope parent)
+        public BoundScope(BoundScope? parent)
         {
             Parent = parent;
             variables = new Dictionary<string, VariableSymbol>();
             functions = new Dictionary<string, FunctionSymbol>();
         }
 
-        public bool TryLookUpVariable(string identifier, out VariableSymbol value)
+        public bool TryLookUpVariable(string identifier, out VariableSymbol? value)
         {
             if (variables.TryGetValue(identifier, out value))
                 return true;
-            else if (Parent == null)
-            {
-                value = null;
+            else if (Parent is null)
                 return false;
-            }
             return Parent.TryLookUpVariable(identifier, out value);
         }
 
@@ -39,15 +36,12 @@ namespace Compiler.Binding
             return true;
         }
 
-        public bool TryLookUpFunction(string identifier, out FunctionSymbol value)
+        public bool TryLookUpFunction(string identifier, out FunctionSymbol? value)
         {
             if (functions.TryGetValue(identifier, out value))
                 return true;
-            else if (Parent == null)
-            {
-                value = FunctionSymbol.Invalid;
+            else if (Parent is null)
                 return false;
-            }
             return Parent.TryLookUpFunction(identifier, out value);
         }
 

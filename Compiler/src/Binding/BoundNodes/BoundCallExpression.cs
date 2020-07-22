@@ -6,15 +6,16 @@ namespace Compiler.Binding
 {
     internal sealed class BoundCallExpression : BoundExpression
     {
-        public BoundCallExpression(FunctionSymbol symbol, ImmutableArray<BoundExpression> arguments, bool isValid) : base(isValid)
+        public BoundCallExpression(FunctionSymbol? symbol, ImmutableArray<BoundExpression> arguments, bool isValid) : base(isValid)
         {
             Symbol = symbol;
             Arguments = arguments;
+            ResultType = symbol is null ? TypeSymbol.ErrorType : symbol.ReturnType;
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.BoundCallExpression;
-        public override TypeSymbol ResultType => Symbol.ReturnType;
-        public FunctionSymbol Symbol { get; }
+        public override TypeSymbol ResultType { get; }
+        public FunctionSymbol? Symbol { get; }
         public ImmutableArray<BoundExpression> Arguments { get; }
     }
 }

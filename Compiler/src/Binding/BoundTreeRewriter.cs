@@ -39,7 +39,7 @@ namespace Compiler.Binding
 
         protected virtual BoundStatement RewriteReturnStatement(BoundReturnStatement node)
         {
-            var expr = node.Expression == null ? null : RewriteExpression(node.Expression);
+            var expr = node.Expression is null ? null : RewriteExpression(node.Expression);
             if (expr == node.Expression)
                 return node;
             return new BoundReturnStatement(expr, node.IsValid);
@@ -90,7 +90,7 @@ namespace Compiler.Binding
         {
             var condition = RewriteExpression(node.Condition);
             var body = RewriteStatement(node.Body);
-            var elseStatement = node.ElseStatement == null ? null : RewriteStatement(node.ElseStatement);
+            var elseStatement = node.ElseStatement is null ? null : RewriteStatement(node.ElseStatement);
             if (condition == node.Condition && body == node.Body && elseStatement == node.ElseStatement)
                 return node;
             return new BoundIfStatement(condition, body, elseStatement, node.IsValid);
@@ -111,7 +111,7 @@ namespace Compiler.Binding
 
         protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
         {
-            ImmutableArray<BoundStatement>.Builder builder = null;
+            var builder = (ImmutableArray<BoundStatement>.Builder?)null;
 
             for (var i = 0; i < node.Statements.Length; i++)
             {
@@ -119,7 +119,7 @@ namespace Compiler.Binding
                 var newStatement = RewriteStatement(oldStatement);
                 if (newStatement != oldStatement)
                 {
-                    if (builder == null)
+                    if (builder is null)
                     {
                         builder = ImmutableArray.CreateBuilder<BoundStatement>(node.Statements.Length);
 
@@ -128,11 +128,11 @@ namespace Compiler.Binding
                     }
                 }
 
-                if (builder != null)
+                if (builder is not null)
                     builder.Add(newStatement);
             }
 
-            if (builder == null)
+            if (builder is null)
                 return node;
 
             return new BoundBlockStatement(builder.MoveToImmutable(), node.IsValid);
@@ -175,12 +175,12 @@ namespace Compiler.Binding
             var expr = RewriteExpression(node.Expression);
             if (expr == node.Expression)
                 return node;
-            return new BoundConversionExpression(node.Type, expr, node.IsValid);
+            return new BoundConversionExpression(node.ResultType, expr, node.IsValid);
         }
 
         protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)
         {
-            ImmutableArray<BoundExpression>.Builder builder = null;
+            var builder = (ImmutableArray<BoundExpression>.Builder?)null;
 
             for (var i = 0; i < node.Arguments.Length; i++)
             {
@@ -188,7 +188,7 @@ namespace Compiler.Binding
                 var newStatement = RewriteExpression(oldStatement);
                 if (newStatement != oldStatement)
                 {
-                    if (builder == null)
+                    if (builder is null)
                     {
                         builder = ImmutableArray.CreateBuilder<BoundExpression>(node.Arguments.Length);
 
@@ -197,11 +197,11 @@ namespace Compiler.Binding
                     }
                 }
 
-                if (builder != null)
+                if (builder is not null)
                     builder.Add(newStatement);
             }
 
-            if (builder == null)
+            if (builder is null)
                 return node;
 
             return new BoundCallExpression(node.Symbol, builder.MoveToImmutable(), node.IsValid);
