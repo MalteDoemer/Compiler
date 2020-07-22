@@ -11,7 +11,7 @@ namespace Compiler.Binding
         }
 
         public abstract BoundNodeKind Kind { get; }
-
+        
         public bool IsValid { get; }
 
         public override string ToString()

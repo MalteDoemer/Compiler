@@ -198,38 +198,8 @@ namespace Compiler.Binding
                     return BindContinueStatementSyntax((ContinueStatementSyntax)syntax);
                 case SyntaxNodeKind.ReturnStatementSyntax:
                     return BindReturnStatementSyntax((ReturnStatementSyntax)syntax);
-                case SyntaxNodeKind.SwitchStatementSyntax:
-                    return BindSwitchStatementSyntax((SwitchStatementSyntax)syntax);
                 default: throw new Exception($"Unexpected SyntaxKind <{syntax.Kind}>");
             }
-        }
-
-        private BoundStatement BindSwitchStatementSyntax(SwitchStatementSyntax syntax)
-        {
-            var expr = BindExpression(syntax.Expression);
-            var exprBuilder = ImmutableArray.CreateBuilder<BoundExpression>();
-            var stmtBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
-
-            labelCounter++;
-            var breakLabel = new BoundLabel($"break{labelCounter}");
-            labelStack.Push((breakLabel, null));
-
-            foreach (var statement in syntax.Cases.Statements)
-            {
-                var @case = (CaseStatementSyntax)statement;
-                var caseExpr = CheckTypeAndConversion(expr.ResultType, @case.Expression);
-                if (!BindFacts.IsValidCase(caseExpr))
-                    ReportError(ErrorMessage.InvalidCaseExpression, @case.Expression.Location);
-                exprBuilder.Add(caseExpr);
-                var caseStmtBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
-                foreach (var stmt in @case.Statements)
-                    caseStmtBuilder.Add(BindStatement(stmt));
-                stmtBuilder.Add(new BoundBlockStatement(caseStmtBuilder.ToImmutable(), isTreeValid));
-            }
-            labelStack.Pop();
-
-            return new BoundSwitchStatement(expr, exprBuilder.ToImmutable(), stmtBuilder.ToImmutable(), breakLabel, isTreeValid);
-
         }
 
         private BoundStatement BindBlockStatmentSyntax(BlockStatmentSyntax syntax)
@@ -339,12 +309,6 @@ namespace Compiler.Binding
             }
             else
                 label = labelStack.Peek().continueLabel;
-
-            if (label == null)
-            {
-                ReportError(ErrorMessage.InvalidBreakOrContinue, syntax.Location, "continue");
-                label = new BoundLabel("Invalid continue");
-            }
 
             return new BoundGotoStatement(label, isTreeValid);
         }

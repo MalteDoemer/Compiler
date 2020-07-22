@@ -31,7 +31,5 @@ namespace Compiler.Diagnostics
         MissingRequiredMethod,
         AmbiguousRequiredMethod,
         InvalidEscapeSequence,
-        DuplicatedCase,
-        InvalidCaseExpression,
     }
 }
