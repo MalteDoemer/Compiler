@@ -207,5 +207,9 @@ namespace Compiler.Binding
             }
         }
 
+        internal static bool IsValidCase(BoundExpression caseExpr)
+        {
+            return true;
+        }
     }
 }

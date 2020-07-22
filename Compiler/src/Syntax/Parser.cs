@@ -156,32 +156,43 @@ namespace Compiler.Syntax
                     return ParseContinueStatement();
                 case SyntaxTokenKind.ReturnKeyword:
                     return ParseReturnStatement();
-                //case SyntaxTokenKind.SwitchKeyword:
-                    //return ParseSwitchStatement();
+                case SyntaxTokenKind.SwitchKeyword:
+                    return ParseSwitchStatement();
+                case SyntaxTokenKind.CaseKeyword:
+                    return ParseCaseStatement();
                 default:
                     return ParseExpressionStatement();
             }
         }
 
+        // TODO Error checking
         private StatementSyntax ParseSwitchStatement()
         {
             var switchToken = MatchToken(SyntaxTokenKind.SwitchKeyword);
             var switchOn = ParseExpression();
-            var lcurly = MatchToken(SyntaxTokenKind.LCurly);
-            var cases = ParseCaseStatements();
-            var rcurly = MatchToken(SyntaxTokenKind.RCurly);
-            var span = TextSpan.FromBounds(switchOn.Location.Span.Start, rcurly.Location.Span.End);
-            return new SwitchStatementSyntax(switchToken, switchOn, lcurly, cases, rcurly, isTreeValid, new TextLocation(source, span)); ;
+            var block = ParseBlockStatement();
+            var span = TextSpan.FromBounds(switchToken.Location.Span.Start, block.CloseCurly.Location.Span.End);
+            return new SwitchStatementSyntax(switchToken, switchOn, block, isTreeValid, new TextLocation(source, span));
         }
 
-        private ImmutableArray<CaseStatementSyntax> ParseCaseStatements()
+        private StatementSyntax ParseCaseStatement()
         {
-            throw new NotImplementedException();
-        }
+            var caseStatements = ImmutableArray.CreateBuilder<StatementSyntax>();
+            var caseToken = MatchToken(SyntaxTokenKind.CaseKeyword, SyntaxTokenKind.DefaultKeyword);
+            var expression = caseToken.TokenKind == SyntaxTokenKind.CaseKeyword ? ParseExpression() : null;
+            var colonToken = MatchToken(SyntaxTokenKind.Colon);
 
-        private CaseStatementSyntax ParseCaseStatement()
-        {
-            throw new NotImplementedException();
+                while (current.TokenKind != SyntaxTokenKind.CaseKeyword ||
+                    current.TokenKind != SyntaxTokenKind.DefaultKeyword ||
+                    current.TokenKind != SyntaxTokenKind.RCurly ||
+                    current.TokenKind != SyntaxTokenKind.EndOfFile)
+            {
+                caseStatements.Add(ParseStatement());
+            }
+            var last = caseStatements.LastOrDefault() ?? (SyntaxNode)colonToken;
+
+            var span = TextSpan.FromBounds(caseToken.Location.Span.Start, last.Location.Span.End);
+            return new CaseStatementSyntax(caseToken, expression, colonToken, caseStatements.ToImmutable(), isTreeValid, new TextLocation(source, span));
         }
 
         private StatementSyntax ParseReturnStatement()

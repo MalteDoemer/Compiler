@@ -37,7 +37,9 @@ namespace Compiler.Diagnostics
            "The required type {0} was found in multiple references: {1}",
            "The required method {0} cannot be resolved in the given references.",
            "The required method {0} was found in multiple references: {1}",
-           "Invalid escape sequence: '{0}'"
+           "Invalid escape sequence: '{0}'",
+           "Dublicated case '{0}'.",
+           "Only constants and LValues can be used in a switch statement.",
         };
 
         private readonly List<Diagnostic> builder;
