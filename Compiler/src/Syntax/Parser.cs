@@ -156,32 +156,9 @@ namespace Compiler.Syntax
                     return ParseContinueStatement();
                 case SyntaxTokenKind.ReturnKeyword:
                     return ParseReturnStatement();
-                //case SyntaxTokenKind.SwitchKeyword:
-                    //return ParseSwitchStatement();
                 default:
                     return ParseExpressionStatement();
             }
-        }
-
-        private StatementSyntax ParseSwitchStatement()
-        {
-            var switchToken = MatchToken(SyntaxTokenKind.SwitchKeyword);
-            var switchOn = ParseExpression();
-            var lcurly = MatchToken(SyntaxTokenKind.LCurly);
-            var cases = ParseCaseStatements();
-            var rcurly = MatchToken(SyntaxTokenKind.RCurly);
-            var span = TextSpan.FromBounds(switchOn.Location.Span.Start, rcurly.Location.Span.End);
-            return new SwitchStatementSyntax(switchToken, switchOn, lcurly, cases, rcurly, isTreeValid, new TextLocation(source, span)); ;
-        }
-
-        private ImmutableArray<CaseStatementSyntax> ParseCaseStatements()
-        {
-            throw new NotImplementedException();
-        }
-
-        private CaseStatementSyntax ParseCaseStatement()
-        {
-            throw new NotImplementedException();
         }
 
         private StatementSyntax ParseReturnStatement()
