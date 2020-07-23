@@ -4,12 +4,12 @@ namespace Compiler.Binding
 {
     internal sealed class BoundConversionExpression : BoundExpression
     {
-        public BoundConversionExpression(TypeSymbol? type, BoundExpression expression, bool isValid) : base(isValid)
+        public BoundConversionExpression(TypeSymbol type, BoundExpression expression, bool isValid) : base(isValid)
         {
-            ResultType = type is null ? TypeSymbol.ErrorType : type;
+            ResultType = type;
             Expression = expression;
-            if (isValid && !(type is null))
-                Constant = ConstantFolder.FoldConversion(ResultType, expression);
+            if (isValid)
+                Constant = ConstantFolder.FoldConversion(type, expression);
         }
         public override BoundNodeKind Kind => BoundNodeKind.BoundConversionExpression;
         public override TypeSymbol ResultType { get; }

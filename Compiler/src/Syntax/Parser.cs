@@ -19,7 +19,7 @@ namespace Compiler.Syntax
 
         private bool isTreeValid = true;
         private bool isStatementValid = true;
-        private SyntaxToken current { get => Peak(0); }
+        private SyntaxToken current { get => Peek(0); }
         private int pos;
 
         public Parser(SourceText source, bool isScript)
@@ -42,11 +42,14 @@ namespace Compiler.Syntax
             isTreeValid = false;
         }
 
+        private TextLocation LocFromBounds(int start, int end) => new TextLocation(source, TextSpan.FromBounds(start, end));
+
+        private TextLocation LocFromLength(int start, int length) => new TextLocation(source, TextSpan.FromLength(start, length));
+
         private SyntaxToken MatchToken(params SyntaxTokenKind[] kinds)
         {
             foreach (var kind in kinds)
                 if (current.TokenKind == kind) return Advance();
-
 
             ReportError(ErrorMessage.ExpectedToken, current.Location, string.Join("/", kinds));
             var res = new SyntaxToken(kinds.FirstOrDefault(), current.Location, current.Value, false);
@@ -61,17 +64,18 @@ namespace Compiler.Syntax
             return res;
         }
 
-        private SyntaxToken Peak(int offset)
+        private SyntaxToken Peek(int offset)
         {
-            if (pos + offset < tokens.Length)
-                return tokens[pos + offset];
-            else return tokens[tokens.Length - 1];
+            var index = pos + offset;
+            if (index < tokens.Length)
+                return tokens[index];
+            return tokens[tokens.Length - 1];
         }
 
         public CompilationUnitSyntax ParseCompilationUnit()
         {
             var members = ParseMembers();
-            return new CompilationUnitSyntax(members, isTreeValid, new TextLocation(source, TextSpan.FromBounds(0, source.Length)));
+            return new CompilationUnitSyntax(members, isTreeValid, LocFromBounds(0, source.Length));
         }
 
         private ImmutableArray<MemberSyntax> ParseMembers()
@@ -120,16 +124,16 @@ namespace Compiler.Syntax
 
             var start = functionKeyword.Location.Span.Start;
             var end = body.Location.Span.End;
-            var span = TextSpan.FromBounds(start, end);
-
-            return new FunctionDeclarationSyntax(functionKeyword, identifier, lparen, parameters, rparen, returnType, body, isTreeValid, new TextLocation(source, span));
+            var loc = LocFromBounds(start, end);
+            return new FunctionDeclarationSyntax(functionKeyword, identifier, lparen, parameters, rparen, returnType, body, isTreeValid, loc);
         }
 
         private ParameterSyntax ParseParameter()
         {
             var identifier = MatchToken(SyntaxTokenKind.Identifier);
             var type = ParseOptionalTypeClause();
-            return new ParameterSyntax(identifier, type, isTreeValid, new TextLocation(source, TextSpan.FromBounds(identifier.Location.Span.Start, type.Location.Span.End)));
+            var loc = LocFromBounds(identifier.Location.Span.Start, type.Location.Span.End);
+            return new ParameterSyntax(identifier, type, isTreeValid, loc);
         }
 
         private StatementSyntax ParseStatement()
@@ -167,12 +171,11 @@ namespace Compiler.Syntax
             if (current.TokenKind == SyntaxTokenKind.VoidKeyword)
             {
                 var voidToken = MatchToken(SyntaxTokenKind.VoidKeyword);
-                var span = TextSpan.FromBounds(returnKeyword.Location.Span.Start, voidToken.Location.Span.End);
-                return new ReturnStatementSyntax(returnKeyword, null, voidToken, isTreeValid, new TextLocation(source, span));
+                return new ReturnStatementSyntax(returnKeyword, null, voidToken, isTreeValid, LocFromBounds(returnKeyword.Location.Start, voidToken.Location.End));
             }
             var expr = ParseExpression();
             var span2 = TextSpan.FromBounds(returnKeyword.Location.Span.Start, expr.Location.Span.End);
-            return new ReturnStatementSyntax(returnKeyword, expr, null, isTreeValid, new TextLocation(source, span2));
+            return new ReturnStatementSyntax(returnKeyword, expr, null, isTreeValid, LocFromBounds(returnKeyword.Location.Start, expr.Location.End));
         }
 
         private StatementSyntax ParseContinueStatement()
@@ -193,8 +196,8 @@ namespace Compiler.Syntax
             var body = ParseStatement();
             var whileToken = MatchToken(SyntaxTokenKind.WhileKeyword);
             var condition = ParseExpression();
-            var span = TextSpan.FromBounds(doToken.Location.Span.Start, condition.Location.Span.End);
-            return new DoWhileStatementSyntax(doToken, body, whileToken, condition, isTreeValid, new TextLocation(source, span));
+            var loc = LocFromBounds(doToken.Location.Start, condition.Location.End);
+            return new DoWhileStatementSyntax(doToken, body, whileToken, condition, isTreeValid, loc);
         }
 
         private ForStatementSyntax ParseForStatement()
@@ -204,8 +207,8 @@ namespace Compiler.Syntax
             var condition = ParseExpression();
             var increment = ParseExpression();
             var body = ParseStatement();
-            var span = TextSpan.FromBounds(forToken.Location.Span.Start, body.Location.Span.End);
-            return new ForStatementSyntax(forToken, variableDeclaration, condition, increment, body, isTreeValid, new TextLocation(source, span));
+            var loc = LocFromBounds(forToken.Location.Start, body.Location.End);
+            return new ForStatementSyntax(forToken, variableDeclaration, condition, increment, body, isTreeValid, loc);
         }
 
         private IfStatementSyntax ParseIfStatement()
@@ -214,10 +217,9 @@ namespace Compiler.Syntax
             var condition = ParseExpression();
             var body = ParseStatement();
             var elseClause = ParseElseClause();
-            var endStmt = elseClause ?? body;
-
-            var span = TextSpan.FromBounds(ifToken.Location.Span.Start, endStmt.Location.Span.End);
-            return new IfStatementSyntax(ifToken, condition, body, elseClause, isTreeValid, new TextLocation(source, span));
+            var last = elseClause ?? body;
+            var loc = LocFromBounds(ifToken.Location.Start, last.Location.End);
+            return new IfStatementSyntax(ifToken, condition, body, elseClause, isTreeValid, loc);
         }
 
         private WhileStatementSyntax ParseWhileStatement()
@@ -225,8 +227,8 @@ namespace Compiler.Syntax
             var whileToken = MatchToken(SyntaxTokenKind.WhileKeyword);
             var condition = ParseExpression();
             var body = ParseStatement();
-            var span = TextSpan.FromBounds(whileToken.Location.Span.Start, body.Location.Span.End);
-            return new WhileStatementSyntax(whileToken, condition, body, isTreeValid, new TextLocation(source, span));
+            var loc = LocFromBounds(whileToken.Location.Start, body.Location.End);
+            return new WhileStatementSyntax(whileToken, condition, body, isTreeValid, loc);
         }
 
         private ExpressionStatementSyntax ParseExpressionStatement()
@@ -246,7 +248,7 @@ namespace Compiler.Syntax
             {
                 if (current.TokenKind == SyntaxTokenKind.EndOfFile)
                 {
-                    ReportError(ErrorMessage.NeverClosedCurlyBrackets, new TextLocation(source, TextSpan.FromBounds(lcurly.Location.Span.Start, current.Location.Span.Start)));
+                    ReportError(ErrorMessage.NeverClosedCurlyBrackets, LocFromBounds(lcurly.Location.Start, current.Location.Start));
                     break;
                 }
 
@@ -255,8 +257,8 @@ namespace Compiler.Syntax
             }
 
             var rcurly = MatchToken(SyntaxTokenKind.RCurly);
-            var span = TextSpan.FromBounds(lcurly.Location.Span.Start, rcurly.Location.Span.End);
-            return new BlockStatmentSyntax(lcurly, builder.ToImmutable(), rcurly, isTreeValid, new TextLocation(source, span));
+            var loc = LocFromBounds(lcurly.Location.Start, lcurly.Location.End);
+            return new BlockStatmentSyntax(lcurly, builder.ToImmutable(), rcurly, isTreeValid, loc);
         }
 
         private VariableDeclarationStatementSyntax ParseVariableDeclaration()
@@ -266,8 +268,8 @@ namespace Compiler.Syntax
             var type = ParseOptionalTypeClause();
             var equalToken = MatchToken(SyntaxTokenKind.Equal);
             var expr = ParseExpression();
-            var span = TextSpan.FromBounds(declareKeyword.Location.Span.Start, expr.Location.Span.End);
-            return new VariableDeclarationStatementSyntax(declareKeyword, identifier, type, equalToken, expr, isTreeValid, new TextLocation(source, span));
+            var loc = LocFromBounds(declareKeyword.Location.Start, expr.Location.End);
+            return new VariableDeclarationStatementSyntax(declareKeyword, identifier, type, equalToken, expr, isTreeValid, loc);
         }
 
         private TypeClauseSyntax ParseOptionalTypeClause()
@@ -275,7 +277,7 @@ namespace Compiler.Syntax
             if (current.TokenKind == SyntaxTokenKind.Colon)
                 return ParseTypeClause();
 
-            var loc = new TextLocation(source, current.Location.Span.Start, 0);
+            var loc = LocFromLength(current.Location.Span.Start, 0);
             var colon = new SyntaxToken(SyntaxTokenKind.Colon, loc, ':');
             var typeToken = new SyntaxToken(SyntaxTokenKind.ObjKeyword, loc, SyntaxTokenKind.ObjKeyword.GetText()!);
             return new TypeClauseSyntax(colon, new PreDefinedTypeSyntax(typeToken, isTreeValid, typeToken.Location), false, isTreeValid, loc);
@@ -291,8 +293,9 @@ namespace Compiler.Syntax
                                        SyntaxTokenKind.StringKeyword,
                                        SyntaxTokenKind.VoidKeyword);
 
-            var span = TextSpan.FromBounds(colon.Location.Span.Start, typeToken.Location.Span.End);
-            return new TypeClauseSyntax(colon, new PreDefinedTypeSyntax(typeToken, isTreeValid, typeToken.Location), isExplicit: true, isTreeValid, new TextLocation(source, span));
+            var typeSyntax = new PreDefinedTypeSyntax(typeToken, isTreeValid, typeToken.Location);
+            var loc = LocFromBounds(colon.Location.Start, typeToken.Location.End);
+            return new TypeClauseSyntax(colon, typeSyntax, true, isTreeValid, loc);
         }
 
         private ExpressionSyntax ParseExpression() => ParseExpression(SyntaxFacts.MaxPrecedence);
@@ -307,8 +310,8 @@ namespace Compiler.Syntax
             {
                 var op = Advance();
                 var right = ParseExpression(lvl - 1);
-                var span = TextSpan.FromBounds(left.Location.Span.Start, right.Location.Span.End);
-                left = new BinaryExpressionSyntax(op, left, right, isTreeValid, new TextLocation(source, span));
+                var loc = LocFromBounds(left.Location.Start, right.Location.End);
+                left = new BinaryExpressionSyntax(op, left, right, isTreeValid, loc);
             }
 
             return left;
@@ -327,8 +330,8 @@ namespace Compiler.Syntax
             {
                 var op = Advance();
                 var expr = ParsePrimaryExpression();
-                var span = TextSpan.FromBounds(op.Location.Span.Start, expr.Location.Span.End);
-                return new UnaryExpressionSyntax(op, expr, isTreeValid, new TextLocation(source, span));
+                var loc = LocFromBounds(op.Location.Start, expr.Location.End);
+                return new UnaryExpressionSyntax(op, expr, isTreeValid, loc);
             }
             else if (current.TokenKind == SyntaxTokenKind.LParen)
                 return ParseParenthesizedExpression();
@@ -348,24 +351,24 @@ namespace Compiler.Syntax
             var lparen = MatchToken(SyntaxTokenKind.LParen);
             var expr = ParseExpression();
             if (current.TokenKind != SyntaxTokenKind.RParen)
-                ReportError(ErrorMessage.NeverClosedParenthesis, new TextLocation(source, TextSpan.FromBounds(start, current.Location.Span.End)));
+                ReportError(ErrorMessage.NeverClosedParenthesis, LocFromBounds(start, current.Location.Span.End));
             var rparen = MatchToken(SyntaxTokenKind.RParen);
-            var span = TextSpan.FromBounds(start, current.Location.Span.End);
-            return new ParenthesizedExpression(lparen, expr, rparen, isStatementValid, new TextLocation(source, span));
+            var loc = LocFromBounds(start, current.Location.End);
+            return new ParenthesizedExpression(lparen, expr, rparen, isStatementValid, loc);
         }
 
         private ExpressionSyntax ParseIdentifier()
         {
             var identifier = MatchToken(SyntaxTokenKind.Identifier);
-            var start = identifier.Location.Span.Start;
+            var start = identifier.Location.Start;
 
             switch (current.TokenKind)
             {
                 case SyntaxTokenKind.Equal:
                     var equalToken = Advance();
                     var expr1 = ParseExpression();
-                    var span1 = TextSpan.FromBounds(start, expr1.Location.Span.End);
-                    return new AssignmentExpressionSyntax(identifier, equalToken, expr1, isTreeValid, new TextLocation(source, span1));
+                    var loc1 = LocFromBounds(start, expr1.Location.End);
+                    return new AssignmentExpressionSyntax(identifier, equalToken, expr1, isTreeValid, loc1);
                 case SyntaxTokenKind.PlusEqual:
                 case SyntaxTokenKind.MinusEqual:
                 case SyntaxTokenKind.StarEqual:
@@ -374,13 +377,13 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.PipeEqual:
                     var op1 = Advance();
                     var expr2 = ParseExpression();
-                    var span2 = TextSpan.FromBounds(start, expr2.Location.Span.End);
-                    return new AdditionalAssignmentExpressionSyntax(identifier, op1, expr2, isTreeValid, new TextLocation(source, span2));
+                    var loc2 = LocFromBounds(start, expr2.Location.End);
+                    return new AdditionalAssignmentExpressionSyntax(identifier, op1, expr2, isTreeValid, loc2);
                 case SyntaxTokenKind.PlusPlus:
                 case SyntaxTokenKind.MinusMinus:
                     var op2 = Advance();
-                    var span3 = TextSpan.FromBounds(start, op2.Location.Span.End);
-                    return new PostIncDecExpressionSyntax(identifier, op2, isTreeValid, new TextLocation(source, span3));
+                    var loc3 = LocFromBounds(start, op2.Location.End);
+                    return new PostIncDecExpressionSyntax(identifier, op2, isTreeValid, loc3);
                 case SyntaxTokenKind.LParen:
                     return ParseFunctionCall(identifier);
                 default:
@@ -400,8 +403,8 @@ namespace Compiler.Syntax
                 arguments = SeperatedSyntaxList<ExpressionSyntax>.Empty;
             var rparen = MatchToken(SyntaxTokenKind.RParen);
 
-            var span = TextSpan.FromBounds(identifier.Location.Span.Start, rparen.Location.Span.End);
-            return new CallExpressionSyntax(identifier, lparen, arguments, rparen, isTreeValid, new TextLocation(source, span));
+            var loc = LocFromBounds(identifier.Location.Start, rparen.Location.End);
+            return new CallExpressionSyntax(identifier, lparen, arguments, rparen, isTreeValid, loc);
         }
 
         private ElseStatementSyntax? ParseElseClause()
@@ -410,8 +413,8 @@ namespace Compiler.Syntax
                 return null;
             var elseKeyword = Advance();
             var statement = ParseStatement();
-            var span = TextSpan.FromBounds(elseKeyword.Location.Span.Start, statement.Location.Span.End);
-            return new ElseStatementSyntax(elseKeyword, statement, isTreeValid, new TextLocation(source, span));
+            var loc = LocFromBounds(elseKeyword.Location.Start, statement.Location.End);
+            return new ElseStatementSyntax(elseKeyword, statement, isTreeValid, loc);
         }
 
         private delegate T ParseDelegate<T>() where T : SyntaxNode;

@@ -21,6 +21,10 @@ namespace Compiler.Text
         public SourceText Text { get; }
         public TextSpan Span { get; }
 
+
+        public int Start { get => Span.Start; }
+        public int Length { get => Span.Length; }
+        public int End { get => Span.End; }
         public int StartLine { get => Text.GetLineNumber(Span.Start); }
         public int EndLine { get => Text.GetLineNumber(Span.End); }
         public int StartCharacter { get => Text.GetCharacterOffset(Span.Start); }

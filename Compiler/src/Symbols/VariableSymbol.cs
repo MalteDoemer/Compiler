@@ -9,7 +9,7 @@ namespace Compiler.Symbols
 
         private sealed class InvalidVariableSymbol : VariableSymbol
         {
-            public InvalidVariableSymbol() : base("$invalid", TypeSymbol.ErrorType, false, null)
+            public InvalidVariableSymbol() : base("$invalid", TypeSymbol.Invalid, false, null)
             {
             }
         }

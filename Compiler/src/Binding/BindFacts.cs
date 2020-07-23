@@ -91,22 +91,24 @@ namespace Compiler.Binding
 
         };
 
-        public static TypeSymbol? ResolveUnaryType(BoundUnaryOperator? op, TypeSymbol type)
+        public static TypeSymbol ResolveUnaryType(BoundUnaryOperator op, TypeSymbol type)
         {
-            if (op is null) return null;
+            if (op == BoundUnaryOperator.Invalid)
+                return TypeSymbol.Invalid;
 
             foreach (var pair in UnaryResultTypes)
                 if (pair.Key.Item2 == op && pair.Key.Item1 == type) return pair.Value;
-            return null;
+            return TypeSymbol.Invalid;
         }
 
-        public static TypeSymbol? ResolveBinaryType(BoundBinaryOperator? op, TypeSymbol left, TypeSymbol right)
+        public static TypeSymbol ResolveBinaryType(BoundBinaryOperator op, TypeSymbol left, TypeSymbol right)
         {
-            if (op is null) return null;
+            if (op == BoundBinaryOperator.Invalid)
+                return TypeSymbol.Invalid;
 
             foreach (var pair in BinaryResultTypes)
                 if (((pair.Key.Item1 == left && pair.Key.Item2 == right) || (pair.Key.Item2 == left && pair.Key.Item1 == right)) && pair.Key.Item3 == op) return pair.Value;
-            return null;
+            return TypeSymbol.Invalid;
         }
 
         public static TypeSymbol GetTypeSymbol(SyntaxTokenKind kind)
@@ -124,14 +126,12 @@ namespace Compiler.Binding
                 case SyntaxTokenKind.BoolKeyword: return TypeSymbol.Bool;
                 case SyntaxTokenKind.VoidKeyword: return TypeSymbol.Void;
                 case SyntaxTokenKind.ObjKeyword: return TypeSymbol.Obj;
-                default: return TypeSymbol.ErrorType;
+                default: return TypeSymbol.Invalid;
             }
         }
 
-        internal static ConversionType ClassifyConversion(TypeSymbol? from, TypeSymbol? to)
+        internal static ConversionType ClassifyConversion(TypeSymbol from, TypeSymbol to)
         {
-            if (from is null || to is null) return ConversionType.None;
-
             if (from == to) return ConversionType.Identety;
 
             if (to == TypeSymbol.Obj || from == TypeSymbol.Obj) return ConversionType.Implicit;

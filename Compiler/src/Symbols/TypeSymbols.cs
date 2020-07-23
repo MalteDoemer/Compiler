@@ -11,7 +11,7 @@ namespace Compiler.Symbols
         public static readonly TypeSymbol String = new TypeSymbol("str");
         public static readonly TypeSymbol Obj = new TypeSymbol("obj");
         public static readonly TypeSymbol Void = new TypeSymbol("void");
-        public static readonly TypeSymbol ErrorType = new TypeSymbol("Error-Type");
+        public static readonly TypeSymbol Invalid = new TypeSymbol("$Invalid");
 
         private TypeSymbol(string name) : base(name)
         {

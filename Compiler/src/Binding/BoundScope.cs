@@ -19,12 +19,15 @@ namespace Compiler.Binding
             functions = new Dictionary<string, FunctionSymbol>();
         }
 
-        public bool TryLookUpVariable(string identifier, out VariableSymbol? value)
+        public bool TryLookUpVariable(string identifier, out VariableSymbol value)
         {
-            if (variables.TryGetValue(identifier, out value))
+            if (variables.TryGetValue(identifier, out value!))
                 return true;
             else if (Parent is null)
+            {
+                value = VariableSymbol.Invalid;
                 return false;
+            }
             return Parent.TryLookUpVariable(identifier, out value);
         }
 
@@ -36,12 +39,15 @@ namespace Compiler.Binding
             return true;
         }
 
-        public bool TryLookUpFunction(string identifier, out FunctionSymbol? value)
+        public bool TryLookUpFunction(string identifier, out FunctionSymbol value)
         {
-            if (functions.TryGetValue(identifier, out value))
+            if (functions.TryGetValue(identifier, out value!))
                 return true;
             else if (Parent is null)
+            {
+                value = FunctionSymbol.Invalid;
                 return false;
+            }
             return Parent.TryLookUpFunction(identifier, out value);
         }
 

@@ -8,7 +8,6 @@ using Compiler.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.IO;
-using System.Diagnostics;
 
 namespace Compiler.Emit
 {
@@ -226,26 +225,26 @@ namespace Compiler.Emit
 
         private void EmitVariableDeclarationStatement(ILProcessor ilProcesser, BoundVariableDeclarationStatement node)
         {
-            if (!(node.Variable.Constant is null))
-                return;
-
-            if (node.Variable is GlobalVariableSymbol globalVariable)
+            if (node.Variable.Constant is null)
             {
-                var field = globalVariables[globalVariable];
-                EmitExpression(ilProcesser, node.Expression);
-                ilProcesser.Emit(OpCodes.Stsfld, field);
-            }
-            else if (node.Variable is LocalVariableSymbol localVariable)
-            {
-                var type = builtInTypes[localVariable.Type];
-                var variable = new VariableDefinition(type);
-                locals.Add(localVariable, variable);
-                ilProcesser.Body.Variables.Add(variable);
+                if (node.Variable is GlobalVariableSymbol globalVariable)
+                {
+                    var field = globalVariables[globalVariable];
+                    EmitExpression(ilProcesser, node.Expression);
+                    ilProcesser.Emit(OpCodes.Stsfld, field);
+                }
+                else if (node.Variable is LocalVariableSymbol localVariable)
+                {
+                    var type = builtInTypes[localVariable.Type];
+                    var variable = new VariableDefinition(type);
+                    locals.Add(localVariable, variable);
+                    ilProcesser.Body.Variables.Add(variable);
 
-                EmitExpression(ilProcesser, node.Expression);
-                ilProcesser.Emit(OpCodes.Stloc, variable);
+                    EmitExpression(ilProcesser, node.Expression);
+                    ilProcesser.Emit(OpCodes.Stloc, variable);
+                }
+                else throw new Exception("Unexpected VariableSymbol");
             }
-            else throw new Exception("Unexpected VariableSymbol");
         }
 
         private void EmitLabelStatement(ILProcessor ilProcesser, BoundLabelStatement node)
@@ -270,8 +269,8 @@ namespace Compiler.Emit
 
         private void EmitReturnStatement(ILProcessor ilProcesser, BoundReturnStatement node)
         {
-            if (node.Expression is null) { }
-            else EmitExpression(ilProcesser, node.Expression);
+            if (!(node.Expression is null)) 
+                EmitExpression(ilProcesser, node.Expression);
             ilProcesser.Emit(OpCodes.Ret);
         }
 
@@ -306,10 +305,10 @@ namespace Compiler.Emit
                     case BoundNodeKind.BoundAssignmentExpression:
                         EmitAssignmentExpression(ilProcesser, (BoundAssignmentExpression)node);
                         break;
+                    default: throw new Exception($"Unexpected kind <{node.Kind}>");
                 }
             else
                 EmitConstatnt(ilProcesser, node.Constant);
-
         }
 
         private void EmitConstatnt(ILProcessor ilProcesser, BoundConstant constant)

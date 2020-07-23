@@ -138,11 +138,11 @@ namespace Compiler.Test
         public static void Report_Binary_Operators(SyntaxTokenKind op, TypeSymbol t1, TypeSymbol t2)
         {
             var boundOp = BindBinaryOperator(op);
-            Assert.NotNull(boundOp);
+            Assert.NotEqual(BoundBinaryOperator.Invalid, boundOp);
 
-            var resType = BindFacts.ResolveBinaryType((BoundBinaryOperator)boundOp, t1, t2);
+            var resType = BindFacts.ResolveBinaryType(boundOp, t1, t2);
 
-            if (!(resType is null))
+            if (resType != TypeSymbol.Invalid)
                 return;
 
             var typeText1 = GetSampleText(t1);
@@ -158,13 +158,13 @@ namespace Compiler.Test
         public static void Report_Unary_Operators(SyntaxTokenKind op, TypeSymbol type)
         {
             var boundOp = BindUnaryOperator(op);
-            Assert.NotNull(boundOp);
-
+            Assert.NotEqual(BoundUnaryOperator.Invalid, boundOp);
+            
             var resType = BindFacts.ResolveUnaryType(boundOp, type);
 
-            if (!(resType is null))
+            if (resType != TypeSymbol.Invalid)
                 return;
-
+            
             var typeText = GetSampleText(type);
             var operatorText = SyntaxFacts.GetText(op);
             var text = $"[{operatorText}]{typeText}";
@@ -307,7 +307,7 @@ namespace Compiler.Test
             else return "";
         }
 
-        private static BoundBinaryOperator? BindBinaryOperator(SyntaxTokenKind op)
+        private static BoundBinaryOperator BindBinaryOperator(SyntaxTokenKind op)
         {
             switch (op)
             {
@@ -337,11 +337,11 @@ namespace Compiler.Test
                 case SyntaxTokenKind.PipeEqual: return BoundBinaryOperator.BitwiseOr;
                 case SyntaxTokenKind.PlusPlus: return BoundBinaryOperator.Addition;
                 case SyntaxTokenKind.MinusMinus: return BoundBinaryOperator.Subtraction;
-                default: return null;
+                default: return BoundBinaryOperator.Invalid;
             }
         }
 
-        private static BoundUnaryOperator? BindUnaryOperator(SyntaxTokenKind op)
+        private static BoundUnaryOperator BindUnaryOperator(SyntaxTokenKind op)
         {
             switch (op)
             {
@@ -349,7 +349,7 @@ namespace Compiler.Test
                 case SyntaxTokenKind.Minus: return BoundUnaryOperator.Negation;
                 case SyntaxTokenKind.Bang: return BoundUnaryOperator.LogicalNot;
                 case SyntaxTokenKind.Tilde: return BoundUnaryOperator.BitwiseNot;
-                default: return null;
+                default: return BoundUnaryOperator.Invalid;
             }
         }
 

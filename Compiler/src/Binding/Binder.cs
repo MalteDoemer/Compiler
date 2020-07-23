@@ -88,7 +88,7 @@ namespace Compiler.Binding
 
             globalBinder.scope.TryLookUpFunction("main", out var mainFunction);
 
-            if (!(mainFunction is null))
+            if (mainFunction != FunctionSymbol.Invalid)
             {
                 void Report(string message, TextLocation location)
                 {
@@ -109,7 +109,7 @@ namespace Compiler.Binding
                 functions.Add(mainFunction, Lowerer.Lower(mainFunction, mainBody));
             }
 
-            var globalFunction = FunctionSymbol.Invalid;
+            var globalFunction = (FunctionSymbol?)null;
 
             if (globalStatementBuilder.Count > 0)
             {
@@ -120,12 +120,15 @@ namespace Compiler.Binding
 
             // Special case 
             // In a script global statements can have nested scopes 
-            if (isScript && globalFunction != FunctionSymbol.Invalid)
+            if (isScript && !(globalFunction is null))
             {
                 var body = functions[globalFunction];
                 var stmts = body.Statements.OfType<BoundVariableDeclarationStatement>();
                 declaredVariables = declaredVariables.Union(stmts.Select(s => s.Variable)).ToImmutableArray();
             }
+
+            if (mainFunction == FunctionSymbol.Invalid)
+                mainFunction = null;
 
 
             return new BoundProgram(declaredVariables, globalFunction, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
@@ -410,7 +413,7 @@ namespace Compiler.Binding
             var right = BindExpression(syntax.Expression);
             var boundOperator = BindUnaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveUnaryType(boundOperator, right.ResultType);
-            if (boundOperator == BoundUnaryOperator.Invalid || resultType is null)
+            if (boundOperator == BoundUnaryOperator.Invalid || resultType == TypeSymbol.Invalid)
                 ReportError(ErrorMessage.UnsupportedUnaryOperator, syntax.Op.Location, syntax.Op.Location.ToString(), right.ResultType);
             return new BoundUnaryExpression(boundOperator, right, resultType, isTreeValid);
         }
@@ -422,7 +425,7 @@ namespace Compiler.Binding
             var boundOperator = BindBinaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveBinaryType(boundOperator, left.ResultType, right.ResultType);
 
-            if (boundOperator == BoundBinaryOperator.Invalid || resultType is null)
+            if (boundOperator == BoundBinaryOperator.Invalid || resultType == TypeSymbol.Invalid)
                 ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Location, syntax.Op.Location.ToString(), left.ResultType, right.ResultType);
             return new BoundBinaryExpression(boundOperator, left, right, resultType, isTreeValid);
         }
@@ -436,11 +439,8 @@ namespace Compiler.Binding
                 return BindExplicitConversion(type, syntax.Arguments[0]);
 
 
-            if (!scope.TryLookUpFunction(name, out FunctionSymbol? symbol))
+            if (!scope.TryLookUpFunction(name, out var symbol))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, name);
-
-            if (symbol is null)
-                return new BoundCallExpression(null, ImmutableArray<BoundExpression>.Empty, isTreeValid);
 
             var paramLen = symbol.Parameters.Length;
 
@@ -472,11 +472,10 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable(name, out var variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, name);
 
-            if (!(variable is null) && variable.IsReadOnly)
+            if (variable.IsReadOnly)
                 ReportError(ErrorMessage.CannotAssignToReadOnly, syntax.Identifier.Location, syntax.Identifier.Value);
 
-            var expr = CheckTypeAndConversion(variable?.Type, syntax.Expression);
-
+            var expr = CheckTypeAndConversion(variable.Type, syntax.Expression);
             return new BoundAssignmentExpression(variable, expr, isTreeValid);
         }
 
@@ -487,9 +486,8 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable(name, out var variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, name);
 
-            if (!(variable is null) && variable.IsReadOnly)
+            if (variable.IsReadOnly)
                 ReportError(ErrorMessage.CannotAssignToReadOnly, syntax.Identifier.Location, syntax.Identifier.Value);
-
 
             var left = new BoundVariableExpression(variable, isTreeValid);
             var right = BindExpression(syntax.Expression);
@@ -497,7 +495,7 @@ namespace Compiler.Binding
             var op = BindBinaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
-            if (op == BoundBinaryOperator.Invalid || resultType is null)
+            if (op == BoundBinaryOperator.Invalid || resultType == TypeSymbol.Invalid)
                 ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Location, syntax.Op.Location.ToString(), left.ResultType, right.ResultType);
 
             var binaryExpression = new BoundBinaryExpression(op, left, right, resultType, isTreeValid);
@@ -509,7 +507,7 @@ namespace Compiler.Binding
             if (!scope.TryLookUpVariable((string)syntax.Identifier.Value, out var variable))
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, (string)syntax.Identifier.Value);
 
-            if (!(variable is null) && variable.IsReadOnly)
+            if (variable.IsReadOnly)
                 ReportError(ErrorMessage.CannotAssignToReadOnly, syntax.Identifier.Location, syntax.Identifier.Value);
 
             var left = new BoundVariableExpression(variable, isTreeValid);
@@ -517,7 +515,7 @@ namespace Compiler.Binding
             var op = BindBinaryOperator(syntax.Op.TokenKind);
             var resultType = BindFacts.ResolveBinaryType(op, left.ResultType, right.ResultType);
 
-            if (op == BoundBinaryOperator.Invalid || resultType is null)
+            if (op == BoundBinaryOperator.Invalid || resultType == TypeSymbol.Invalid)
                 ReportError(ErrorMessage.UnsupportedBinaryOperator, syntax.Op.Location, syntax.Op.Location.ToString(), left.ResultType, right.ResultType);
 
             var binaryExpression = new BoundBinaryExpression(op, left, right, resultType, isTreeValid);
@@ -570,7 +568,7 @@ namespace Compiler.Binding
             }
         }
 
-        private BoundExpression CheckTypeAndConversion(TypeSymbol? type, ExpressionSyntax expression)
+        private BoundExpression CheckTypeAndConversion(TypeSymbol type, ExpressionSyntax expression)
         {
             var expr = BindExpression(expression);
             var conversionType = BindFacts.ClassifyConversion(expr.ResultType, type);
@@ -578,9 +576,11 @@ namespace Compiler.Binding
             if (conversionType == ConversionType.Identety)
                 return expr;
             else if (conversionType == ConversionType.Explicit)
-                ReportError(ErrorMessage.MissingExplicitConversion, expression.Location, type!, expr.ResultType);
+                ReportError(ErrorMessage.MissingExplicitConversion, expression.Location, type, expr.ResultType);
             else if (conversionType == ConversionType.None)
-                ReportError(ErrorMessage.IncompatibleTypes, expression.Location, type!, expr.ResultType);
+            {
+                ReportError(ErrorMessage.IncompatibleTypes, expression.Location, type, expr.ResultType);
+            }
 
             return new BoundConversionExpression(type, expr, isTreeValid);
         }
