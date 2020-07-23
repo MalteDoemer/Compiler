@@ -36,6 +36,7 @@ namespace Compiler.Binding
         public static bool AllPathsReturn(FunctionSymbol symbol, BoundBlockStatement body)
         {
             if (symbol.ReturnType == TypeSymbol.Void) return true;
+            if (!body.IsValid) return false;
 
             var graph = Create(body);
 

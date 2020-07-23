@@ -443,12 +443,8 @@ namespace Compiler.Binding
                 ReportError(ErrorMessage.UnresolvedIdentifier, syntax.Identifier.Location, name);
 
             var paramLen = symbol.Parameters.Length;
-
             if (argLen != paramLen)
-            {
-                var reportSpan = TextSpan.FromBounds(syntax.LeftParenthesis.Location.Span.Start, syntax.RightParenthesis.Location.Span.End);
-                ReportError(ErrorMessage.WrongAmountOfArguments, new TextLocation(syntax.Location.Text, reportSpan), symbol.Name, paramLen, argLen);
-            }
+                ReportError(ErrorMessage.WrongAmountOfArguments, syntax.Identifier.Location, symbol.Name, paramLen, argLen);
 
             var len = Math.Min(argLen, paramLen);
             var argBuilder = ImmutableArray.CreateBuilder<BoundExpression>(len);

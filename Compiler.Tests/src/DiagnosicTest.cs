@@ -13,6 +13,8 @@ namespace Compiler.Test
     public class DiagnosicTest
     {
 
+        // Lexer
+
         [Fact]
         public static void Report_Invlid_Decimal_Point()
         {
@@ -21,22 +23,94 @@ namespace Compiler.Test
         }
 
         [Fact]
-        public static void Report_Cannot_Assing_To_Const_As_Global()
+        public static void Report_Invlid_Escape_sequence()
         {
-            var text = @"
-                let c = 0
-                [c] = 20
-            ";
-            AssertDiagnostic(text, ErrorMessage.CannotAssignToReadOnly, "c");
+            var text = "var text = 'hello how are ?\\nOhh very nice[\\!]'";
+            AssertDiagnostic(text, ErrorMessage.InvalidEscapeSequence, "!");
         }
 
         [Fact]
-        public static void Report_Cannot_Return_Outside_A_Function()
+        public static void Report_Never_Closed_String()
+        {
+            var text = "['hello]";
+            AssertDiagnostic(text, ErrorMessage.NeverClosedStringLiteral);
+        }
+
+        // Parser
+
+        [Fact]
+        public static void Report_Never_Closed_Curly()
         {
             var text = @"
-                [return 20]
+                func test() [{
+                    for var i = 0 i < 20 i++ {
+                        println(i)
+                    }]
             ";
-            AssertDiagnostic(text, ErrorMessage.ReturnOnlyInFunction);
+
+            AssertDiagnostic(text, ErrorMessage.NeverClosedCurlyBrackets);
+        }
+
+        [Fact]
+        public static void Report_Never_Closed_Parenthesis()
+        {
+            var text = "var i = 1 + [((10 -3) * 3]";
+            AssertDiagnostic(text, ErrorMessage.NeverClosedParenthesis);
+        }
+
+        // Binder
+
+        [Theory]
+        [InlineData("var [14.03] = 0", SyntaxTokenKind.Identifier)]
+        [InlineData("var i [134] 0", SyntaxTokenKind.Equal)]
+        [InlineData("func f[+]) {}", SyntaxTokenKind.LParen)]
+        public static void Report_Expected_Token(string text, SyntaxTokenKind expectedKind)
+        {
+            AssertDiagnostic(text, ErrorMessage.ExpectedToken, expectedKind);
+        }
+
+        [Theory]
+        [InlineData("[§]", SyntaxTokenKind.Invalid)]
+        [InlineData("[else]", SyntaxTokenKind.ElseKeyword)]
+        [InlineData("print('',[]", SyntaxTokenKind.EndOfFile)]
+        public static void Report_Unexpected_Token(string text, SyntaxTokenKind unExpectedKind)
+        {
+            AssertDiagnostic(text, ErrorMessage.UnexpectedToken, unExpectedKind);
+        }
+
+
+        [Theory]
+        [MemberData(nameof(GetRandomNames), 20)]
+        public static void Report_Unresolved_Identifier_In_Assignment(string identifierName)
+        {
+            var text = $"[{identifierName}] = 1 + 2 * 3";
+            AssertDiagnostic(text, ErrorMessage.UnresolvedIdentifier, identifierName);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetRandomNames), 20)]
+        public static void Report_Unresolved_Identifier_In_Expression(string identifierName)
+        {
+            var text = $"var i = [{identifierName}]";
+            AssertDiagnostic(text, ErrorMessage.UnresolvedIdentifier, identifierName);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetRandomNames), 20)]
+        public static void Report_Unresolved_Identifier_In_Function_Call(string identifierName)
+        {
+            var text = $"var i = [{identifierName}](1,2,'fett')";
+            AssertDiagnostic(text, ErrorMessage.UnresolvedIdentifier, identifierName);
+        }
+
+        [Theory]
+        [InlineData("let i: int = ['fett']", "int", "str")]
+        [InlineData("var state = true state = [36]", "bool", "int")]
+        [InlineData("if ['this is a string'] {}", "bool", "str")]
+        [InlineData("while [1] {}", "bool", "int")]
+        public static void Report_Incompatible_Types(string text, string expected, string actual)
+        {
+            AssertDiagnostic(text, ErrorMessage.IncompatibleTypes, expected, actual);
         }
 
         [Fact]
@@ -72,6 +146,129 @@ namespace Compiler.Test
             AssertDiagnostic(text, ErrorMessage.IncompatibleTypes, TypeSymbol.Void, TypeSymbol.Int);
         }
 
+
+        [Theory]
+        [MemberData(nameof(GetBinaryData))]
+        public static void Report_Illeagal_Binary_Operator(SyntaxTokenKind op, TypeSymbol t1, TypeSymbol t2)
+        {
+            var boundOp = BindBinaryOperator(op);
+            Assert.NotEqual(BoundBinaryOperator.Invalid, boundOp);
+
+            var resType = BindFacts.ResolveBinaryType(boundOp, t1, t2);
+
+            if (resType != TypeSymbol.Invalid)
+                return;
+
+            var typeText1 = GetSampleText(t1);
+            var typeText2 = GetSampleText(t2);
+            var operatorText = SyntaxFacts.GetText(op);
+            var text = $"{typeText1} [{operatorText}] {typeText2}";
+
+            AssertDiagnostic(text, ErrorMessage.UnsupportedBinaryOperator, operatorText, t1, t2);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetUnaryData))]
+        public static void Report_Illeagal_Unary_Operator(SyntaxTokenKind op, TypeSymbol type)
+        {
+            var boundOp = BindUnaryOperator(op);
+            Assert.NotEqual(BoundUnaryOperator.Invalid, boundOp);
+
+            var resType = BindFacts.ResolveUnaryType(boundOp, type);
+
+            if (resType != TypeSymbol.Invalid)
+                return;
+
+            var typeText = GetSampleText(type);
+            var operatorText = SyntaxFacts.GetText(op);
+            var text = $"[{operatorText}]{typeText}";
+
+            AssertDiagnostic(text, ErrorMessage.UnsupportedUnaryOperator, operatorText, type);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetRandomNames), 20)]
+        public static void Report_Variable_Already_Declared(string identifierName)
+        {
+            var text = $@"
+                    var {identifierName} = 0 
+                    var [{identifierName}] = 13
+            ";
+            AssertDiagnostic(text, ErrorMessage.VariableAlreadyDeclared, identifierName);
+        }
+
+        [Theory]
+        [InlineData("func test(a: int, b: str, c: float){} [test](1,'', 4.5, false, true)", "test", 3, 5)]
+        [InlineData("[rand]()", "rand", 2, 0)]
+        public static void Report_Wrong_Amount_Of_Arguments(string text, string name, int required, int recived)
+        {
+            AssertDiagnostic(text, ErrorMessage.WrongAmountOfArguments, name, required, recived);
+        }
+
+        [Fact]
+        public static void Report_Expression_Cannot_Be_Void()
+        {
+            var text = "var i = [print('')]";
+            AssertDiagnostic(text, ErrorMessage.CannotBeVoid);
+        }
+
+        [Theory]
+        [InlineData("let i: int = [36.4]", "int", "float")]
+        [InlineData("var text = 'test' text = [true]", "str", "bool")]
+        [InlineData("len([36])", "str", "int")]
+        [InlineData("rand(1, [4.5])", "int", "float")]
+        public static void Report_Explicit_Conversion_Needed(string text, string to, string from)
+        {
+            AssertDiagnostic(text, ErrorMessage.MissingExplicitConversion, to, from);
+        }
+
+        [Theory]
+        [InlineData("int(['hello'])", "str", "int")]
+        [InlineData("bool([36])", "int", "bool")]
+        [InlineData("bool(['not true'])", "str", "bool")]
+        [InlineData("float(['not a number'])", "str", "float")]
+        public static void Report_Cannot_Convert_Types(string text, string from, string to)
+        {
+            AssertDiagnostic(text, ErrorMessage.CannotConvert, from, to);
+        }
+
+        [Fact]
+        public static void Report_Dublicated_Parameter()
+        {
+            var text = @"
+                func test(a: int, b: float, c: str, [a: obj]): int {
+                    return 36
+                }
+            ";
+
+            AssertDiagnostic(text, ErrorMessage.DuplicatedParameters, "a");
+        }
+
+        [Theory]
+        [MemberData(nameof(GetRandomNames), 20)]
+        public static void Report_Function_Already_Declared(string identifierName)
+        {
+            var text = $@"
+                func {identifierName}() {{ 
+                    println ('test') 
+                }}
+                func [{identifierName}](): str {{ 
+                    return 'test'
+                }}
+            ";
+            AssertDiagnostic(text, ErrorMessage.FunctionAlreadyDeclared, identifierName);
+        }
+
+        [Fact]
+        public static void Report_Cannot_Assing_To_Read_Only_As_Global()
+        {
+            var text = @"
+                let c = 0
+                [c] = 20
+            ";
+            AssertDiagnostic(text, ErrorMessage.CannotAssignToReadOnly, "c");
+        }
+
         [Fact]
         public static void Report_Cannot_Assing_To_Read_Only_As_Local()
         {
@@ -82,6 +279,31 @@ namespace Compiler.Test
                 }
             ";
             AssertDiagnostic(text, ErrorMessage.CannotAssignToReadOnly, "c");
+        }
+
+        [Theory]
+        [InlineData("break")]
+        [InlineData("continue")]
+        public static void Report_Break_Or_Continue_Onyl_In_Loop(string keyWord)
+        {
+            var text = $@"
+                var i = 0
+                if i < 10
+                    [{keyWord}]
+                else 
+                    i = 10
+            ";
+
+            AssertDiagnostic(text, ErrorMessage.InvalidBreakOrContinue, keyWord);
+        }
+
+        [Fact]
+        public static void Report_Cannot_Return_Outside_A_Function()
+        {
+            var text = @"
+                [return 20]
+            ";
+            AssertDiagnostic(text, ErrorMessage.ReturnOnlyInFunction);
         }
 
         [Fact]
@@ -102,177 +324,47 @@ namespace Compiler.Test
             AssertDiagnostic(text, ErrorMessage.AllPathsMustReturn);
         }
 
-        [Fact]
-        public static void Report_Never_Closed_String()
-        {
-            var text = "['hello]";
-            AssertDiagnostic(text, ErrorMessage.NeverClosedStringLiteral);
-        }
-
-        [Fact]
-        public static void Report_Never_Closed_Parenthesis()
-        {
-            var text = "var i = 1 + [((10 -3) * 3]";
-            AssertDiagnostic(text, ErrorMessage.NeverClosedParenthesis);
-        }
-
-        [Theory]
-        [InlineData("var [14.03] = 0", SyntaxTokenKind.Identifier)]
-        [InlineData("var i [134] 0", SyntaxTokenKind.Equal)]
-        public static void Report_Expected_Token(string text, SyntaxTokenKind expectedKind)
-        {
-            AssertDiagnostic(text, ErrorMessage.ExpectedToken, expectedKind);
-        }
-
-        [Theory]
-        [InlineData("[§]", SyntaxTokenKind.Invalid)]
-        [InlineData("[else]", SyntaxTokenKind.ElseKeyword)]
-        public static void Report_Unexpected_Token(string text, SyntaxTokenKind unExpectedKind)
-        {
-            AssertDiagnostic(text, ErrorMessage.UnexpectedToken, unExpectedKind);
-        }
-
-
-        [Theory]
-        [MemberData(nameof(GetBinaryData))]
-        public static void Report_Binary_Operators(SyntaxTokenKind op, TypeSymbol t1, TypeSymbol t2)
-        {
-            var boundOp = BindBinaryOperator(op);
-            Assert.NotEqual(BoundBinaryOperator.Invalid, boundOp);
-
-            var resType = BindFacts.ResolveBinaryType(boundOp, t1, t2);
-
-            if (resType != TypeSymbol.Invalid)
-                return;
-
-            var typeText1 = GetSampleText(t1);
-            var typeText2 = GetSampleText(t2);
-            var operatorText = SyntaxFacts.GetText(op);
-            var text = $"{typeText1} [{operatorText}] {typeText2}";
-
-            AssertDiagnostic(text, ErrorMessage.UnsupportedBinaryOperator, operatorText, t1, t2);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetUnaryData))]
-        public static void Report_Unary_Operators(SyntaxTokenKind op, TypeSymbol type)
-        {
-            var boundOp = BindUnaryOperator(op);
-            Assert.NotEqual(BoundUnaryOperator.Invalid, boundOp);
-            
-            var resType = BindFacts.ResolveUnaryType(boundOp, type);
-
-            if (resType != TypeSymbol.Invalid)
-                return;
-            
-            var typeText = GetSampleText(type);
-            var operatorText = SyntaxFacts.GetText(op);
-            var text = $"[{operatorText}]{typeText}";
-
-            AssertDiagnostic(text, ErrorMessage.UnsupportedUnaryOperator, operatorText, type);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetRandomNames), 20)]
-        public static void Report_Unresolved_Identifier_In_Assignment(string identifierName)
-        {
-            var text = $"[{identifierName}] = 1 + 2 * 3";
-            AssertDiagnostic(text, ErrorMessage.UnresolvedIdentifier, identifierName);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetRandomNames), 20)]
-        public static void Report_Unresolved_Identifier_In_Expression(string identifierName)
-        {
-            var text = $"var i = [{identifierName}]";
-            AssertDiagnostic(text, ErrorMessage.UnresolvedIdentifier, identifierName);
-        }
-
-        [Theory]
-        [MemberData(nameof(GetRandomNames), 20)]
-        public static void Report_Variable_Already_Declared(string identifierName)
-        {
-            var text = $@"
-                {{
-                    var {identifierName} = 0 
-                    var [{identifierName}] = 13
-                }}
-            ";
-            AssertDiagnostic(text, ErrorMessage.VariableAlreadyDeclared, identifierName);
-        }
-
-        [Fact]
-        public static void Report_Expression_Cannot_Be_Void()
-        {
-            var text = "var i = [print('')]";
-            AssertDiagnostic(text, ErrorMessage.CannotBeVoid);
-        }
-
-        [Fact]
-        public static void No_Cascading_Errors_In_BlockStatments()
-        {
-            var text = @"
-                {
-                    var done = true
-                    do {
-                        do{
-                            do {
-                                do {
-                                    do {
-                                        do {
-                                            do {
-                                                do{
-                                                    1 [+] false
-                                                } while (!done)
-                                            } while (!done)
-                                        } while (!done)
-                                    } while (!done)
-                                } while (!done)
-                            } while (!done)
-                        } while (!done)
-                    } while (!done)
-                }
-            ";
-
-            AssertDiagnostic(text, ErrorMessage.UnsupportedBinaryOperator, '+', TypeSymbol.Int.Name, TypeSymbol.Bool.Name);
-        }
-
-
         private static void AssertDiagnostic(string text, ErrorMessage message, params object[] values)
         {
             AssertDiagnostic(text, string.Format(DiagnosticBag.ErrorFormats[(int)message], values));
         }
 
-        private static void AssertDiagnostic(string text, string expected)
+        private static void AssertDiagnostic(string text, string message)
         {
             var annotatedText = AnnotatedText.Parse(text);
             var compilation = Compilation.CompileScript(new SourceText(annotatedText.Text, null), Compilation.StandardReferencePaths);
-            var diagnostics = AnnotatedText.UnindentLines(expected);
 
-            if (diagnostics.Length != annotatedText.Spans.Length)
-                throw new Exception($"Marks and diagnostic must be same amount <{annotatedText.Spans.Length}> <{diagnostics.Length}>");
 
-            Assert.Equal(diagnostics.Length, compilation.Diagnostics.Length);
+            if (annotatedText.Spans.Length < 1)
+                throw new Exception($"Enter at least one diagnostic <{annotatedText.Spans.Length}>");
+            else if (annotatedText.Spans.Length < 1)
+                throw new Exception($"Only one diagnostic is should be enterd <{annotatedText.Spans.Length}>");
 
-            var len = Math.Min(diagnostics.Length, compilation.Diagnostics.Length);
-            for (int i = 0; i < len; i++)
-            {
-                var expectedMessage = diagnostics[i];
-                var actualMessage = compilation.Diagnostics[i].Message;
-                var expectedSpan = annotatedText.Spans[i];
-                var actualSpan = compilation.Diagnostics[i].Span;
+            var diagnostic = Assert.Single(compilation.Diagnostics.Errors);
 
-                Assert.Equal(expectedMessage, actualMessage);
-                Assert.Equal(expectedSpan, actualSpan);
-            }
+            var actualMessage = diagnostic.Message;
+            var expectedSpan = annotatedText.Spans[0];
+            var actualSpan = diagnostic.Span;
+
+            Assert.Equal(message, actualMessage);
+            Assert.Equal(expectedSpan, actualSpan);
         }
 
         public static IEnumerable<object[]> GetRandomNames(int amount)
         {
             var random = new Random();
             const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUW_";
-            for (int i = 0; i < amount; i++)
-                yield return new object[] { new string(Enumerable.Repeat(chars, random.Next(1, 10)).Select(s => s[random.Next(s.Length)]).ToArray()) };
+            string GetRandomName() => new string(Enumerable.Repeat(chars, random.Next(1, 10)).Select(s => s[random.Next(s.Length)]).ToArray());
+
+            for (var i = 0; i < amount; i++)
+            {
+                var str = GetRandomName();
+
+                while (!(SyntaxFacts.IsKeyWord(str) is null))
+                    str = GetRandomName();
+
+                yield return new object[] { str };
+            }
         }
 
         public static IEnumerable<object[]> GetUnaryData()

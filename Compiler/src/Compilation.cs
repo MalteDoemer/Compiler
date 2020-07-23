@@ -97,6 +97,7 @@ namespace Compiler
 
         public void WriteControlFlowGraph(TextWriter writer, string functionName)
         {
+            if (Diagnostics.HasErrors) return;
             var symbols = program.Functions.Keys.Where(s => s.Name == functionName);
             if (!symbols.Any())
                 writer.ColorWrite($"The function {functionName} does not exist.", ConsoleColor.Red);

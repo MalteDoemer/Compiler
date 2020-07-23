@@ -59,6 +59,7 @@ namespace Compiler.Lowering
 
         private static BoundBlockStatement RemoveDeadCode(BoundBlockStatement node)
         {
+            if (!node.IsValid) return node;
             var controlFlow = ControlFlowGraph.Create(node);
             var reachableStatements = new HashSet<BoundStatement>(
                 controlFlow.Blocks.SelectMany(b => b.Statements));
