@@ -150,7 +150,7 @@ namespace Compiler.Binding
             for (var i = 0; i < func.Parameters.Length; i++)
             {
                 var parameterSyntax = func.Parameters[i];
-                var type = BindType(parameterSyntax.TypeClause);
+                var type = BindType(parameterSyntax.TypeClause.TypeSyntax);
                 var name = parameterSyntax.Identifier.Location.ToString();
 
                 if (!seenParameters.Add(name))
@@ -160,7 +160,7 @@ namespace Compiler.Binding
 
             TypeSymbol returnType;
             if (func.ReturnType.IsExplicit)
-                returnType = BindType(func.ReturnType);
+                returnType = BindType(func.ReturnType.TypeSyntax);
             else
                 returnType = TypeSymbol.Void;
 
@@ -231,7 +231,7 @@ namespace Compiler.Binding
 
             if (syntax.TypeClause.IsExplicit)
             {
-                type = BindType(syntax.TypeClause);
+                type = BindType(syntax.TypeClause.TypeSyntax);
                 expr = CheckTypeAndConversion(type, syntax.Expression);
             }
             else
@@ -592,12 +592,19 @@ namespace Compiler.Binding
             return new BoundConversionExpression(type, expr, isTreeValid);
         }
 
-        private TypeSymbol BindType(TypeClauseSyntax syntax)
+        private TypeSymbol BindType(TypeSyntax syntax)
         {
-            var pre = (PreDefinedTypeSyntax)syntax.TypeSyntax;
-
-            var type = BindFacts.GetTypeSymbol(pre.TypeToken.TokenKind);
-            return type;
+            if (syntax is PreDefinedTypeSyntax preDefinedType)
+            {
+                var type = BindFacts.GetTypeSymbol(preDefinedType.TypeToken.TokenKind);
+                return type;
+            }
+            else if (syntax is ArrayTypeSyntax arrayType)
+            {
+                 var underlying = BindType(arrayType.UnderlyingType);
+                 return new ArrayTypeSymbol(underlying);
+            }
+            else throw new Exception($"Unexpected type {syntax.GetType()}");
         }
     }
 }

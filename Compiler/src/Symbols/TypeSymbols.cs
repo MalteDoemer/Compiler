@@ -1,34 +1,29 @@
 using System;
+using Mono.Cecil;
 using System.Collections.Generic;
 
 namespace Compiler.Symbols
 {
-    public sealed class TypeSymbol : Symbol
+    public abstract class TypeSymbol : Symbol
     {
-        public static readonly TypeSymbol Int = new TypeSymbol("int");
-        public static readonly TypeSymbol Float = new TypeSymbol("float");
-        public static readonly TypeSymbol Bool = new TypeSymbol("bool");
-        public static readonly TypeSymbol String = new TypeSymbol("str");
-        public static readonly TypeSymbol Obj = new TypeSymbol("obj");
-        public static readonly TypeSymbol Void = new TypeSymbol("void");
-        public static readonly TypeSymbol Invalid = new TypeSymbol("$Invalid");
-
-        private TypeSymbol(string name) : base(name)
+        private sealed class PrimitiveTypeSymbol : TypeSymbol
         {
-            Type = this;
-            IsArray = false;
+            public PrimitiveTypeSymbol(string name) : base(name)
+            {
+            }
         }
 
-        private TypeSymbol(TypeSymbol type) : base(type.Name + "[]")
+        public static readonly TypeSymbol Int = new PrimitiveTypeSymbol("int");
+        public static readonly TypeSymbol Float = new PrimitiveTypeSymbol("float");
+        public static readonly TypeSymbol Bool = new PrimitiveTypeSymbol("bool");
+        public static readonly TypeSymbol String = new PrimitiveTypeSymbol("str");
+        public static readonly TypeSymbol Obj = new PrimitiveTypeSymbol("obj");
+        public static readonly TypeSymbol Void = new PrimitiveTypeSymbol("void");
+        public static readonly TypeSymbol Invalid = new PrimitiveTypeSymbol("$Invalid");
+
+        protected TypeSymbol(string name) : base(name)
         {
-            Type = type;
-            IsArray = true;
         }
-
-        public TypeSymbol Type { get; }
-        public bool IsArray { get; }
-
-        public TypeSymbol CreateArray() => new TypeSymbol(this);
 
         public static TypeSymbol? Lookup(string name)
         {
@@ -44,7 +39,33 @@ namespace Compiler.Symbols
             }
         }
 
-        public override bool Equals(object? obj) => obj is TypeSymbol symbol && Name == symbol.Name;
+        public override bool Equals(object? obj) => obj is TypeSymbol type && type.Name == Name;
         public override int GetHashCode() => HashCode.Combine(Name);
+
+        public static bool operator ==(TypeSymbol? l, TypeSymbol? r)
+        {
+            if (l is null && r is null)
+                return true;
+            else if (l is null || r is null)
+                return false;
+            else return l.Name == r.Name;
+        }
+        public static bool operator !=(TypeSymbol? l, TypeSymbol? r) => !(l == r);
+
+    }
+
+
+    public sealed class ArrayTypeSymbol : TypeSymbol
+    {
+        public ArrayTypeSymbol(TypeSymbol type) : base(type.Name + "[]")
+        {
+            Type = type;
+            if (type is ArrayTypeSymbol array)
+                Rank = array.Rank + 1;
+            else Rank = 0;
+        }
+
+        public TypeSymbol Type { get; }
+        public int Rank { get; }
     }
 }

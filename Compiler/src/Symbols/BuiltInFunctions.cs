@@ -13,7 +13,7 @@ namespace Compiler.Symbols
         public static readonly FunctionSymbol Exit = new FunctionSymbol("exit", ImmutableArray.Create<ParameterSymbol>(new ParameterSymbol("exitCode", 0, TypeSymbol.Int)), TypeSymbol.Void);
         public static readonly FunctionSymbol Random = new FunctionSymbol("rand", ImmutableArray.Create<ParameterSymbol>(new ParameterSymbol("start", 0, TypeSymbol.Int), new ParameterSymbol("stop", 1, TypeSymbol.Int)), TypeSymbol.Int);
         public static readonly FunctionSymbol RandomFloat = new FunctionSymbol("randf", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Float);
-
+        
         public static IEnumerable<FunctionSymbol> GetAll()
         {
             yield return Print;

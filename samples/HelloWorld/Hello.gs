@@ -1,7 +1,6 @@
 func main() {
-    
-    let inp = prompt("Fett? ")
-    println(inp)
+    var f = 0.5
+    println(f)
 
     input()
 }

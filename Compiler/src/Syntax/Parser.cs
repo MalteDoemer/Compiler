@@ -286,16 +286,32 @@ namespace Compiler.Syntax
         private TypeClauseSyntax ParseTypeClause()
         {
             var colon = MatchToken(SyntaxTokenKind.Colon);
-            var typeToken = MatchToken(SyntaxTokenKind.ObjKeyword,
-                                       SyntaxTokenKind.IntKeyword,
-                                       SyntaxTokenKind.FloatKeyword,
-                                       SyntaxTokenKind.BoolKeyword,
-                                       SyntaxTokenKind.StringKeyword,
-                                       SyntaxTokenKind.VoidKeyword);
 
-            var typeSyntax = new PreDefinedTypeSyntax(typeToken, isTreeValid, typeToken.Location);
-            var loc = LocFromBounds(colon.Location.Start, typeToken.Location.End);
+            var typeSyntax = ParseTypeSyntax();
+            var loc = LocFromBounds(colon.Location.Start, typeSyntax.Location.End);
             return new TypeClauseSyntax(colon, typeSyntax, true, isTreeValid, loc);
+        }
+
+        private TypeSyntax ParseTypeSyntax()
+        {
+            var typeToken = MatchToken(SyntaxTokenKind.ObjKeyword,
+                                                   SyntaxTokenKind.IntKeyword,
+                                                   SyntaxTokenKind.FloatKeyword,
+                                                   SyntaxTokenKind.BoolKeyword,
+                                                   SyntaxTokenKind.StringKeyword,
+                                                   SyntaxTokenKind.VoidKeyword);
+
+            TypeSyntax typeSyntax = new PreDefinedTypeSyntax(typeToken, isTreeValid, typeToken.Location);
+            
+            while (current.TokenKind == SyntaxTokenKind.LSquare)
+            {
+                var lsquare = MatchToken(SyntaxTokenKind.LSquare);
+                var rsquare = MatchToken(SyntaxTokenKind.RSquare);
+                var loc = LocFromBounds(typeSyntax.Location.Start, rsquare.Location.End);
+                typeSyntax = new ArrayTypeSyntax(typeSyntax, lsquare, rsquare, isTreeValid, loc);
+            }
+
+            return typeSyntax;
         }
 
         private ExpressionSyntax ParseExpression() => ParseExpression(SyntaxFacts.MaxPrecedence);

@@ -100,7 +100,6 @@ namespace Compiler.Emit
             randomNextReference = ResolveMethod("System.Random", "Next", "System.Int32", "System.Int32", "System.Int32");
             randomNextDoubleReference = ResolveMethod("System.Random", "NextDouble", "System.Double");
 
-
         }
 
         public void Emit()
@@ -269,7 +268,7 @@ namespace Compiler.Emit
 
         private void EmitReturnStatement(ILProcessor ilProcesser, BoundReturnStatement node)
         {
-            if (!(node.Expression is null)) 
+            if (!(node.Expression is null))
                 EmitExpression(ilProcesser, node.Expression);
             ilProcesser.Emit(OpCodes.Ret);
         }
