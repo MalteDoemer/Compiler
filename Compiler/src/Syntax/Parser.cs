@@ -396,7 +396,7 @@ namespace Compiler.Syntax
             switch (typeSyntax.Kind)
             {
                 case SyntaxNodeKind.ArrayTypeSyntax:
-                    return new NewArraySyntax(newToken, (ArrayTypeSyntax)typeSyntax, isTreeValid, LocFromBounds(newToken.Location.Start, typeSyntax.Location.End));
+                    return new ArrayCreationSyntax(newToken, (ArrayTypeSyntax)typeSyntax, isTreeValid, LocFromBounds(newToken.Location.Start, typeSyntax.Location.End));
                 case SyntaxNodeKind.PreDefinedTypeSyntax:
                     throw new NotImplementedException();
                 default: throw new Exception($"Unexpected kind: <{typeSyntax.Kind}>");

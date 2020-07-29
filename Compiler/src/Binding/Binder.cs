@@ -416,8 +416,8 @@ namespace Compiler.Binding
                     return BindAdditionalAssignmentExpressionSyntax((AdditionalAssignmentExpressionSyntax)syntax);
                 case SyntaxNodeKind.PostIncDecExpressionSyntax:
                     return BindPostIncDecExpressionSyntax((PostIncDecExpressionSyntax)syntax);
-                case SyntaxNodeKind.NewArraySyntax:
-                    return BindNewArraySyntax((NewArraySyntax)syntax);
+                case SyntaxNodeKind.ArrayCreationSyntax:
+                    return BindNewArraySyntax((ArrayCreationSyntax)syntax);
                 case SyntaxNodeKind.TernaryExpressionSyntax:
                     return BindTernaryExpressionSyntax((TernaryExpressionSyntax)syntax);
                 case SyntaxNodeKind.ParenthesizedExpression:
@@ -434,7 +434,7 @@ namespace Compiler.Binding
             return new BoundTernaryExpression(condition, thenExpr, elseExpr, thenExpr.ResultType, isTreeValid);
         }
 
-        private BoundExpression BindNewArraySyntax(NewArraySyntax syntax)
+        private BoundExpression BindNewArraySyntax(ArrayCreationSyntax syntax)
         {
             BoundExpression size;
 
@@ -463,7 +463,7 @@ namespace Compiler.Binding
             if (!resolver.ResolveType(type.UnderlyingType))
                 ReportError(ErrorMessage.TypeNotFound, syntax.ArrayTypeSyntax.UnderlyingType.Location, type.Name);
 
-            return new BoundNewArray(type, size, isTreeValid);
+            return new BoundArrayCreation(type, size, isTreeValid);
         }
 
         private BoundExpression BindLiteralExpressionSyntax(LiteralExpressionSyntax syntax)

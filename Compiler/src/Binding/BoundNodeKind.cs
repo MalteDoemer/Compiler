@@ -11,7 +11,7 @@ namespace Compiler.Binding
         BoundConversionExpression,
         BoundAssignmentExpression,
         BoundInvalidExpression,
-        BoundNewArray,
+        BoundArrayCreation,
         BoundTernaryExpression,
         BoundStatementExpression,
         

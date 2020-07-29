@@ -285,8 +285,8 @@ namespace Compiler.Emit
                     case BoundNodeKind.BoundAssignmentExpression:
                         EmitAssignmentExpression(ilProcessor, (BoundAssignmentExpression)node);
                         break;
-                    case BoundNodeKind.BoundNewArray:
-                        EmitNewArrayExpession(ilProcessor, (BoundNewArray)node);
+                    case BoundNodeKind.BoundArrayCreation:
+                        EmitNewArrayExpession(ilProcessor, (BoundArrayCreation)node);
                         break;
                     case BoundNodeKind.BoundStatementExpression:
                         EmitStatementExpression(ilProcessor, (BoundStatementExpression)node);
@@ -305,7 +305,7 @@ namespace Compiler.Emit
                 EmitStatement(ilProcessor, stmt);
         }
 
-        private void EmitNewArrayExpession(ILProcessor ilProcessor, BoundNewArray node)
+        private void EmitNewArrayExpession(ILProcessor ilProcessor, BoundArrayCreation node)
         {
             EmitExpression(ilProcessor, node.Size);
             var type = resolvedTypes[node.UnderlyingType];

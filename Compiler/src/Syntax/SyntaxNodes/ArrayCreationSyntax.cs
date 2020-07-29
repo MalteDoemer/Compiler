@@ -5,15 +5,15 @@ using Compiler.Text;
 
 namespace Compiler.Syntax
 {
-    public sealed class NewArraySyntax : ExpressionSyntax
+    public sealed class ArrayCreationSyntax : ExpressionSyntax
     {
-        public NewArraySyntax(SyntaxToken newToken, ArrayTypeSyntax arrayTypeSyntax, bool isValid, TextLocation location) : base(isValid, location)
+        public ArrayCreationSyntax(SyntaxToken newToken, ArrayTypeSyntax arrayTypeSyntax, bool isValid, TextLocation location) : base(isValid, location)
         {
             NewToken = newToken;
             ArrayTypeSyntax = arrayTypeSyntax;
         }
 
-        public override SyntaxNodeKind Kind => SyntaxNodeKind.NewArraySyntax;
+        public override SyntaxNodeKind Kind => SyntaxNodeKind.ArrayCreationSyntax;
 
         public SyntaxToken NewToken { get; }
         public ArrayTypeSyntax ArrayTypeSyntax { get; }

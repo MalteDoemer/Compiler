@@ -165,8 +165,8 @@ namespace Compiler.Binding
                     return RewriteConversionExpression((BoundConversionExpression)node);
                 case BoundNodeKind.BoundAssignmentExpression:
                     return RewriteAssignmentExpression((BoundAssignmentExpression)node);
-                case BoundNodeKind.BoundNewArray:
-                    return RewriteNewArray((BoundNewArray)node);
+                case BoundNodeKind.BoundArrayCreation:
+                    return RewriteNewArray((BoundArrayCreation)node);
                 case BoundNodeKind.BoundTernaryExpression:
                     return RewriteTernaryExpression((BoundTernaryExpression)node);
                 case BoundNodeKind.BoundStatementExpression:
@@ -198,13 +198,13 @@ namespace Compiler.Binding
             return new BoundTernaryExpression(condition, thenExpr, elseExpr, node.ResultType, node.IsValid);
         }
 
-        protected virtual BoundExpression RewriteNewArray(BoundNewArray node)
+        protected virtual BoundExpression RewriteNewArray(BoundArrayCreation node)
         {
             var size = RewriteExpression(node.Size);
             if (size == node.Size)
                 return node;
 
-            return new BoundNewArray(node.ResultType, size, node.IsValid);
+            return new BoundArrayCreation(node.ResultType, size, node.IsValid);
         }
 
         protected virtual BoundExpression RewriteConversionExpression(BoundConversionExpression node)
