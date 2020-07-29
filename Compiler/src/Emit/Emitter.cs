@@ -173,134 +173,134 @@ namespace Compiler.Emit
             }
         }
 
-        private void EmitStatement(ILProcessor ilProcesser, BoundStatement node)
+        private void EmitStatement(ILProcessor ilProcessor, BoundStatement node)
         {
             switch (node.Kind)
             {
                 case BoundNodeKind.BoundVariableDeclarationStatement:
-                    EmitVariableDeclarationStatement(ilProcesser, (BoundVariableDeclarationStatement)node);
+                    EmitVariableDeclarationStatement(ilProcessor, (BoundVariableDeclarationStatement)node);
                     break;
                 case BoundNodeKind.BoundConditionalGotoStatement:
-                    EmitConditionalGotoStatement(ilProcesser, (BoundConditionalGotoStatement)node);
+                    EmitConditionalGotoStatement(ilProcessor, (BoundConditionalGotoStatement)node);
                     break;
                 case BoundNodeKind.BoundGotoStatement:
-                    EmitGotoStatement(ilProcesser, (BoundGotoStatement)node);
+                    EmitGotoStatement(ilProcessor, (BoundGotoStatement)node);
                     break;
                 case BoundNodeKind.BoundLabelStatement:
-                    EmitLabelStatement(ilProcesser, (BoundLabelStatement)node);
+                    EmitLabelStatement(ilProcessor, (BoundLabelStatement)node);
                     break;
                 case BoundNodeKind.BoundReturnStatement:
-                    EmitReturnStatement(ilProcesser, (BoundReturnStatement)node);
+                    EmitReturnStatement(ilProcessor, (BoundReturnStatement)node);
                     break;
                 case BoundNodeKind.BoundExpressionStatement:
-                    EmitExpressionStatement(ilProcesser, (BoundExpressionStatement)node);
+                    EmitExpressionStatement(ilProcessor, (BoundExpressionStatement)node);
                     break;
                 case BoundNodeKind.BoundNopStatement:
-                    ilProcesser.Emit(OpCodes.Nop);
+                    ilProcessor.Emit(OpCodes.Nop);
                     break;
                 default: throw new Exception("Unexpected kind");
             }
         }
 
-        private void EmitVariableDeclarationStatement(ILProcessor ilProcesser, BoundVariableDeclarationStatement node)
+        private void EmitVariableDeclarationStatement(ILProcessor ilProcessor, BoundVariableDeclarationStatement node)
         {
             if (node.Variable.Constant is null)
             {
                 if (node.Variable is GlobalVariableSymbol globalVariable)
                 {
                     var field = globalVariables[globalVariable];
-                    EmitExpression(ilProcesser, node.Expression);
-                    ilProcesser.Emit(OpCodes.Stsfld, field);
+                    EmitExpression(ilProcessor, node.Expression);
+                    ilProcessor.Emit(OpCodes.Stsfld, field);
                 }
                 else if (node.Variable is LocalVariableSymbol localVariable)
                 {
                     var type = resolvedTypes[localVariable.Type];
                     var variable = new VariableDefinition(type);
                     locals.Add(localVariable, variable);
-                    ilProcesser.Body.Variables.Add(variable);
+                    ilProcessor.Body.Variables.Add(variable);
 
-                    EmitExpression(ilProcesser, node.Expression);
-                    ilProcesser.Emit(OpCodes.Stloc, variable);
+                    EmitExpression(ilProcessor, node.Expression);
+                    ilProcessor.Emit(OpCodes.Stloc, variable);
                 }
                 else throw new Exception("Unexpected VariableSymbol");
             }
         }
 
-        private void EmitLabelStatement(ILProcessor ilProcesser, BoundLabelStatement node)
+        private void EmitLabelStatement(ILProcessor ilProcessor, BoundLabelStatement node)
         {
-            labels.Add(node.Label, ilProcesser.Body.Instructions.Count);
+            labels.Add(node.Label, ilProcessor.Body.Instructions.Count);
         }
 
-        private void EmitGotoStatement(ILProcessor ilProcesser, BoundGotoStatement node)
+        private void EmitGotoStatement(ILProcessor ilProcessor, BoundGotoStatement node)
         {
-            fixups.Add((ilProcesser.Body.Instructions.Count, node.Label));
-            ilProcesser.Emit(OpCodes.Br, Instruction.Create(OpCodes.Nop));
+            fixups.Add((ilProcessor.Body.Instructions.Count, node.Label));
+            ilProcessor.Emit(OpCodes.Br, Instruction.Create(OpCodes.Nop));
         }
 
-        private void EmitConditionalGotoStatement(ILProcessor ilProcesser, BoundConditionalGotoStatement node)
+        private void EmitConditionalGotoStatement(ILProcessor ilProcessor, BoundConditionalGotoStatement node)
         {
-            EmitExpression(ilProcesser, node.Condition);
+            EmitExpression(ilProcessor, node.Condition);
 
-            fixups.Add((ilProcesser.Body.Instructions.Count, node.Label));
+            fixups.Add((ilProcessor.Body.Instructions.Count, node.Label));
             var opCode = node.JumpIfFalse ? OpCodes.Brfalse : OpCodes.Brtrue;
-            ilProcesser.Emit(opCode, Instruction.Create(OpCodes.Nop));
+            ilProcessor.Emit(opCode, Instruction.Create(OpCodes.Nop));
         }
 
-        private void EmitReturnStatement(ILProcessor ilProcesser, BoundReturnStatement node)
+        private void EmitReturnStatement(ILProcessor ilProcessor, BoundReturnStatement node)
         {
             if (!(node.Expression is null))
-                EmitExpression(ilProcesser, node.Expression);
-            ilProcesser.Emit(OpCodes.Ret);
+                EmitExpression(ilProcessor, node.Expression);
+            ilProcessor.Emit(OpCodes.Ret);
         }
 
-        private void EmitExpressionStatement(ILProcessor ilProcesser, BoundExpressionStatement node)
+        private void EmitExpressionStatement(ILProcessor ilProcessor, BoundExpressionStatement node)
         {
-            EmitExpression(ilProcesser, node.Expression);
+            EmitExpression(ilProcessor, node.Expression);
 
             if (node.Expression.ResultType != TypeSymbol.Void)
-                ilProcesser.Emit(OpCodes.Pop);
+                ilProcessor.Emit(OpCodes.Pop);
         }
 
-        private void EmitExpression(ILProcessor ilProcesser, BoundExpression node)
+        private void EmitExpression(ILProcessor ilProcessor, BoundExpression node)
         {
             if (node.Constant is null)
                 switch (node.Kind)
                 {
                     case BoundNodeKind.BoundVariableExpression:
-                        EmitVariableExpression(ilProcesser, (BoundVariableExpression)node);
+                        EmitVariableExpression(ilProcessor, (BoundVariableExpression)node);
                         break;
                     case BoundNodeKind.BoundUnaryExpression:
-                        EmitUnaryExpression(ilProcesser, (BoundUnaryExpression)node);
+                        EmitUnaryExpression(ilProcessor, (BoundUnaryExpression)node);
                         break;
                     case BoundNodeKind.BoundBinaryExpression:
-                        EmitBinaryExpression(ilProcesser, (BoundBinaryExpression)node);
+                        EmitBinaryExpression(ilProcessor, (BoundBinaryExpression)node);
                         break;
                     case BoundNodeKind.BoundCallExpression:
-                        EmitCallExpression(ilProcesser, (BoundCallExpression)node);
+                        EmitCallExpression(ilProcessor, (BoundCallExpression)node);
                         break;
                     case BoundNodeKind.BoundConversionExpression:
-                        EmitConversionExpression(ilProcesser, (BoundConversionExpression)node);
+                        EmitConversionExpression(ilProcessor, (BoundConversionExpression)node);
                         break;
                     case BoundNodeKind.BoundAssignmentExpression:
-                        EmitAssignmentExpression(ilProcesser, (BoundAssignmentExpression)node);
+                        EmitAssignmentExpression(ilProcessor, (BoundAssignmentExpression)node);
                         break;
                     case BoundNodeKind.BoundNewArray:
-                        EmitNewArrayExpession(ilProcesser, (BoundNewArray)node);
+                        EmitNewArrayExpession(ilProcessor, (BoundNewArray)node);
                         break;
                     default: throw new Exception($"Unexpected kind <{node.Kind}>");
                 }
             else
-                EmitConstatnt(ilProcesser, node.Constant);
+                EmitConstatnt(ilProcessor, node.Constant);
         }
 
-        private void EmitNewArrayExpession(ILProcessor ilProcesser, BoundNewArray node)
+        private void EmitNewArrayExpession(ILProcessor ilProcessor, BoundNewArray node)
         {
-            EmitExpression(ilProcesser, node.Size);
+            EmitExpression(ilProcessor, node.Size);
             var type = resolvedTypes[node.UnderlyingType];
-            ilProcesser.Emit(OpCodes.Newarr, type);
+            ilProcessor.Emit(OpCodes.Newarr, type);
         }
 
-        private void EmitConstatnt(ILProcessor ilProcesser, BoundConstant constant)
+        private void EmitConstatnt(ILProcessor ilProcessor, BoundConstant constant)
         {
             var value = constant.Value;
 
@@ -308,66 +308,66 @@ namespace Compiler.Emit
             {
                 switch (i)
                 {
-                    case -1: ilProcesser.Emit(OpCodes.Ldc_I4_M1); break;
-                    case 0: ilProcesser.Emit(OpCodes.Ldc_I4_0); break;
-                    case 1: ilProcesser.Emit(OpCodes.Ldc_I4_1); break;
-                    case 2: ilProcesser.Emit(OpCodes.Ldc_I4_2); break;
-                    case 3: ilProcesser.Emit(OpCodes.Ldc_I4_3); break;
-                    case 4: ilProcesser.Emit(OpCodes.Ldc_I4_4); break;
-                    case 5: ilProcesser.Emit(OpCodes.Ldc_I4_5); break;
-                    case 6: ilProcesser.Emit(OpCodes.Ldc_I4_6); break;
-                    case 7: ilProcesser.Emit(OpCodes.Ldc_I4_7); break;
-                    case 8: ilProcesser.Emit(OpCodes.Ldc_I4_8); break;
+                    case -1: ilProcessor.Emit(OpCodes.Ldc_I4_M1); break;
+                    case 0: ilProcessor.Emit(OpCodes.Ldc_I4_0); break;
+                    case 1: ilProcessor.Emit(OpCodes.Ldc_I4_1); break;
+                    case 2: ilProcessor.Emit(OpCodes.Ldc_I4_2); break;
+                    case 3: ilProcessor.Emit(OpCodes.Ldc_I4_3); break;
+                    case 4: ilProcessor.Emit(OpCodes.Ldc_I4_4); break;
+                    case 5: ilProcessor.Emit(OpCodes.Ldc_I4_5); break;
+                    case 6: ilProcessor.Emit(OpCodes.Ldc_I4_6); break;
+                    case 7: ilProcessor.Emit(OpCodes.Ldc_I4_7); break;
+                    case 8: ilProcessor.Emit(OpCodes.Ldc_I4_8); break;
                     default:
                         if (i <= sbyte.MaxValue)
-                            ilProcesser.Emit(OpCodes.Ldc_I4_S, (sbyte)i);
+                            ilProcessor.Emit(OpCodes.Ldc_I4_S, (sbyte)i);
                         else
-                            ilProcesser.Emit(OpCodes.Ldc_I4, i);
+                            ilProcessor.Emit(OpCodes.Ldc_I4, i);
                         break;
                 }
             }
             else if (value is double d)
             {
-                ilProcesser.Emit(OpCodes.Ldc_R8, d);
+                ilProcessor.Emit(OpCodes.Ldc_R8, d);
             }
             else if (value is bool b)
             {
                 var opcode = b ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0;
-                ilProcesser.Emit(opcode);
+                ilProcessor.Emit(opcode);
             }
             else if (value is string s)
             {
-                ilProcesser.Emit(OpCodes.Ldstr, s);
+                ilProcessor.Emit(OpCodes.Ldstr, s);
             }
             else if (value is null)
             {
-                ilProcesser.Emit(OpCodes.Ldnull);
+                ilProcessor.Emit(OpCodes.Ldnull);
             }
             else throw new Exception($"Unexpected constant type ${value.GetType()}");
         }
 
-        private void EmitVariableExpression(ILProcessor ilProcesser, BoundVariableExpression node)
+        private void EmitVariableExpression(ILProcessor ilProcessor, BoundVariableExpression node)
         {
             if (node.Variable is GlobalVariableSymbol globalVariable)
             {
                 var field = globalVariables[globalVariable];
-                ilProcesser.Emit(OpCodes.Ldsfld, field);
+                ilProcessor.Emit(OpCodes.Ldsfld, field);
             }
             else if (node.Variable is LocalVariableSymbol localVariable)
             {
                 var variable = locals[localVariable];
-                ilProcesser.Emit(OpCodes.Ldloc, variable);
+                ilProcessor.Emit(OpCodes.Ldloc, variable);
             }
             else if (node.Variable is ParameterSymbol parameter)
             {
-                ilProcesser.Emit(OpCodes.Ldarg, parameter.Index);
+                ilProcessor.Emit(OpCodes.Ldarg, parameter.Index);
             }
             else throw new Exception("Unexpected VariableSymbol");
         }
 
-        private void EmitUnaryExpression(ILProcessor ilProcesser, BoundUnaryExpression node)
+        private void EmitUnaryExpression(ILProcessor ilProcessor, BoundUnaryExpression node)
         {
-            EmitExpression(ilProcesser, node.Expression);
+            EmitExpression(ilProcessor, node.Expression);
 
             switch (node.Op)
             {
@@ -375,59 +375,59 @@ namespace Compiler.Emit
                     // Nothing
                     break;
                 case BoundUnaryOperator.Negation:
-                    ilProcesser.Emit(OpCodes.Neg);
+                    ilProcessor.Emit(OpCodes.Neg);
                     break;
                 case BoundUnaryOperator.LogicalNot:
-                    ilProcesser.Emit(OpCodes.Ldc_I4_0);
-                    ilProcesser.Emit(OpCodes.Ceq);
+                    ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                    ilProcessor.Emit(OpCodes.Ceq);
                     break;
                 case BoundUnaryOperator.BitwiseNot:
-                    ilProcesser.Emit(OpCodes.Not);
+                    ilProcessor.Emit(OpCodes.Not);
                     break;
                 default: throw new Exception($"Unexpceted unary operator {node.Op}");
             }
         }
 
-        private void EmitBinaryExpression(ILProcessor ilProcesser, BoundBinaryExpression node)
+        private void EmitBinaryExpression(ILProcessor ilProcessor, BoundBinaryExpression node)
         {
             var leftType = node.Left.ResultType;
             var rightType = node.Right.ResultType;
 
-            EmitExpression(ilProcesser, node.Left);
-            EmitExpression(ilProcesser, node.Right);
+            EmitExpression(ilProcessor, node.Left);
+            EmitExpression(ilProcessor, node.Right);
 
 
             if (node.Op == BoundBinaryOperator.Addition && leftType == TypeSymbol.String && rightType == TypeSymbol.String)
             {
-                ilProcesser.Emit(OpCodes.Call, stringConcatReference);
+                ilProcessor.Emit(OpCodes.Call, stringConcatReference);
                 return;
             }
 
             if (node.Op == BoundBinaryOperator.EqualEqual && leftType == TypeSymbol.String && rightType == TypeSymbol.String)
             {
-                ilProcesser.Emit(OpCodes.Call, stringEqualsReference);
+                ilProcessor.Emit(OpCodes.Call, stringEqualsReference);
                 return;
             }
 
             if (node.Op == BoundBinaryOperator.EqualEqual && leftType == TypeSymbol.Obj && rightType == TypeSymbol.Obj)
             {
-                ilProcesser.Emit(OpCodes.Call, objectEqualsReference);
+                ilProcessor.Emit(OpCodes.Call, objectEqualsReference);
                 return;
             }
 
             if (node.Op == BoundBinaryOperator.NotEqual && leftType == TypeSymbol.String && rightType == TypeSymbol.String)
             {
-                ilProcesser.Emit(OpCodes.Call, stringEqualsReference);
-                ilProcesser.Emit(OpCodes.Ldc_I4_0);
-                ilProcesser.Emit(OpCodes.Ceq);
+                ilProcessor.Emit(OpCodes.Call, stringEqualsReference);
+                ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                ilProcessor.Emit(OpCodes.Ceq);
                 return;
             }
 
             if (node.Op == BoundBinaryOperator.NotEqual && leftType == TypeSymbol.Obj && rightType == TypeSymbol.Obj)
             {
-                ilProcesser.Emit(OpCodes.Callvirt, objectEqualsReference);
-                ilProcesser.Emit(OpCodes.Ldc_I4_0);
-                ilProcesser.Emit(OpCodes.Ceq);
+                ilProcessor.Emit(OpCodes.Callvirt, objectEqualsReference);
+                ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                ilProcessor.Emit(OpCodes.Ceq);
                 return;
             }
 
@@ -435,66 +435,66 @@ namespace Compiler.Emit
             switch (node.Op)
             {
                 case BoundBinaryOperator.Addition:
-                    ilProcesser.Emit(OpCodes.Add);
+                    ilProcessor.Emit(OpCodes.Add);
                     break;
                 case BoundBinaryOperator.Subtraction:
-                    ilProcesser.Emit(OpCodes.Sub);
+                    ilProcessor.Emit(OpCodes.Sub);
                     break;
                 case BoundBinaryOperator.Multiplication:
-                    ilProcesser.Emit(OpCodes.Mul);
+                    ilProcessor.Emit(OpCodes.Mul);
                     break;
                 case BoundBinaryOperator.Division:
-                    ilProcesser.Emit(OpCodes.Div);
+                    ilProcessor.Emit(OpCodes.Div);
                     break;
                 case BoundBinaryOperator.Modulo:
-                    ilProcesser.Emit(OpCodes.Rem);
+                    ilProcessor.Emit(OpCodes.Rem);
                     break;
                 case BoundBinaryOperator.Power:
-                    ilProcesser.Emit(OpCodes.Call, mathPowReference);
+                    ilProcessor.Emit(OpCodes.Call, mathPowReference);
                     break;
                 case BoundBinaryOperator.EqualEqual:
-                    ilProcesser.Emit(OpCodes.Ceq);
+                    ilProcessor.Emit(OpCodes.Ceq);
                     break;
                 case BoundBinaryOperator.NotEqual:
-                    ilProcesser.Emit(OpCodes.Ceq);
-                    ilProcesser.Emit(OpCodes.Ldc_I4_0);
-                    ilProcesser.Emit(OpCodes.Ceq);
+                    ilProcessor.Emit(OpCodes.Ceq);
+                    ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                    ilProcessor.Emit(OpCodes.Ceq);
                     break;
                 case BoundBinaryOperator.LessThan:
-                    ilProcesser.Emit(OpCodes.Clt);
+                    ilProcessor.Emit(OpCodes.Clt);
                     break;
                 case BoundBinaryOperator.GreaterThan:
-                    ilProcesser.Emit(OpCodes.Cgt);
+                    ilProcessor.Emit(OpCodes.Cgt);
                     break;
                 case BoundBinaryOperator.LessEqual:
-                    ilProcesser.Emit(OpCodes.Cgt);
-                    ilProcesser.Emit(OpCodes.Ldc_I4_0);
-                    ilProcesser.Emit(OpCodes.Ceq);
+                    ilProcessor.Emit(OpCodes.Cgt);
+                    ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                    ilProcessor.Emit(OpCodes.Ceq);
                     break;
                 case BoundBinaryOperator.GreaterEqual:
-                    ilProcesser.Emit(OpCodes.Clt);
-                    ilProcesser.Emit(OpCodes.Ldc_I4_0);
-                    ilProcesser.Emit(OpCodes.Ceq);
+                    ilProcessor.Emit(OpCodes.Clt);
+                    ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                    ilProcessor.Emit(OpCodes.Ceq);
                     break;
                 // TODO short-circuit evalutaion
                 case BoundBinaryOperator.LogicalAnd:
                 case BoundBinaryOperator.BitwiseAnd:
-                    ilProcesser.Emit(OpCodes.And);
+                    ilProcessor.Emit(OpCodes.And);
                     break;
                 // TODO short-circuit evalutaion
                 case BoundBinaryOperator.LogicalOr:
                 case BoundBinaryOperator.BitwiseOr:
-                    ilProcesser.Emit(OpCodes.Or);
+                    ilProcessor.Emit(OpCodes.Or);
                     break;
                 case BoundBinaryOperator.BitwiseXor:
-                    ilProcesser.Emit(OpCodes.Xor);
+                    ilProcessor.Emit(OpCodes.Xor);
                     break;
 
                 default: throw new Exception($"Unexpected binary operator {node.Op}");
             }
         }
 
-        private void EmitCallExpression(ILProcessor ilProcesser, BoundCallExpression node)
+        private void EmitCallExpression(ILProcessor ilProcessor, BoundCallExpression node)
         {
             if (node.Symbol == BuiltInFunctions.Random || node.Symbol == BuiltInFunctions.RandomFloat)
             {
@@ -505,67 +505,67 @@ namespace Compiler.Emit
                     needsRandom = true;
                 }
 
-                ilProcesser.Emit(OpCodes.Ldsfld, randomDefiniton);
+                ilProcessor.Emit(OpCodes.Ldsfld, randomDefiniton);
             }
 
             foreach (var arg in node.Arguments)
-                EmitExpression(ilProcesser, arg);
+                EmitExpression(ilProcessor, arg);
 
             if (node.Symbol == BuiltInFunctions.Print)
-                ilProcesser.Emit(OpCodes.Call, consoleWriteReference);
+                ilProcessor.Emit(OpCodes.Call, consoleWriteReference);
             else if (node.Symbol == BuiltInFunctions.PrintLine)
-                ilProcesser.Emit(OpCodes.Call, consoleWriteLineReference);
+                ilProcessor.Emit(OpCodes.Call, consoleWriteLineReference);
             else if (node.Symbol == BuiltInFunctions.Input)
-                ilProcesser.Emit(OpCodes.Call, cosnoleReadLineReference);
+                ilProcessor.Emit(OpCodes.Call, cosnoleReadLineReference);
             else if (node.Symbol == BuiltInFunctions.Len)
-                ilProcesser.Emit(OpCodes.Call, stringGetLengthReference);
+                ilProcessor.Emit(OpCodes.Call, stringGetLengthReference);
             else if (node.Symbol == BuiltInFunctions.Clear)
-                ilProcesser.Emit(OpCodes.Call, cosnoleClearReference);
+                ilProcessor.Emit(OpCodes.Call, cosnoleClearReference);
             else if (node.Symbol == BuiltInFunctions.Exit)
-                ilProcesser.Emit(OpCodes.Call, environmentExitReference);
+                ilProcessor.Emit(OpCodes.Call, environmentExitReference);
             else if (node.Symbol == BuiltInFunctions.Random)
-                ilProcesser.Emit(OpCodes.Callvirt, randomNextReference);
+                ilProcessor.Emit(OpCodes.Callvirt, randomNextReference);
             else if (node.Symbol == BuiltInFunctions.RandomFloat)
-                ilProcesser.Emit(OpCodes.Callvirt, randomNextDoubleReference);
+                ilProcessor.Emit(OpCodes.Callvirt, randomNextDoubleReference);
             else
             {
                 var function = functions[node.Symbol!];
-                ilProcesser.Emit(OpCodes.Call, function);
+                ilProcessor.Emit(OpCodes.Call, function);
             }
 
         }
 
-        private void EmitConversionExpression(ILProcessor ilProcesser, BoundConversionExpression node)
+        private void EmitConversionExpression(ILProcessor ilProcessor, BoundConversionExpression node)
         {
             var from = node.Expression.ResultType.Name;
             var to = node.ResultType.Name;
 
-            EmitExpression(ilProcesser, node.Expression);
+            EmitExpression(ilProcessor, node.Expression);
 
             switch (from, to)
             {
 
                 case ("int", "float"):
-                    ilProcesser.Emit(OpCodes.Conv_R8);
+                    ilProcessor.Emit(OpCodes.Conv_R8);
                     break;
                 case ("float", "int"):
-                    ilProcesser.Emit(OpCodes.Conv_I8);
+                    ilProcessor.Emit(OpCodes.Conv_I8);
                     break;
                 case ("obj", "str"):
-                    ilProcesser.Emit(OpCodes.Call, convertToStringReference);
+                    ilProcessor.Emit(OpCodes.Call, convertToStringReference);
                     break;
                 case ("int", "str"):
                 case ("float", "str"):
                 case ("bool", "str"):
                     var type1 = resolvedTypes[node.Expression.ResultType];
-                    ilProcesser.Emit(OpCodes.Box, type1);
-                    ilProcesser.Emit(OpCodes.Call, convertToStringReference);
+                    ilProcessor.Emit(OpCodes.Box, type1);
+                    ilProcessor.Emit(OpCodes.Call, convertToStringReference);
                     break;
                 case ("int", "obj"):
                 case ("float", "obj"):
                 case ("bool", "obj"):
                     var type2 = resolvedTypes[node.Expression.ResultType];
-                    ilProcesser.Emit(OpCodes.Box, type2);
+                    ilProcessor.Emit(OpCodes.Box, type2);
                     break;
                 case ("str", "obj"):
                     break;
@@ -573,7 +573,7 @@ namespace Compiler.Emit
                 case ("obj", "float"):
                 case ("obj", "bool"):
                     var type3 = resolvedTypes[node.ResultType];
-                    ilProcesser.Emit(OpCodes.Unbox_Any, type3);
+                    ilProcessor.Emit(OpCodes.Unbox_Any, type3);
                     break;
                 default:
                     if (to == "obj" && node.Expression.ResultType is ArrayTypeSymbol)
@@ -583,7 +583,7 @@ namespace Compiler.Emit
             }
         }
 
-        private void EmitAssignmentExpression(ILProcessor ilProcesser, BoundAssignmentExpression node)
+        private void EmitAssignmentExpression(ILProcessor ilProcessor, BoundAssignmentExpression node)
         {
             if (!(node.Variable!.Constant is null))
                 return;
@@ -591,22 +591,22 @@ namespace Compiler.Emit
             if (node.Variable is GlobalVariableSymbol globalVariable)
             {
                 var field = globalVariables[globalVariable];
-                EmitExpression(ilProcesser, node.Expression);
-                ilProcesser.Emit(OpCodes.Dup);
-                ilProcesser.Emit(OpCodes.Stsfld, field);
+                EmitExpression(ilProcessor, node.Expression);
+                ilProcessor.Emit(OpCodes.Dup);
+                ilProcessor.Emit(OpCodes.Stsfld, field);
             }
             else if (node.Variable is LocalVariableSymbol localVariable)
             {
                 var variable = locals[localVariable];
-                EmitExpression(ilProcesser, node.Expression);
-                ilProcesser.Emit(OpCodes.Dup);
-                ilProcesser.Emit(OpCodes.Stloc, variable);
+                EmitExpression(ilProcessor, node.Expression);
+                ilProcessor.Emit(OpCodes.Dup);
+                ilProcessor.Emit(OpCodes.Stloc, variable);
             }
             else if (node.Variable is ParameterSymbol parameter)
             {
-                EmitExpression(ilProcesser, node.Expression);
-                ilProcesser.Emit(OpCodes.Dup);
-                ilProcesser.Emit(OpCodes.Starg, parameter.Index);
+                EmitExpression(ilProcessor, node.Expression);
+                ilProcessor.Emit(OpCodes.Dup);
+                ilProcessor.Emit(OpCodes.Starg, parameter.Index);
             }
             else throw new Exception("Unexpected VariableSymbol");
         }
