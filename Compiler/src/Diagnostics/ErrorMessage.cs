@@ -32,5 +32,6 @@ namespace Compiler.Diagnostics
         AmbiguousRequiredMethod,
         InvalidEscapeSequence,
         TypeNotFound,
+        ArrayCreationMustHaveSize,
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using Compiler.Symbols;
 
 namespace Compiler.Binding
 {
@@ -164,10 +165,21 @@ namespace Compiler.Binding
                     return RewriteConversionExpression((BoundConversionExpression)expression);
                 case BoundNodeKind.BoundAssignmentExpression:
                     return RewriteAssignmentExpression((BoundAssignmentExpression)expression);
+                case BoundNodeKind.BoundNewArray:
+                    return RewriteNewArray((BoundNewArray)expression);
                 case BoundNodeKind.BoundInvalidExpression:
                     return expression;
                 default: throw new Exception($"Unknown BoundExpression <{expression}>");
             }
+        }
+
+        protected virtual BoundExpression RewriteNewArray(BoundNewArray node)
+        {
+            var size = RewriteExpression(node.Size);
+            if (size == node.Size)
+                return node;
+
+            return new BoundNewArray(node.ResultType, size, node.IsValid);
         }
 
         protected virtual BoundExpression RewriteConversionExpression(BoundConversionExpression node)

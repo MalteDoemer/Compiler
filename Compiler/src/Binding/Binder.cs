@@ -416,10 +416,44 @@ namespace Compiler.Binding
                     return BindAdditionalAssignmentExpressionSyntax((AdditionalAssignmentExpressionSyntax)syntax);
                 case SyntaxNodeKind.PostIncDecExpressionSyntax:
                     return BindPostIncDecExpressionSyntax((PostIncDecExpressionSyntax)syntax);
+                case SyntaxNodeKind.NewArraySyntax:
+                    return BindNewArraySyntax((NewArraySyntax)syntax);
                 case SyntaxNodeKind.ParenthesizedExpression:
                     return BindExpression(((ParenthesizedExpression)syntax).Expression);
                 default: throw new Exception($"Unexpected SyntaxKind <{syntax.Kind}>");
             }
+        }
+
+        private BoundExpression BindNewArraySyntax(NewArraySyntax syntax)
+        {
+            BoundExpression size;
+
+            var typeSyntax = syntax.ArrayTypeSyntax;
+
+            while (typeSyntax.UnderlyingType is ArrayTypeSyntax array)
+                typeSyntax = array;
+
+
+            if (typeSyntax.Size is null)
+            {
+                var span = TextSpan.FromBounds(typeSyntax.LeftBracket.Location.Start, typeSyntax.RightBracket.Location.End);
+                ReportError(ErrorMessage.ArrayCreationMustHaveSize, new TextLocation(typeSyntax.Location.Text, span));
+                size = new BoundLiteralExpression(0, TypeSymbol.Int, isTreeValid);
+            }
+            else
+            {
+                size = CheckTypeAndConversion(TypeSymbol.Int, typeSyntax.Size);
+            }
+
+            var type = (ArrayTypeSymbol)BindType(syntax.ArrayTypeSyntax);
+
+            if (!resolver.ResolveType(type))
+                ReportError(ErrorMessage.TypeNotFound, syntax.ArrayTypeSyntax.Location, type.Name);
+
+            if (!resolver.ResolveType(type.UnderlyingType))
+                ReportError(ErrorMessage.TypeNotFound, syntax.ArrayTypeSyntax.UnderlyingType.Location, type.Name);
+
+            return new BoundNewArray(type, size, isTreeValid);
         }
 
         private BoundExpression BindLiteralExpressionSyntax(LiteralExpressionSyntax syntax)

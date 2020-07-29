@@ -292,7 +292,7 @@ namespace Compiler.Syntax
             return new TypeClauseSyntax(colon, typeSyntax, true, isTreeValid, loc);
         }
 
-        private TypeSyntax ParseTypeSyntax()
+        private TypeSyntax ParseTypeSyntax(bool canHaveSize = false)
         {
             var typeToken = MatchToken(SyntaxTokenKind.ObjKeyword,
                                                    SyntaxTokenKind.IntKeyword,
@@ -302,13 +302,21 @@ namespace Compiler.Syntax
                                                    SyntaxTokenKind.VoidKeyword);
 
             TypeSyntax typeSyntax = new PreDefinedTypeSyntax(typeToken, isTreeValid, typeToken.Location);
-            
+
             while (current.TokenKind == SyntaxTokenKind.LSquare)
             {
                 var lsquare = MatchToken(SyntaxTokenKind.LSquare);
+                var size = (ExpressionSyntax?)null;
+
+                if (current.TokenKind != SyntaxTokenKind.RSquare && canHaveSize)
+                {
+                    size = ParseExpression();
+                    canHaveSize = false;
+                }
+
                 var rsquare = MatchToken(SyntaxTokenKind.RSquare);
                 var loc = LocFromBounds(typeSyntax.Location.Start, rsquare.Location.End);
-                typeSyntax = new ArrayTypeSyntax(typeSyntax, lsquare, rsquare, isTreeValid, loc);
+                typeSyntax = new ArrayTypeSyntax(typeSyntax, lsquare, size, rsquare, isTreeValid, loc);
             }
 
             return typeSyntax;
@@ -342,6 +350,8 @@ namespace Compiler.Syntax
             }
             else if (current.TokenKind == SyntaxTokenKind.Identifier)
                 return ParseIdentifier();
+            else if (current.TokenKind == SyntaxTokenKind.NewKeyWord)
+                return ParseNewExpression();
             else if (current.TokenKind.IsUnaryOperator())
             {
                 var op = Advance();
@@ -358,6 +368,21 @@ namespace Compiler.Syntax
                 var token = Advance();
                 ReportError(ErrorMessage.UnexpectedToken, token.Location, token.TokenKind);
                 return new LiteralExpressionSyntax(token, false, token.Location);
+            }
+        }
+
+        private ExpressionSyntax ParseNewExpression()
+        {
+            var newToken = MatchToken(SyntaxTokenKind.NewKeyWord);
+            var typeSyntax = ParseTypeSyntax(canHaveSize: true);
+
+            switch (typeSyntax.Kind)
+            {
+                case SyntaxNodeKind.ArrayTypeSyntax:
+                    return new NewArraySyntax(newToken, (ArrayTypeSyntax)typeSyntax, isTreeValid, LocFromBounds(newToken.Location.Start, typeSyntax.Location.End));
+                case SyntaxNodeKind.PreDefinedTypeSyntax:
+                    throw new NotImplementedException();
+                default: throw new Exception($"Unexpected kind: <{typeSyntax.Kind}>");
             }
         }
 

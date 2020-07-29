@@ -23,5 +23,6 @@ namespace Compiler.Binding
         BoundReturnStatement,
         BoundNopStatement,
         BoundInvalidExpression,
+        BoundNewArray,
     }
 }

@@ -284,10 +284,20 @@ namespace Compiler.Emit
                     case BoundNodeKind.BoundAssignmentExpression:
                         EmitAssignmentExpression(ilProcesser, (BoundAssignmentExpression)node);
                         break;
+                    case BoundNodeKind.BoundNewArray:
+                        EmitNewArrayExpession(ilProcesser, (BoundNewArray)node);
+                        break;
                     default: throw new Exception($"Unexpected kind <{node.Kind}>");
                 }
             else
                 EmitConstatnt(ilProcesser, node.Constant);
+        }
+
+        private void EmitNewArrayExpession(ILProcessor ilProcesser, BoundNewArray node)
+        {
+            EmitExpression(ilProcesser, node.Size);
+            var type = resolvedTypes[node.UnderlyingType];
+            ilProcesser.Emit(OpCodes.Newarr, type);
         }
 
         private void EmitConstatnt(ILProcessor ilProcesser, BoundConstant constant)
@@ -565,7 +575,11 @@ namespace Compiler.Emit
                     var type3 = resolvedTypes[node.ResultType];
                     ilProcesser.Emit(OpCodes.Unbox_Any, type3);
                     break;
-                default: throw new Exception($"Unexpected conversion from {from} to {to}");
+                default:
+                    if (to == "obj" && node.Expression.ResultType is ArrayTypeSymbol)
+                        break;
+                    else
+                        throw new Exception($"Unexpected conversion from {from} to {to}");
             }
         }
 

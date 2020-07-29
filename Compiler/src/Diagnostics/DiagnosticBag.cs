@@ -38,7 +38,8 @@ namespace Compiler.Diagnostics
            "The required method {0} cannot be resolved in the given references.",
            "The required method {0} was found in multiple references: {1}",
            "Invalid escape sequence: '{0}'", // 
-           "The Type '{0}' could not be found."
+           "The Type '{0}' could not be found.",
+           "Array creation must have a size",
         };
 
         private readonly List<Diagnostic> builder;
