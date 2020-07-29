@@ -24,10 +24,10 @@ namespace Compiler.Diagnostics
            "Expression cannot be void.", // ✓
            "The types '{0}' and '{1}' need a explicit conversion.", // ✓
            "Cannot convert '{0}' to '{1}'.", // ✓
-           "Expression isn't a statement.", // TODO Test for "Expression isn't a statement."
+           "Expression isn't a statement.", 
            "Duplicated parameter '{0}'.", // ✓
            "Function '{0}' is already declared", // ✓
-           "Statement isn't a global statement.", // TODO Test for "Statement isn't a global statement."
+           "Statement isn't a global statement.", 
            "Cannot assing to read-only variable '{0}'", // ✓
            "The keyword '{0}' can only be used inside a loop.", // ✓
            "The keyword 'return' can only be used inside a function.", // ✓

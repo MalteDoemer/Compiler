@@ -173,20 +173,12 @@ namespace gsi
         {
             if (renderer.CurrentChar > 0)
                 renderer.CurrentChar--;
-            else
-            {
-                // TODO go to previous line
-            }
         }
 
         private void HandleRightArrow(ObservableCollection<string> document, SubmissionRenderer renderer)
         {
             if (renderer.CurrentChar < document[renderer.CurrentLine].Length)
                 renderer.CurrentChar++;
-            else
-            {
-                // TODO go to next line
-            }
         }
 
         private void HandleUpArrow(ObservableCollection<string> document, SubmissionRenderer renderer)
