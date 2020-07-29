@@ -60,6 +60,8 @@ namespace Compiler.Binding
             var globalBinder = new Binder(parentScope, resolver, isScript, function: null);
             var isProgramValid = true;
 
+            globalBinder.ResolvePredefinedTypes();
+
             foreach (var func in functionSyntax)
                 globalBinder.DeclareFunction(func);
 
@@ -144,6 +146,15 @@ namespace Compiler.Binding
             return scope;
         }
 
+        private void ResolvePredefinedTypes()
+        {
+            foreach (var primitive in TypeSymbol.GetPrimitiveTypes())
+            {
+                if (!resolver.ResolveType(primitive))
+                    ReportError(ErrorMessage.MissingRequiredType, TextLocation.Undefined, primitive.Name);
+            }
+        }
+
         private void DeclareFunction(FunctionDeclarationSyntax func)
         {
             var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
@@ -153,6 +164,10 @@ namespace Compiler.Binding
             {
                 var parameterSyntax = func.Parameters[i];
                 var type = BindType(parameterSyntax.TypeClause.TypeSyntax);
+
+                if (!resolver.ResolveType(type))
+                    ReportError(ErrorMessage.TypeNotFound, parameterSyntax.TypeClause.TypeSyntax.Location, type.Name);
+
                 var name = parameterSyntax.Identifier.Location.ToString();
 
                 if (!seenParameters.Add(name))
@@ -165,6 +180,9 @@ namespace Compiler.Binding
                 returnType = BindType(func.ReturnType.TypeSyntax);
             else
                 returnType = TypeSymbol.Void;
+
+            if (!resolver.ResolveType(returnType))
+                ReportError(ErrorMessage.TypeNotFound, func.ReturnType.TypeSyntax.Location);
 
             var symbol = new FunctionSymbol(func.Identifier.Location.ToString(), parameters.ToImmutable(), returnType, func);
 
@@ -234,12 +252,19 @@ namespace Compiler.Binding
             if (syntax.TypeClause.IsExplicit)
             {
                 type = BindType(syntax.TypeClause.TypeSyntax);
+
+                if (!resolver.ResolveType(type))
+                    ReportError(ErrorMessage.TypeNotFound, syntax.TypeClause.TypeSyntax.Location, type.Name);
+
                 expr = CheckTypeAndConversion(type, syntax.Expression);
             }
             else
             {
                 expr = BindExpression(syntax.Expression, canBeVoid: false);
                 type = expr.ResultType;
+
+                if (!resolver.ResolveType(type))
+                    ReportError(ErrorMessage.TypeNotFound, syntax.VarKeyword.Location, type.Name);
             }
 
             bool isConst = syntax.VarKeyword.TokenKind == SyntaxTokenKind.LetKeyword;
@@ -361,6 +386,7 @@ namespace Compiler.Binding
                 ReportError(ErrorMessage.CannotBeVoid, syntax.Location);
                 return new BoundInvalidExpression();
             }
+
             return res;
         }
 
@@ -439,7 +465,11 @@ namespace Compiler.Binding
             var argLen = syntax.Arguments.Length;
 
             if (argLen == 1 && TypeSymbol.Lookup(name) is TypeSymbol type)
+            {
+                if (!resolver.ResolveType(type))
+                    ReportError(ErrorMessage.TypeNotFound, syntax.Identifier.Location, type.Name);
                 return BindExplicitConversion(type, syntax.Arguments[0]);
+            }
 
 
             if (!scope.TryLookUpFunction(name, out var symbol))

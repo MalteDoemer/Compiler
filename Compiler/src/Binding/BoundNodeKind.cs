@@ -20,8 +20,8 @@ namespace Compiler.Binding
         BoundConditionalGotoStatement,
         BoundGotoStatement,
         BoundLabelStatement,
-        BoundInvalidExpression,
         BoundReturnStatement,
         BoundNopStatement,
+        BoundInvalidExpression,
     }
 }

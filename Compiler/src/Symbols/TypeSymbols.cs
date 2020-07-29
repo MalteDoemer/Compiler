@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Compiler.Symbols
@@ -30,6 +31,18 @@ namespace Compiler.Symbols
                 default: return null;
             }
         }
+        
+        
+        public static IEnumerable<TypeSymbol> GetPrimitiveTypes()
+        {
+            yield return Int;
+            yield return Float;
+            yield return Bool;
+            yield return String;
+            yield return Obj;
+            yield return Void;   
+        }
+        
         public override bool Equals(object? obj) => obj is TypeSymbol type && type.Name == Name;
         public override int GetHashCode() => HashCode.Combine(Name);
 
@@ -60,7 +73,7 @@ namespace Compiler.Symbols
             UnderlyingType = type;
             if (type is ArrayTypeSymbol array)
                 Rank = array.Rank + 1;
-            else Rank = 0;
+            else Rank = 1;
         }
 
         public TypeSymbol UnderlyingType { get; }

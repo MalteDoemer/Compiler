@@ -2,7 +2,6 @@ using Compiler.Symbols;
 
 namespace Compiler.Binding
 {
-    // TODO remove this
     internal sealed class BoundInvalidExpression : BoundExpression
     {
         public BoundInvalidExpression() : base(false)
