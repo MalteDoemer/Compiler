@@ -393,6 +393,7 @@ namespace Compiler.Binding
                 default: throw new Exception($"Unexpected SyntaxKind <{syntax.Kind}>");
             }
         }
+        
         private BoundExpression BindLiteralExpressionSyntax(LiteralExpressionSyntax syntax)
         {
             var value = syntax.Literal.Value;

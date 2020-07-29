@@ -1,18 +1,10 @@
 using System;
-using Mono.Cecil;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace Compiler.Symbols
 {
     public abstract class TypeSymbol : Symbol
     {
-        private sealed class PrimitiveTypeSymbol : TypeSymbol
-        {
-            public PrimitiveTypeSymbol(string name) : base(name)
-            {
-            }
-        }
-
         public static readonly TypeSymbol Int = new PrimitiveTypeSymbol("int");
         public static readonly TypeSymbol Float = new PrimitiveTypeSymbol("float");
         public static readonly TypeSymbol Bool = new PrimitiveTypeSymbol("bool");
@@ -38,7 +30,6 @@ namespace Compiler.Symbols
                 default: return null;
             }
         }
-
         public override bool Equals(object? obj) => obj is TypeSymbol type && type.Name == Name;
         public override int GetHashCode() => HashCode.Combine(Name);
 
@@ -54,18 +45,38 @@ namespace Compiler.Symbols
 
     }
 
+    public sealed class PrimitiveTypeSymbol : TypeSymbol
+    {
+        internal PrimitiveTypeSymbol(string name) : base(name)
+        {
+        }
+    }
+
 
     public sealed class ArrayTypeSymbol : TypeSymbol
     {
-        public ArrayTypeSymbol(TypeSymbol type) : base(type.Name + "[]")
+        internal ArrayTypeSymbol(TypeSymbol type) : base(type.Name + "[]")
         {
-            Type = type;
+            UnderlyingType = type;
             if (type is ArrayTypeSymbol array)
                 Rank = array.Rank + 1;
             else Rank = 0;
         }
 
-        public TypeSymbol Type { get; }
+        public TypeSymbol UnderlyingType { get; }
         public int Rank { get; }
+
+        public TypeSymbol BaseType
+        {
+            get
+            {
+                var type = UnderlyingType;
+
+                while (type is ArrayTypeSymbol array)
+                    type = array.UnderlyingType;
+
+                return type;
+            }
+        }
     }
 }
