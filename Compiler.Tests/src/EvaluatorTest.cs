@@ -94,7 +94,7 @@ namespace Compiler.Test
         {
             text = $"print({text})";
             var expected = value.ToString();
-            var compilation = Compilation.CompileScript(new SourceText(text, null), Compilation.StandardReferencePaths);
+            var compilation = Compilation.CompileScript(new SourceText(text, null), "Hello" ,Compilation.StandardReferencePaths);
 
             Assert.Empty(compilation.Diagnostics);
 

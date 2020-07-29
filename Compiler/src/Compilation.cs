@@ -22,15 +22,16 @@ namespace Compiler
         };
 
         private readonly BoundProgram program;
+        private readonly string moduleName;
         private readonly string[] referencePaths;
         private readonly bool isScript;
 
-        private Compilation(IEnumerable<SourceText> sourceTexts, string[] referencePaths, bool isScript)
+        private Compilation(IEnumerable<SourceText> sourceTexts, string moduleName, string[] referencePaths, bool isScript)
         {
             this.referencePaths = referencePaths;
             this.isScript = isScript;
             this.SourceTexts = sourceTexts;
-
+            this.moduleName = moduleName;
             var diagnosticBuilder = ImmutableArray.CreateBuilder<Diagnostic>();
             var trees = new List<SyntaxTree>();
 
@@ -41,7 +42,7 @@ namespace Compiler
                 trees.Add(tree);
             }
 
-            program = Binder.BindProgram(isScript, trees.Select(t => t.Root));
+            program = Binder.BindProgram(moduleName, referencePaths, isScript, trees.Select(t => t.Root));
             diagnosticBuilder.AddRange(program.Diagnostics);
 
             Diagnostics = new DiagnosticReport(diagnosticBuilder.ToImmutable());
@@ -50,12 +51,12 @@ namespace Compiler
         public DiagnosticReport Diagnostics { get; }
         public IEnumerable<SourceText> SourceTexts { get; }
 
-        public DiagnosticReport Emit(string moduleName, string outputPath)
+        public DiagnosticReport Emit(string outputPath)
         {
             if (Diagnostics.HasErrors)
                 return Diagnostics;
 
-            var emitter = new Emiter(program, moduleName, referencePaths);
+            var emitter = new Emiter(program);
             emitter.Emit();
             emitter.WriteTo(outputPath);
             return new DiagnosticReport(Diagnostics.Concat(emitter.GetDiagnostics()));
@@ -67,7 +68,7 @@ namespace Compiler
 
             using (var ms = new MemoryStream())
             {
-                var emitter = new Emiter(program, "Hello", referencePaths);
+                var emitter = new Emiter(program);
                 emitter.Emit();
                 emitter.WriteTo(ms);
                 ms.Seek(0, SeekOrigin.Begin);
@@ -105,9 +106,9 @@ namespace Compiler
             cfg.WriteTo(writer);
         }
 
-        public static Compilation Compile(SourceText[] text, string[] referencePaths) => new Compilation(text, referencePaths, false);
+        public static Compilation Compile(SourceText[] text, string moduleName, string[] referencePaths) => new Compilation(text, moduleName, referencePaths, false);
 
-        public static Compilation CompileScript(SourceText text, string[] referencePaths) => new Compilation(new[] { text }, referencePaths, true);
+        public static Compilation CompileScript(SourceText text, string moduleName, string[] referencePaths) => new Compilation(new[] { text }, moduleName, referencePaths, true);
 
         public string[] GetFunctionDeclarations()
         {

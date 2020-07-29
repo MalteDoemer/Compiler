@@ -14,6 +14,7 @@ namespace Compiler.Binding
     {
         private readonly DiagnosticBag diagnostics;
         private readonly FunctionSymbol? function;
+        private readonly BoundTypeResolver resolver;
         private readonly bool isScript;
         private readonly Stack<(BoundLabel breakLabel, BoundLabel continueLabel)> labelStack;
 
@@ -32,8 +33,9 @@ namespace Compiler.Binding
             isTreeValid = false;
         }
 
-        private Binder(BoundScope parentScope, bool isScript, FunctionSymbol? function)
+        private Binder(BoundScope parentScope, BoundTypeResolver resolver, bool isScript, FunctionSymbol? function)
         {
+            this.resolver = resolver;
             this.isScript = isScript;
             this.function = function;
             this.isTreeValid = true;
@@ -47,14 +49,15 @@ namespace Compiler.Binding
                     scope.TryDeclareVariable(param);
         }
 
-        public static BoundProgram BindProgram(bool isScript, IEnumerable<CompilationUnitSyntax> units)
+        public static BoundProgram BindProgram(string moduleName, string[] references, bool isScript, IEnumerable<CompilationUnitSyntax> units)
         {
             var parentScope = CreateRootScope();
             var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
             var functionSyntax = units.SelectMany(u => u.Members.OfType<FunctionDeclarationSyntax>());
             var statementSyntax = units.SelectMany(u => u.Members.OfType<GlobalStatementSynatx>());
             var globalStatementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
-            var globalBinder = new Binder(parentScope, isScript, function: null);
+            var resolver = new BoundTypeResolver(moduleName, references);
+            var globalBinder = new Binder(parentScope, resolver, isScript, function: null);
             var isProgramValid = true;
 
             foreach (var func in functionSyntax)
@@ -74,7 +77,7 @@ namespace Compiler.Binding
 
             foreach (var symbol in declaredFunctions)
             {
-                var binder = new Binder(currentScope, isScript, symbol);
+                var binder = new Binder(currentScope, resolver, isScript, symbol);
                 var body = binder.BindBlockStatmentSyntax(symbol.Syntax!.Body);
                 var loweredBody = Lowerer.Lower(symbol, body);
 
@@ -130,8 +133,7 @@ namespace Compiler.Binding
             if (mainFunction == FunctionSymbol.Invalid)
                 mainFunction = null;
 
-
-            return new BoundProgram(declaredVariables, globalFunction, mainFunction, functions.ToImmutable(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
+            return new BoundProgram(declaredVariables, globalFunction, mainFunction, functions.ToImmutable(), resolver.MainAssembly, resolver.References, resolver.Types.ToImmutableDictionary(), new DiagnosticReport(diagnostics.ToImmutable()), isProgramValid);
         }
 
         private static BoundScope CreateRootScope()
@@ -393,7 +395,7 @@ namespace Compiler.Binding
                 default: throw new Exception($"Unexpected SyntaxKind <{syntax.Kind}>");
             }
         }
-        
+
         private BoundExpression BindLiteralExpressionSyntax(LiteralExpressionSyntax syntax)
         {
             var value = syntax.Literal.Value;
@@ -602,8 +604,8 @@ namespace Compiler.Binding
             }
             else if (syntax is ArrayTypeSyntax arrayType)
             {
-                 var underlying = BindType(arrayType.UnderlyingType);
-                 return new ArrayTypeSymbol(underlying);
+                var underlying = BindType(arrayType.UnderlyingType);
+                return new ArrayTypeSymbol(underlying);
             }
             else throw new Exception($"Unexpected type {syntax.GetType()}");
         }

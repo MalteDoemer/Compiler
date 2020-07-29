@@ -11,17 +11,22 @@ namespace Compiler.Binding
 {
     internal sealed class BoundTypeResolver : IDiagnostable
     {
-        private readonly Dictionary<TypeSymbol, TypeReference> types;
-        private readonly ImmutableArray<AssemblyDefinition> references;
-        private readonly AssemblyDefinition mainAssembly;
         private readonly DiagnosticBag diagnostics;
+
+        public ImmutableArray<AssemblyDefinition> References { get; }
+        public Dictionary<TypeSymbol, TypeReference> Types { get; }
+        public AssemblyDefinition MainAssembly { get; }
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
-        public BoundTypeResolver(AssemblyDefinition mainAssembly, string[] referencePaths)
+        public BoundTypeResolver(string moduleName, string[] referencePaths)
         {
-            types = new Dictionary<TypeSymbol, TypeReference>();
+            Types = new Dictionary<TypeSymbol, TypeReference>();
             diagnostics = new DiagnosticBag();
+
+            var assembylInfo = new AssemblyNameDefinition(moduleName, new Version(1, 0));
+            MainAssembly = AssemblyDefinition.CreateAssembly(assembylInfo, moduleName, ModuleKind.Console);
+
             var refBuilder = ImmutableArray.CreateBuilder<AssemblyDefinition>();
             foreach (var reference in referencePaths)
             {
@@ -35,13 +40,12 @@ namespace Compiler.Binding
                     diagnostics.ReportError(ErrorMessage.InvalidReference, TextLocation.Undefined, reference);
                 }
             }
-            references = refBuilder.ToImmutable();
-            this.mainAssembly = mainAssembly;
+            References = refBuilder.ToImmutable();
         }
 
         public bool ResolveType(TypeSymbol symbol)
         {
-            if (types.ContainsKey(symbol))
+            if (Types.ContainsKey(symbol))
                 return true;
 
             var type = ResolveTypeReference(symbol);
@@ -49,7 +53,7 @@ namespace Compiler.Binding
             if (type is null)
                 return false;
 
-            types.Add(symbol, type);
+            Types.Add(symbol, type);
             return true;
         }
 
@@ -88,12 +92,12 @@ namespace Compiler.Binding
             if (def is null)
                 return null;
 
-            return mainAssembly.MainModule.ImportReference(def);
+            return MainAssembly.MainModule.ImportReference(def);
         }
 
         private TypeDefinition? ResolveTypeDefinition(string metadataName)
         {
-            return references.SelectMany(a => a.Modules)
+            return References.SelectMany(a => a.Modules)
                              .SelectMany(m => m.Types)
                              .Where(t => t.FullName == metadataName)
                              .SingleOrDefault();

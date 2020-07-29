@@ -332,7 +332,7 @@ namespace Compiler.Test
         private static void AssertDiagnostic(string text, string message)
         {
             var annotatedText = AnnotatedText.Parse(text);
-            var compilation = Compilation.CompileScript(new SourceText(annotatedText.Text, null), Compilation.StandardReferencePaths);
+            var compilation = Compilation.CompileScript(new SourceText(annotatedText.Text, null), "Hello", Compilation.StandardReferencePaths);
 
 
             if (annotatedText.Spans.Length < 1)

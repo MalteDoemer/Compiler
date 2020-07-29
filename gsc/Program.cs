@@ -62,8 +62,8 @@ namespace gsc
                 moduleName = Path.GetFileNameWithoutExtension(outputPath);
 
             var sourceTexts = paths.Select(p => new SourceText(File.ReadAllText(p), p)).ToArray();
-            var compilation = Compilation.Compile(sourceTexts, referencePaths.ToArray());
-            var diagnostics = compilation.Emit(moduleName, outputPath);
+            var compilation = Compilation.Compile(sourceTexts, moduleName, referencePaths.ToArray());
+            var diagnostics = compilation.Emit(outputPath);
             diagnostics.WriteTo(Console.Out);
 
             if (printTree)

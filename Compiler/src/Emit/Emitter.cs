@@ -8,6 +8,7 @@ using Compiler.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.IO;
+using System.Collections.Immutable;
 
 namespace Compiler.Emit
 {
@@ -15,11 +16,13 @@ namespace Compiler.Emit
     {
         private readonly BoundProgram program;
         private readonly DiagnosticBag diagnostics;
-        private readonly AssemblyDefinition mainAssebly;
-        private readonly TypeDefinition? mainClass;
-        private readonly List<AssemblyDefinition> references;
-        private readonly Dictionary<TypeSymbol, TypeReference?> builtInTypes;
+        private readonly AssemblyDefinition mainAssembly;
+        private readonly TypeDefinition mainClass;
+
+        private readonly ImmutableArray<AssemblyDefinition> references;
+        private readonly ImmutableDictionary<TypeSymbol, TypeReference> resolvedTypes;
         private readonly Dictionary<FunctionSymbol, MethodDefinition?> functions;
+
         private readonly Dictionary<BoundLabel, int> labels;
         private readonly List<(int, BoundLabel)> fixups;
 
@@ -48,43 +51,21 @@ namespace Compiler.Emit
 
         public IEnumerable<Diagnostic> GetDiagnostics() => diagnostics;
 
-        public Emiter(BoundProgram program, string moduleName, string[] referencePaths)
+        public Emiter(BoundProgram program)
         {
             this.program = program;
+            this.references = program.ReferencAssemblies;
+            this.mainAssembly = program.MainAssembly;
+            this.resolvedTypes = program.ResolvedTypes;
             this.diagnostics = new DiagnosticBag();
             this.functions = new Dictionary<FunctionSymbol, MethodDefinition?>();
-            this.builtInTypes = new Dictionary<TypeSymbol, TypeReference?>();
             this.globalVariables = new Dictionary<VariableSymbol, FieldDefinition>();
             this.locals = new Dictionary<LocalVariableSymbol, VariableDefinition>();
             this.labels = new Dictionary<BoundLabel, int>();
             this.fixups = new List<(int, BoundLabel)>();
+            mainClass = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.Public, ResolveType("System.Object"));
 
-            var assembylInfo = new AssemblyNameDefinition(moduleName, new Version(1, 0));
-            mainAssebly = AssemblyDefinition.CreateAssembly(assembylInfo, moduleName, ModuleKind.Console);
-            references = new List<AssemblyDefinition>();
-            foreach (var reference in referencePaths)
-            {
-                try
-                {
-                    var assembly = AssemblyDefinition.ReadAssembly(reference);
-                    references.Add(assembly);
-                }
-                catch (BadImageFormatException)
-                {
-                    diagnostics.ReportError(ErrorMessage.InvalidReference, TextLocation.Undefined, reference);
-                    return;
-                }
-            }
-
-            builtInTypes.Add(TypeSymbol.Obj, ResolveType("System.Object"));
-            builtInTypes.Add(TypeSymbol.Int, ResolveType("System.Int32"));
-            builtInTypes.Add(TypeSymbol.Float, ResolveType("System.Double"));
-            builtInTypes.Add(TypeSymbol.Bool, ResolveType("System.Boolean"));
-            builtInTypes.Add(TypeSymbol.String, ResolveType("System.String"));
-            builtInTypes.Add(TypeSymbol.Void, ResolveType("System.Void"));
             randomTypeReference = ResolveType("System.Random");
-
-            mainClass = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.Public, builtInTypes[TypeSymbol.Obj]);
             consoleWriteReference = ResolveMethod("System.Console", "Write", "System.Void", "System.Object");
             consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", "System.Void", "System.Object");
             cosnoleReadLineReference = ResolveMethod("System.Console", "ReadLine", "System.String");
@@ -99,7 +80,6 @@ namespace Compiler.Emit
             randomCtorReference = ResolveMethod("System.Random", ".ctor", "System.Void");
             randomNextReference = ResolveMethod("System.Random", "Next", "System.Int32", "System.Int32", "System.Int32");
             randomNextDoubleReference = ResolveMethod("System.Random", "NextDouble", "System.Double");
-
         }
 
         public void Emit()
@@ -120,7 +100,7 @@ namespace Compiler.Emit
             if (program.GlobalFunction != FunctionSymbol.Invalid || needsRandom)
             {
                 const MethodAttributes attrs = MethodAttributes.SpecialName | MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.RTSpecialName;
-                var staticCtor = new MethodDefinition(".cctor", attrs, builtInTypes[TypeSymbol.Void]);
+                var staticCtor = new MethodDefinition(".cctor", attrs, ResolveType("System.Void"));
                 mainClass!.Methods.Add(staticCtor);
                 var ilProcessor = staticCtor.Body.GetILProcessor();
 
@@ -136,21 +116,21 @@ namespace Compiler.Emit
                 ilProcessor.Emit(OpCodes.Ret);
             }
 
-            mainAssebly.MainModule.Types.Add(mainClass);
+            mainAssembly.MainModule.Types.Add(mainClass);
             if (!(program.MainFunction is null))
-                mainAssebly.EntryPoint = functions[program.MainFunction];
+                mainAssembly.EntryPoint = functions[program.MainFunction];
         }
 
-        public void WriteTo(string outputPath) => mainAssebly.Write(outputPath);
+        public void WriteTo(string outputPath) => mainAssembly.Write(outputPath);
 
-        public void WriteTo(Stream stream) => mainAssebly.Write(stream);
+        public void WriteTo(Stream stream) => mainAssembly.Write(stream);
 
         private void AddGlobalVariable(VariableSymbol variable)
         {
             if (variable.Constant is null)
             {
                 const FieldAttributes attrs = FieldAttributes.Static | FieldAttributes.Private;
-                var type = builtInTypes[variable.Type];
+                var type = resolvedTypes[variable.Type];
                 var field = new FieldDefinition(variable.Name, attrs, type);
                 globalVariables.Add(variable, field);
                 mainClass!.Fields.Add(field);
@@ -160,12 +140,12 @@ namespace Compiler.Emit
         private void EmitFunctionDecleration(FunctionSymbol symbol)
         {
             const MethodAttributes attrs = MethodAttributes.Static | MethodAttributes.Private;
-            var returnType = builtInTypes[symbol.ReturnType];
+            var returnType = resolvedTypes[symbol.ReturnType];
             var function = new MethodDefinition(symbol.Name, attrs, returnType);
 
             foreach (var parameter in symbol.Parameters)
             {
-                var type = builtInTypes[parameter.Type];
+                var type = resolvedTypes[parameter.Type];
                 var parameterDefinition = new ParameterDefinition(parameter.Name, ParameterAttributes.None, type);
                 function.Parameters.Add(parameterDefinition);
             }
@@ -234,7 +214,7 @@ namespace Compiler.Emit
                 }
                 else if (node.Variable is LocalVariableSymbol localVariable)
                 {
-                    var type = builtInTypes[localVariable.Type];
+                    var type = resolvedTypes[localVariable.Type];
                     var variable = new VariableDefinition(type);
                     locals.Add(localVariable, variable);
                     ilProcesser.Body.Variables.Add(variable);
@@ -567,14 +547,14 @@ namespace Compiler.Emit
                 case ("int", "str"):
                 case ("float", "str"):
                 case ("bool", "str"):
-                    var type1 = builtInTypes[node.Expression.ResultType];
+                    var type1 = resolvedTypes[node.Expression.ResultType];
                     ilProcesser.Emit(OpCodes.Box, type1);
                     ilProcesser.Emit(OpCodes.Call, convertToStringReference);
                     break;
                 case ("int", "obj"):
                 case ("float", "obj"):
                 case ("bool", "obj"):
-                    var type2 = builtInTypes[node.Expression.ResultType];
+                    var type2 = resolvedTypes[node.Expression.ResultType];
                     ilProcesser.Emit(OpCodes.Box, type2);
                     break;
                 case ("str", "obj"):
@@ -582,7 +562,7 @@ namespace Compiler.Emit
                 case ("obj", "int"):
                 case ("obj", "float"):
                 case ("obj", "bool"):
-                    var type3 = builtInTypes[node.ResultType];
+                    var type3 = resolvedTypes[node.ResultType];
                     ilProcesser.Emit(OpCodes.Unbox_Any, type3);
                     break;
                 default: throw new Exception($"Unexpected conversion from {from} to {to}");
@@ -622,7 +602,7 @@ namespace Compiler.Emit
             var definition = ResolveTypeDefinition(metadataName);
             if (definition is null)
                 return null;
-            return mainAssebly.MainModule.ImportReference(definition);
+            return mainAssembly.MainModule.ImportReference(definition);
         }
 
         private TypeDefinition? ResolveTypeDefinition(string metadataName)
@@ -654,7 +634,7 @@ namespace Compiler.Emit
             var definition = ResolveMethodDefinition(type, name, returnType, parameterTypes);
             if (definition is null)
                 return null;
-            return mainAssebly.MainModule.ImportReference(definition);
+            return mainAssembly.MainModule.ImportReference(definition);
         }
 
         private MethodDefinition? ResolveMethodDefinition(string type, string name, string returnType, params string[] parameterTypes)

@@ -28,7 +28,7 @@ namespace gsi
         {
             text = previous + text;
             var src = new SourceText(text, "<stdin>");
-            compilation = Compilation.CompileScript(src, Compilation.StandardReferencePaths);
+            compilation = Compilation.CompileScript(src, "Main", Compilation.StandardReferencePaths);
             Console.WriteLine();
             compilation.Evaluate();
             compilation.Diagnostics.WriteTo(Console.Out);
@@ -40,7 +40,7 @@ namespace gsi
         {
             text = previous + text;
             var src = new SourceText(text, "<stdin>");
-            var compilation = Compilation.CompileScript(src, Compilation.StandardReferencePaths);
+            var compilation = Compilation.CompileScript(src, "Main", Compilation.StandardReferencePaths);
 
             return !compilation.Diagnostics.Any(d => shouldContinueMessages.Contains(d.Message));
         }
@@ -119,7 +119,7 @@ namespace gsi
         [MetaCommand("emit", "Writes the assembly to disk")]
         private void EmitCommand()
         {
-            compilation.Emit("Main", outDir + "\\Main.dll");
+            compilation.Emit(outDir + "\\Main.dll");
         }
     }
 }
