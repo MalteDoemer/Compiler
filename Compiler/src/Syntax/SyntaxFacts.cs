@@ -131,16 +131,15 @@ namespace Compiler.Syntax
             }
         }
         
-        // TODO optimize
         internal static bool IsExpressionStatement(ExpressionSyntax expression, bool isScripting = true)
         {
             if (isScripting) return true;
-            switch (expression)
+            switch (expression.Kind)
             {
-                case CallExpressionSyntax _:
-                case AssignmentExpressionSyntax __:
-                case AdditionalAssignmentExpressionSyntax ___:
-                case PostIncDecExpressionSyntax ____:
+                case SyntaxNodeKind.CallExpressionSyntax:
+                case SyntaxNodeKind.AssignmentExpressionSyntax:
+                case SyntaxNodeKind.AdditionalAssignmentExpressionSyntax:
+                case SyntaxNodeKind.PostIncDecExpressionSyntax:
                     return true;
                 default: return false;
             }
