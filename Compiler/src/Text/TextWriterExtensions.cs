@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.IO;
 using Compiler.Binding;
 using Compiler.Diagnostics;
+using Compiler.Lowering;
 using Compiler.Symbols;
 using Compiler.Syntax;
 
@@ -142,6 +143,8 @@ namespace Compiler.Text
                     WriteBoundLabelStatement(writer, (BoundLabelStatement)node); break;
                 case BoundNodeKind.BoundReturnStatement:
                     WriteBoundReturnStatement(writer, (BoundReturnStatement)node); break;
+                case BoundNodeKind.BoundStatementExpression:
+                    WriteBoundStatementExpression(writer, (BoundStatementExpression)node); break;
                 case BoundNodeKind.BoundNopStatement:
                     writer.WriteBlueKeyword("nop"); break;
                 default: throw new Exception("Unexpected kind");
@@ -346,6 +349,16 @@ namespace Compiler.Text
             else writer.WriteBoundNode(node.Expression);
         }
 
+        private static void WriteBoundStatementExpression(IndentedTextWriter writer, BoundStatementExpression node)
+        {
+            var statements = Lowerer.Flatten(FunctionSymbol.Invalid, node.Statement).Statements;
+            writer.Indent += 4;
+            foreach (var stmt in statements)
+            {
+                writer.WriteBoundNode(stmt);
+                writer.WriteLine();
+            }
+            writer.Indent -= 4;
+        }
     }
-
 }

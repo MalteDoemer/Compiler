@@ -26,7 +26,7 @@ namespace Compiler.Lowering
             return RemoveDeadCode(Flatten(function, res));
         }
 
-        private static BoundBlockStatement Flatten(FunctionSymbol function, BoundStatement node)
+        public static BoundBlockStatement Flatten(FunctionSymbol function, BoundStatement node)
         {
             var builder = ImmutableArray.CreateBuilder<BoundStatement>();
             var stack = new Stack<BoundStatement>();
@@ -45,13 +45,13 @@ namespace Compiler.Lowering
                     builder.Add(current);
                 }
             }
-            if (!(function is null) && function.ReturnType == TypeSymbol.Void)
+            if (function.ReturnType == TypeSymbol.Void)
                 if (builder.Count == 0 || CanFallThrough(builder.Last()))
                     builder.Add(new BoundReturnStatement(null, true));
 
             return new BoundBlockStatement(builder.ToImmutable(), node.IsValid);
         }
-
+        
         private static bool CanFallThrough(BoundStatement boundStatement)
         {
             return boundStatement.Kind != BoundNodeKind.BoundReturnStatement && boundStatement.Kind != BoundNodeKind.BoundGotoStatement;
@@ -114,7 +114,7 @@ namespace Compiler.Lowering
             // body:
             // <body>
             // continue:
-            // gotoTrue <condition> body
+            // goto body if <condition>
             // break:
 
             var bodyLabel = CreateLabel();
@@ -189,13 +189,13 @@ namespace Compiler.Lowering
             continue:
             <increment>
             check:
-            gotoTrue body <condtiton>
+            goto body if <condtiton>
             break:            
             */
 
 
             var decl = node.VariableDeclaration;
-            var increment = new BoundExpressionStatement(node.Increment, node.IsValid);
+            var increment = new BoundExpressionStatement(node.Increment, node.IsValid, true);
             var body = node.Body;
             var condition = node.Condition;
 
@@ -320,5 +320,47 @@ namespace Compiler.Lowering
             return new BoundBinaryExpression(node.Op, left, right, node.ResultType, node.IsValid);
         }
 
+        protected override BoundExpression RewriteTernaryExpression(BoundTernaryExpression node)
+        {
+            /*
+            
+            <condition> ? <thenExpr> : <elseExpr>
+
+            -->
+
+            goto thenLabel if <condition>
+            <elseExpr>
+            goto endLabel
+            thenLabel:
+            <thenExpr>
+            endLabel:
+        
+            */
+
+            var condition = node.Condition;
+            var thenExpr = new BoundExpressionStatement(node.ThenExpression, node.IsValid, false);
+            var elseExpr = new BoundExpressionStatement(node.ElseExpression, node.IsValid, false);
+
+            var thenLabel = CreateLabel();
+            var endLabel = CreateLabel();
+
+            var thenLabelStmt = new BoundLabelStatement(thenLabel, node.IsValid);
+            var endLabelStmt = new BoundLabelStatement(endLabel, node.IsValid);
+
+            var gotoThen = new BoundConditionalGotoStatement(thenLabel, condition, false, node.IsValid);
+            var gotoEnd = new BoundGotoStatement(endLabel, node.IsValid);
+
+            var body = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(
+                gotoThen,
+                elseExpr,
+                gotoEnd,
+                thenLabelStmt,
+                thenExpr,
+                endLabelStmt
+            ), isValid: node.IsValid);
+
+            var res = new BoundStatementExpression(body, node.ResultType, node.IsValid);
+            return RewriteExpression(res);
+        }
     }
 }

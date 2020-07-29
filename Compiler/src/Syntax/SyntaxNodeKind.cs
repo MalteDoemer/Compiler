@@ -35,6 +35,7 @@ namespace Compiler.Syntax
         CaseStatementSyntax,
         PreDefinedTypeSyntax,
         ArrayTypeSyntax,
-        NewArraySyntax
+        NewArraySyntax,
+        TernaryExpressionSyntax
     }
 }

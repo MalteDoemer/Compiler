@@ -26,6 +26,7 @@ namespace Compiler.Syntax
         Hat,
         Tilde,
         Bang,
+        QuestionMark,
 
 
         // Double operators

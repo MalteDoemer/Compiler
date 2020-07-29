@@ -72,6 +72,7 @@ namespace Compiler.Syntax
                 case ':': return SyntaxTokenKind.Colon;
                 case '[': return SyntaxTokenKind.LSquare;
                 case ']': return SyntaxTokenKind.RSquare;
+                case '?': return SyntaxTokenKind.QuestionMark;
                 default: return null;
             }
         }
@@ -183,6 +184,7 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.Colon: return ":";
                 case SyntaxTokenKind.LSquare: return "[";
                 case SyntaxTokenKind.RSquare: return "]";
+                case SyntaxTokenKind.QuestionMark: return "?";
 
                 case SyntaxTokenKind.StarStar: return "**";
                 case SyntaxTokenKind.SlashSlah: return "//";

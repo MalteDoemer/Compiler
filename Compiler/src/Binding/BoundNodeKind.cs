@@ -10,6 +10,11 @@ namespace Compiler.Binding
         BoundCallExpression,
         BoundConversionExpression,
         BoundAssignmentExpression,
+        BoundInvalidExpression,
+        BoundNewArray,
+        BoundTernaryExpression,
+        BoundStatementExpression,
+        
         BoundBlockStatement,
         BoundExpressionStatement,
         BoundVariableDeclarationStatement,
@@ -22,7 +27,5 @@ namespace Compiler.Binding
         BoundLabelStatement,
         BoundReturnStatement,
         BoundNopStatement,
-        BoundInvalidExpression,
-        BoundNewArray,
     }
 }

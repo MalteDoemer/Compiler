@@ -1,4 +1,5 @@
 using System.IO;
+using Compiler.Symbols;
 using Compiler.Text;
 
 namespace Compiler.Binding
@@ -22,5 +23,18 @@ namespace Compiler.Binding
                 return writer.ToString();
             }
         }
+    }
+
+    internal sealed class BoundStatementExpression : BoundExpression
+    {
+        public BoundStatementExpression(BoundStatement statement, TypeSymbol resultType, bool isValid) : base(isValid)
+        {
+            Statement = statement;
+            ResultType = resultType;
+        }
+
+        public override BoundNodeKind Kind => BoundNodeKind.BoundStatementExpression;
+        public override TypeSymbol ResultType { get; }
+        public BoundStatement Statement { get; }
     }
 }

@@ -1,6 +1,9 @@
 func main() {
+    var rnd = rand(0,100)
 
-    var arr: int[][] = new int[10][]
-    println(arr)
+    var i = rnd % 10 == 0 ? "nice" : rnd == 36 ? "glich nice" : "nid so nice"
+    println(rnd)
+    println(i)
+
     input()
 }

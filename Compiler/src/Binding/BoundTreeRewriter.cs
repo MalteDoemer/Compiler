@@ -144,33 +144,58 @@ namespace Compiler.Binding
             var expr = RewriteExpression(node.Expression);
             if (expr == node.Expression)
                 return node;
-            return new BoundExpressionStatement(expr, node.IsValid);
+            return new BoundExpressionStatement(expr, node.IsValid, node.ShouldPop);
         }
 
-        protected virtual BoundExpression RewriteExpression(BoundExpression expression)
+        protected virtual BoundExpression RewriteExpression(BoundExpression node)
         {
-            switch (expression.Kind)
+            switch (node.Kind)
             {
                 case BoundNodeKind.BoundLiteralExpression:
-                    return RewriteLiteralExpression((BoundLiteralExpression)expression);
+                    return RewriteLiteralExpression((BoundLiteralExpression)node);
                 case BoundNodeKind.BoundVariableExpression:
-                    return RewriteVariableExpression((BoundVariableExpression)expression);
+                    return RewriteVariableExpression((BoundVariableExpression)node);
                 case BoundNodeKind.BoundUnaryExpression:
-                    return RewriteUnaryExpression((BoundUnaryExpression)expression);
+                    return RewriteUnaryExpression((BoundUnaryExpression)node);
                 case BoundNodeKind.BoundBinaryExpression:
-                    return RewriteBinaryExpression((BoundBinaryExpression)expression);
+                    return RewriteBinaryExpression((BoundBinaryExpression)node);
                 case BoundNodeKind.BoundCallExpression:
-                    return RewriteCallExpression((BoundCallExpression)expression);
+                    return RewriteCallExpression((BoundCallExpression)node);
                 case BoundNodeKind.BoundConversionExpression:
-                    return RewriteConversionExpression((BoundConversionExpression)expression);
+                    return RewriteConversionExpression((BoundConversionExpression)node);
                 case BoundNodeKind.BoundAssignmentExpression:
-                    return RewriteAssignmentExpression((BoundAssignmentExpression)expression);
+                    return RewriteAssignmentExpression((BoundAssignmentExpression)node);
                 case BoundNodeKind.BoundNewArray:
-                    return RewriteNewArray((BoundNewArray)expression);
+                    return RewriteNewArray((BoundNewArray)node);
+                case BoundNodeKind.BoundTernaryExpression:
+                    return RewriteTernaryExpression((BoundTernaryExpression)node);
+                case BoundNodeKind.BoundStatementExpression:
+                    return RewriteStatementExpression((BoundStatementExpression)node);
                 case BoundNodeKind.BoundInvalidExpression:
-                    return expression;
-                default: throw new Exception($"Unknown BoundExpression <{expression}>");
+                    return node;
+                default: throw new Exception($"Unknown BoundExpression <{node}>");
             }
+        }
+
+        protected virtual BoundExpression RewriteStatementExpression(BoundStatementExpression node)
+        {
+            var statement = RewriteStatement(node.Statement);
+            if (statement == node.Statement)
+                return node;
+            return new BoundStatementExpression(statement, node.ResultType, node.IsValid);
+        }
+
+        protected virtual BoundExpression RewriteTernaryExpression(BoundTernaryExpression node)
+        {
+            var condition = RewriteExpression(node.Condition);
+            var thenExpr = RewriteExpression(node.ThenExpression);
+            var elseExpr = RewriteExpression(node.ElseExpression);
+
+            if (condition == node.Condition &&
+                thenExpr == node.ThenExpression &&
+                elseExpr == node.ElseExpression)
+                return node;
+            return new BoundTernaryExpression(condition, thenExpr, elseExpr, node.ResultType, node.IsValid);
         }
 
         protected virtual BoundExpression RewriteNewArray(BoundNewArray node)

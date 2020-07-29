@@ -241,7 +241,7 @@ namespace Compiler.Binding
         private BoundStatement BindExpressionStatementSyntax(ExpressionStatementSyntax syntax)
         {
             var expr = BindExpression(syntax.Expression, true);
-            return new BoundExpressionStatement(expr, isTreeValid);
+            return new BoundExpressionStatement(expr, isTreeValid, true);
         }
 
         private BoundStatement BindVariableDeclarationStatementSyntax(VariableDeclarationStatementSyntax syntax)
@@ -418,10 +418,20 @@ namespace Compiler.Binding
                     return BindPostIncDecExpressionSyntax((PostIncDecExpressionSyntax)syntax);
                 case SyntaxNodeKind.NewArraySyntax:
                     return BindNewArraySyntax((NewArraySyntax)syntax);
+                case SyntaxNodeKind.TernaryExpressionSyntax:
+                    return BindTernaryExpressionSyntax((TernaryExpressionSyntax)syntax);
                 case SyntaxNodeKind.ParenthesizedExpression:
                     return BindExpression(((ParenthesizedExpression)syntax).Expression);
                 default: throw new Exception($"Unexpected SyntaxKind <{syntax.Kind}>");
             }
+        }
+
+        private BoundExpression BindTernaryExpressionSyntax(TernaryExpressionSyntax syntax)
+        {
+            var condition = CheckTypeAndConversion(TypeSymbol.Bool, syntax.Condition);
+            var thenExpr = BindExpression(syntax.ThenExpression);
+            var elseExpr = CheckTypeAndConversion(thenExpr.ResultType, syntax.ElseExpression); // TODO find base class
+            return new BoundTernaryExpression(condition, thenExpr, elseExpr, thenExpr.ResultType, isTreeValid);
         }
 
         private BoundExpression BindNewArraySyntax(NewArraySyntax syntax)

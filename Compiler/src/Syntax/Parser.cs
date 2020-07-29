@@ -322,7 +322,15 @@ namespace Compiler.Syntax
             return typeSyntax;
         }
 
-        private ExpressionSyntax ParseExpression() => ParseExpression(SyntaxFacts.MaxPrecedence);
+        private ExpressionSyntax ParseExpression()
+        {
+            var res = ParseExpression(SyntaxFacts.MaxPrecedence);
+
+            if (current.TokenKind == SyntaxTokenKind.QuestionMark)
+                return ParseTernaryExpression(res);
+
+            return res;
+        }
 
         private ExpressionSyntax ParseExpression(int lvl)
         {
@@ -369,6 +377,15 @@ namespace Compiler.Syntax
                 ReportError(ErrorMessage.UnexpectedToken, token.Location, token.TokenKind);
                 return new LiteralExpressionSyntax(token, false, token.Location);
             }
+        }
+
+        private ExpressionSyntax ParseTernaryExpression(ExpressionSyntax condition)
+        {
+            var questionMark = MatchToken(SyntaxTokenKind.QuestionMark);
+            var then = ParseExpression();
+            var colon = MatchToken(SyntaxTokenKind.Colon);
+            var elseExpression = ParseExpression();
+            return new TernaryExpressionSyntax(condition, questionMark, then, colon, elseExpression, isTreeValid, LocFromBounds(questionMark.Location.Start, elseExpression.Location.End));
         }
 
         private ExpressionSyntax ParseNewExpression()

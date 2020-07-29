@@ -9,6 +9,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.IO;
 using System.Collections.Immutable;
+using Compiler.Lowering;
 
 namespace Compiler.Emit
 {
@@ -257,7 +258,7 @@ namespace Compiler.Emit
         {
             EmitExpression(ilProcessor, node.Expression);
 
-            if (node.Expression.ResultType != TypeSymbol.Void)
+            if (node.Expression.ResultType != TypeSymbol.Void && node.ShouldPop)
                 ilProcessor.Emit(OpCodes.Pop);
         }
 
@@ -287,10 +288,21 @@ namespace Compiler.Emit
                     case BoundNodeKind.BoundNewArray:
                         EmitNewArrayExpession(ilProcessor, (BoundNewArray)node);
                         break;
+                    case BoundNodeKind.BoundStatementExpression:
+                        EmitStatementExpression(ilProcessor, (BoundStatementExpression)node);
+                        break;
                     default: throw new Exception($"Unexpected kind <{node.Kind}>");
                 }
             else
                 EmitConstatnt(ilProcessor, node.Constant);
+        }
+
+        private void EmitStatementExpression(ILProcessor ilProcessor, BoundStatementExpression node)
+        {
+            // TODO do this somewhere else
+            var statements = Lowerer.Flatten(FunctionSymbol.Invalid, node.Statement).Statements;
+            foreach (var stmt in statements)
+                EmitStatement(ilProcessor, stmt);
         }
 
         private void EmitNewArrayExpession(ILProcessor ilProcessor, BoundNewArray node)
