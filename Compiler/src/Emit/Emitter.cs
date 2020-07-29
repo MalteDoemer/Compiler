@@ -488,13 +488,9 @@ namespace Compiler.Emit
                     ilProcessor.Emit(OpCodes.Ldc_I4_0);
                     ilProcessor.Emit(OpCodes.Ceq);
                     break;
-                // TODO short-circuit evalutaion
-                case BoundBinaryOperator.LogicalAnd:
                 case BoundBinaryOperator.BitwiseAnd:
                     ilProcessor.Emit(OpCodes.And);
                     break;
-                // TODO short-circuit evalutaion
-                case BoundBinaryOperator.LogicalOr:
                 case BoundBinaryOperator.BitwiseOr:
                     ilProcessor.Emit(OpCodes.Or);
                     break;

@@ -1,9 +1,19 @@
 func main() {
-    var rnd = rand(0,100)
-
-    var i = rnd % 10 == 0 ? "nice" : rnd == 36 ? "glich nice" : "nid so nice"
-    println(rnd)
-    println(i)
+    
+    if (IsValid(20) && IsValid(36) || IsValid(36) && IsValid(0)) 
+    {
+        println("sucess!")
+    }
 
     input()
+}
+
+func IsValid(num: int): bool
+{
+    var res = num != 36
+
+    print(num + " is ")
+    println(res ? "valid" : "invalid")
+
+    return res
 }

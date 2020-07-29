@@ -51,7 +51,7 @@ namespace Compiler.Lowering
 
             return new BoundBlockStatement(builder.ToImmutable(), node.IsValid);
         }
-        
+
         private static bool CanFallThrough(BoundStatement boundStatement)
         {
             return boundStatement.Kind != BoundNodeKind.BoundReturnStatement && boundStatement.Kind != BoundNodeKind.BoundGotoStatement;
@@ -246,6 +246,12 @@ namespace Compiler.Lowering
             if (!(node.Constant is null))
                 return node;
 
+            if (node.Op == BoundBinaryOperator.LogicalAnd)
+                return RewriteLogicalAnd(node);
+
+            if (node.Op == BoundBinaryOperator.LogicalOr)
+                return RewriteLogicalOr(node);
+
             var left = RewriteExpression(node.Left);
             var right = RewriteExpression(node.Right);
 
@@ -318,6 +324,46 @@ namespace Compiler.Lowering
             }
 
             return new BoundBinaryExpression(node.Op, left, right, node.ResultType, node.IsValid);
+        }
+
+        private BoundExpression RewriteLogicalAnd(BoundBinaryExpression node)
+        {
+            /*
+
+            <a> && <b>
+
+            -->
+
+            <a> ? <b> : false
+
+            */
+
+            var a = node.Left;
+            var b = node.Right;
+            var @false = new BoundLiteralExpression(false, TypeSymbol.Bool, true);
+            var res = new BoundTernaryExpression(a, b, @false, TypeSymbol.Bool, node.IsValid);
+
+            return RewriteExpression(res);
+        }
+
+        private BoundExpression RewriteLogicalOr(BoundBinaryExpression node)
+        {
+            /*
+
+             <a> || <b>
+
+             -->
+
+             <a> ? true : <b>
+
+             */
+
+            var a = node.Left;
+            var b = node.Right;
+            var @true = new BoundLiteralExpression(true, TypeSymbol.Bool, true);
+            var res = new BoundTernaryExpression(a, @true, b, TypeSymbol.Bool, node.IsValid);
+
+            return RewriteExpression(res);
         }
 
         protected override BoundExpression RewriteTernaryExpression(BoundTernaryExpression node)

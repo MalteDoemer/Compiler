@@ -6,7 +6,7 @@ namespace Compiler.Syntax
     public static class SyntaxFacts
     {
 
-        internal const int MaxPrecedence = 6;
+        internal const int MaxPrecedence = 10;
 
         internal static object GetKeywordValue(string keyword)
         {
@@ -131,7 +131,7 @@ namespace Compiler.Syntax
                 default: return null;
             }
         }
-        
+
         internal static bool IsExpressionStatement(ExpressionSyntax expression, bool isScripting = true)
         {
             if (isScripting) return true;
@@ -250,18 +250,26 @@ namespace Compiler.Syntax
                 case SyntaxTokenKind.GreaterEqual:
                 case SyntaxTokenKind.LessThan:
                 case SyntaxTokenKind.GreaterThan:
-                case SyntaxTokenKind.EqualEqual:
-                case SyntaxTokenKind.NotEqual:
                     return 4;
 
-                case SyntaxTokenKind.Ampersand:
-                case SyntaxTokenKind.Pipe:
-                case SyntaxTokenKind.Hat:
+                case SyntaxTokenKind.EqualEqual:
+                case SyntaxTokenKind.NotEqual:
                     return 5;
 
-                case SyntaxTokenKind.AmpersandAmpersand:
-                case SyntaxTokenKind.PipePipe:
+                case SyntaxTokenKind.Ampersand:
                     return 6;
+
+                case SyntaxTokenKind.Hat:
+                    return 7;
+
+                case SyntaxTokenKind.Pipe:
+                    return 8;
+
+                case SyntaxTokenKind.AmpersandAmpersand:
+                    return 9;
+
+                case SyntaxTokenKind.PipePipe:
+                    return 10;
 
                 default: return 0;
             }
